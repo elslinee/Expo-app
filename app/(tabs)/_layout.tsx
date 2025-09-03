@@ -1,0 +1,77 @@
+import React from "react";
+import { Link, Tabs } from "expo-router";
+import { Pressable } from "react-native";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+
+import { Colors } from "@/constants/Colors";
+
+import { useClientOnlyValue } from "@/components/useClientOnlyValue";
+import { FontFamily } from "@/constants/FontFamily";
+import { useTheme } from "@/context/ThemeContext";
+function TabBarIcon(props: {
+  name: React.ComponentProps<typeof FontAwesome5>["name"];
+  color: string;
+}) {
+  return <FontAwesome5 size={24} style={{ marginBottom: -3 }} {...props} />;
+}
+
+export default function TabLayout() {
+  const { theme } = useTheme();
+
+  return (
+    <Tabs
+      screenOptions={{
+        sceneStyle: {
+          backgroundColor: Colors[theme].background,
+        },
+        tabBarActiveTintColor: Colors[theme].tint,
+        tabBarStyle: {
+          borderWidth: 1,
+          borderColor: Colors[theme].border,
+          backgroundColor: Colors[theme].background,
+        },
+        headerShown: useClientOnlyValue(false, true),
+        headerTitleAlign: "center",
+        headerStyle: {
+          backgroundColor: Colors[theme].background,
+          height: 70,
+        },
+        headerTitleStyle: {
+          color: Colors[theme].text,
+          fontFamily: FontFamily.regular,
+          fontSize: 20,
+        },
+        tabBarLabelStyle: {
+          display: "none",
+          fontFamily: FontFamily.bold,
+          fontSize: 14,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "الرئيسية",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="mosque" size={24} color={color} />
+          ),
+          headerRight: () => "",
+        }}
+      />
+      <Tabs.Screen
+        name="PrayerTimes"
+        options={{
+          title: "مواقيت الصلاة",
+          tabBarIcon: ({ color }) => <TabBarIcon name="clock" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="Settings"
+        options={{
+          title: "الإعدادات",
+          tabBarIcon: ({ color }) => <TabBarIcon name="cog" color={color} />,
+        }}
+      />
+    </Tabs>
+  );
+}

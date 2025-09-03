@@ -1,0 +1,39 @@
+# node modules
+node_modules
+
+# git
+.git
+.gitignore
+
+# Expo caches
+.expo
+.expo-shared
+
+# Native directories
+android
+ios
+
+# Build outputs
+dist
+build
+web-build
+
+# Logs
+npm-debug.*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Other
+*.tar
+*.gz
+*.zip
+*.rar
+*.7z
+*.psd
+*.mp4
+*.mov
+*.avi
+*.pdf
+*.apk
+*.aab
