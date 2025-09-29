@@ -49,7 +49,7 @@ export default function ScreenBtn({
           backgroundColor: pressed ? color.primary : color.background,
           transform: [{ scale }],
         }}
-        className="flex p-3  border justify-center     items-center gap-1"
+        className="flex p-3 min-w-[100px]  border justify-center     items-center gap-1"
       >
         <Icon
           color={pressed ? color.white : color.primary}

@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { QuranIcon } from "@/constants/Icons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingScreen from "@/components/LoadingScreen";
 
 // بيانات السور
@@ -176,6 +177,7 @@ export default function QuranScreen() {
   const [isReversed, setIsReversed] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [pinnedSurahs, setPinnedSurahs] = useState<number[]>([]);
 
   useEffect(() => {
     // Simulate loading time for better UX
@@ -185,14 +187,50 @@ export default function QuranScreen() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    const loadPinned = async () => {
+      try {
+        const stored = await AsyncStorage.getItem("quran_pinned_surahs");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setPinnedSurahs(parsed.filter((n) => typeof n === "number"));
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    loadPinned();
+  }, []);
+
+  const togglePin = async (surahNumber: number) => {
+    try {
+      const next = pinnedSurahs.includes(surahNumber)
+        ? pinnedSurahs.filter((n) => n !== surahNumber)
+        : [...pinnedSurahs, surahNumber];
+      setPinnedSurahs(next);
+      await AsyncStorage.setItem("quran_pinned_surahs", JSON.stringify(next));
+    } catch (e) {
+      // ignore
+    }
+  };
   // Filter surahs based on search text
   const filteredSurahs = surahsData.filter((surah) =>
     surah.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const sortedSurahs = isReversed
-    ? [...filteredSurahs].reverse()
-    : filteredSurahs;
+  // First, sort by pin status (pinned first, preserving original order), then apply reverse if needed
+  const pinnedSet = new Set(pinnedSurahs);
+  const prioritized = [...filteredSurahs].sort((a, b) => {
+    const aPinned = pinnedSet.has(a.number) ? 1 : 0;
+    const bPinned = pinnedSet.has(b.number) ? 1 : 0;
+    if (aPinned !== bPinned) return bPinned - aPinned; // pinned first
+    return 0; // keep relative order otherwise
+  });
+
+  const sortedSurahs = isReversed ? [...prioritized].reverse() : prioritized;
 
   // Show loading screen while loading
   if (isLoading) {
@@ -242,7 +280,27 @@ export default function QuranScreen() {
       </View>
 
       <View style={styles.surahIcon}>
-        <FontAwesome5 name="arrow-left" size={20} color={color.primary} />
+        <TouchableOpacity
+          onPress={() => togglePin(item.number)}
+          accessibilityRole="button"
+          accessibilityLabel={
+            pinnedSurahs.includes(item.number) ? "Unpin surah" : "Pin surah"
+          }
+          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+        >
+          <FontAwesome5
+            name={
+              pinnedSurahs.includes(item.number) ? "thumbtack" : "thumbtack"
+            }
+            size={18}
+            color={
+              pinnedSurahs.includes(item.number)
+                ? color.primary
+                : color.text + "80"
+            }
+            style={{ transform: [{ rotate: "-20deg" }] }}
+          />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { Colors } from "@/constants/Colors";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { FontFamily } from "@/constants/FontFamily";
 
 interface Ayah {
   numberInSurah: number;
@@ -76,7 +77,7 @@ export default function AyahItem({
               justifyContent: "center",
               alignItems: "center",
               fontSize: 12,
-              fontFamily: "",
+              fontFamily: FontFamily.bold,
               color: "#fff",
             }}
           >
@@ -87,8 +88,7 @@ export default function AyahItem({
         <Text
           style={{
             fontSize: 18,
-            fontWeight: "800",
-            fontFamily: "sans-serif",
+            fontFamily: FontFamily.medium,
             lineHeight: 32,
             flex: 1,
             color: color.text,

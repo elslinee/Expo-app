@@ -160,7 +160,7 @@ export default function FavoritesScreen() {
           <Text
             style={{
               fontSize: 12,
-              fontFamily: "",
+           
               color: "#fff",
             }}
           >
@@ -172,8 +172,8 @@ export default function FavoritesScreen() {
           <Text
             style={{
               fontSize: 18,
-              fontWeight: "800",
-              fontFamily: "sans-serif",
+          
+              fontFamily: FontFamily.medium,
               lineHeight: 32,
 
               color: color.text,
@@ -337,7 +337,9 @@ export default function FavoritesScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: color.background }}>
+    <View
+      style={{ flex: 1, backgroundColor: color.background, paddingTop: 40 }}
+    >
       {/* Header */}
       <View
         style={{

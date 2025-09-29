@@ -39,7 +39,7 @@ export default function DateAndLocation({
   });
 
   return (
-    <View className="px-4 flex overflow-hidden pt-6 flex-row gap-4 justify-around items-center">
+    <View className="px-4 flex overflow-hidden  flex-row gap-4 justify-around items-center">
       <View className="flex flex-col gap-1">
         <Text
           style={{

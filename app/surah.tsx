@@ -352,7 +352,9 @@ export default function SurahScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: color.background }}>
+    <View
+      style={{ flex: 1, backgroundColor: color.background, paddingTop: 40 }}
+    >
       <View
         style={{
           flexDirection: "row",
@@ -384,7 +386,6 @@ export default function SurahScreen() {
             <FontAwesome5 name="arrow-right" size={20} color={color.primary} />
           </TouchableOpacity>
 
-          {/* Bookmark Button */}
           {bookmark && (
             <TouchableOpacity
               style={{
@@ -413,20 +414,10 @@ export default function SurahScreen() {
             </TouchableOpacity>
           )}
 
-          {/* Test buttons */}
-          <View
-            style={{
-              position: "absolute",
-              right: 4,
-              top: 10,
-              flexDirection: "row",
-              gap: 8,
-            }}
-          ></View>
           <Text
             style={{
-              fontSize: 22,
-              fontFamily: FontFamily.regular,
+              fontSize: 18,
+              fontFamily: FontFamily.bold,
               textAlign: "center",
               marginBottom: 6,
               color: color.text,

@@ -27,13 +27,13 @@ export default function RootLayout() {
   const expoPushToken = usePushNotifications();
 
   const [loaded, error] = useFonts({
-    [FontFamily.extraLight]: require("../assets/fonts/Cairo-ExtraLight.ttf"),
-    [FontFamily.light]: require("../assets/fonts/Cairo-Light.ttf"),
-    [FontFamily.regular]: require("../assets/fonts/Cairo-Regular.ttf"),
-    [FontFamily.medium]: require("../assets/fonts/Cairo-Medium.ttf"),
-    [FontFamily.bold]: require("../assets/fonts/Cairo-Bold.ttf"),
-    [FontFamily.extraBold]: require("../assets/fonts/Cairo-ExtraBold.ttf"),
-    [FontFamily.black]: require("../assets/fonts/Cairo-Black.ttf"),
+    [FontFamily.extraLight]: require("../assets/fonts/ExtraLight.ttf"),
+    [FontFamily.light]: require("../assets/fonts/Light.ttf"),
+    [FontFamily.regular]: require("../assets/fonts/Regular.ttf"),
+    [FontFamily.medium]: require("../assets/fonts/Medium.ttf"),
+    [FontFamily.bold]: require("../assets/fonts/Bold.ttf"),
+    [FontFamily.extraBold]: require("../assets/fonts/ExtraBold.ttf"),
+    [FontFamily.black]: require("../assets/fonts/Black.ttf"),
     ...FontAwesome.font,
   });
   useEffect(() => {
@@ -74,6 +74,7 @@ function RootLayoutNav() {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: Colors[theme].background }}
+      edges={["left", "right", "bottom"]}
     >
       <StatusBar
         style={theme === "dark" ? "light" : "dark"}
@@ -127,6 +128,20 @@ function RootLayoutNav() {
           options={{
             title: "المفضلة",
             headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="tasbeeh"
+          options={{
+            title: "التسبيح",
+            headerShown: true,
+          }}
+        />
+        <Stack.Screen
+          name="tasbeeh/[id]"
+          options={{
+            title: "التسبيح",
+            headerShown: true,
           }}
         />
       </Stack>

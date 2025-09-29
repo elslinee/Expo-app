@@ -5,7 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import MosqueBackground from "@/components/homeScreen/MosqueBackground";
 import ScreenBtn from "@/components/homeScreen/ScreenBtn";
-import { QuranIcon } from "@/constants/Icons";
+import { QuranIcon, TasbeehIcon } from "@/constants/Icons";
 import { useRouter } from "expo-router";
 import { navigateToPage } from "@/utils/navigationUtils";
 export default function HomeScreen() {
@@ -30,6 +30,13 @@ export default function HomeScreen() {
           Icon={QuranIcon}
           onPress={() => navigateToPage("/quran")}
         />
+        <ScreenBtn
+          color={color}
+          title="التسبيح"
+          Icon={TasbeehIcon}
+          onPress={() => router.push("/tasbeeh")}
+        />
+
         {/* <ScreenBtn
           color={color}
           title="القرآن الكريم"

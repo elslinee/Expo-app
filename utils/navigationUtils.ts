@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 
 // دالة للانتقال السلس مع تحسينات
-export const navigateToPage = (route: "/quran" | "/about") => {
+export const navigateToPage = (route: "/quran" | "/about" | "/tasbeeh") => {
   // انتقال فوري بدون تأخير
   router.push(route);
 };
@@ -15,6 +15,6 @@ export const goBack = () => {
 };
 
 // دالة للانتقال مع استبدال الصفحة الحالية
-export const replacePage = (route: "/quran" | "/about") => {
+export const replacePage = (route: "/quran" | "/about" | "/tasbeeh") => {
   router.replace(route);
 };

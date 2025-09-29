@@ -121,12 +121,11 @@ export default function AyahModal({
           <Text
             style={{
               fontSize: 20,
-              fontFamily: "sans-serif",
 
               lineHeight: 32,
               marginBottom: 16,
               color: color.text,
-              fontWeight: "800",
+              fontFamily: FontFamily.medium,
             }}
           >
             {ayah?.text}

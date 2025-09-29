@@ -25,14 +25,14 @@ export default function TabLayout() {
         },
         tabBarActiveTintColor: Colors[theme].primary,
         tabBarStyle: {
-          height: 80,
+          height: 60,
           shadowColor: Colors[theme].border,
           borderWidth: 1,
           borderColor: Colors[theme].border,
           backgroundColor: Colors[theme].background,
         },
 
-        headerShown: useClientOnlyValue(false, true),
+        headerShown: true,
         headerTitleAlign: "center",
         headerStyle: {
           shadowColor: Colors[theme].border,
@@ -42,7 +42,7 @@ export default function TabLayout() {
         headerTitleStyle: {
           color: Colors[theme].text,
           fontFamily: FontFamily.regular,
-          fontSize: 16,
+          fontSize: 18,
         },
         tabBarLabelStyle: {
           fontFamily: FontFamily.bold,
