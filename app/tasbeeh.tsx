@@ -32,6 +32,7 @@ export default function Tasbeeh() {
   const router = useRouter();
   const [items, setItems] = useState<TasbeehItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasHydrated, setHasHydrated] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [newName, setNewName] = useState<string>("");
   const [newGoal, setNewGoal] = useState<string>("");
@@ -63,14 +64,16 @@ export default function Tasbeeh() {
         // ignore
       } finally {
         setIsLoading(false);
+        setHasHydrated(true);
       }
     };
     load();
   }, []);
 
   useEffect(() => {
+    if (!hasHydrated) return;
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(items)).catch(() => {});
-  }, [items]);
+  }, [items, hasHydrated]);
 
   useFocusEffect(
     useCallback(() => {

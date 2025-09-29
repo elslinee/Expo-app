@@ -213,8 +213,12 @@ class PrayerTimesService {
     latitude: number;
     longitude: number;
   }> {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
+    // Mirror the single-prompt behavior: check first, request only if never asked
+    const { status: existingStatus } =
+      await Location.getForegroundPermissionsAsync();
+    if (existingStatus !== "granted") {
+      // Do not prompt here; LocationContext owns prompting logic.
+      // If permission not granted, propagate error to let UI handle gracefully.
       throw new Error("Location permission denied");
     }
 
@@ -364,8 +368,7 @@ class PrayerTimesService {
         );
         return;
       }
-
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.getForegroundPermissionsAsync();
       if (status !== "granted") {
         console.warn("Location permission denied for monitoring");
         return;

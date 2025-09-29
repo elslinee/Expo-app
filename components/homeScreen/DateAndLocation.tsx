@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import { useLocation } from "@/context/LocationContext";
 
@@ -9,7 +9,7 @@ export default function DateAndLocation({
   color: any;
   inHomeScreen?: boolean;
 }) {
-  const { address, errorMsg } = useLocation();
+  const { address, errorMsg, openLocationSettingsAndRefresh } = useLocation();
 
   let text = address;
   if (errorMsg) {
@@ -67,14 +67,28 @@ export default function DateAndLocation({
         >
           المكان
         </Text>
-        <Text
-          style={{
-            color: inHomeScreen ? color.text : color.primary,
-          }}
-          className="text-base font-medium "
-        >
-          {text}
-        </Text>
+        {errorMsg ? (
+          <TouchableOpacity onPress={openLocationSettingsAndRefresh}>
+            <Text
+              style={{
+                color: inHomeScreen ? color.text : color.primary,
+                textDecorationLine: "underline",
+              }}
+              className="text-base font-medium "
+            >
+              {text}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <Text
+            style={{
+              color: inHomeScreen ? color.text : color.primary,
+            }}
+            className="text-base font-medium "
+          >
+            {text}
+          </Text>
+        )}
       </View>
     </View>
   );

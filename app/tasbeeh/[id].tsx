@@ -287,7 +287,7 @@ export default function TasbeehDetail() {
             return (
               <Pressable
                 onPress={increment}
-                android_ripple={{ color: themeColors.border }}
+                android_ripple={{ color: themeColors.border, radius: 100 }}
                 style={{ alignSelf: "center" }}
               >
                 <View

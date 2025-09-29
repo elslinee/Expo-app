@@ -6,6 +6,8 @@ import React, {
   useEffect,
 } from "react";
 import * as Location from "expo-location";
+import { Linking } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { TranslationService } from "@/utils/translationService";
 
 interface LocationContextType {
@@ -14,6 +16,7 @@ interface LocationContextType {
   errorMsg: string | null;
   isLoading: boolean;
   refreshLocation: () => Promise<void>;
+  openLocationSettingsAndRefresh: () => Promise<void>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(
@@ -39,21 +42,53 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     setErrorMsg(null);
 
     try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
+      // Ensure device location services are enabled (separate from permission)
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!servicesEnabled) {
+        setErrorMsg("خدمات الموقع معطّلة");
+        setAddress("الرجاء تفعيل خدمات الموقع");
+        setIsLoading(false);
+        return;
+      }
+
+      const PERMISSION_ASKED_KEY = "locationPermissionAsked";
+
+      // Check existing permission without prompting first
+      let { status: existingStatus } =
+        await Location.getForegroundPermissionsAsync();
+
+      // If not granted, only request once (persist flag)
+      if (existingStatus !== "granted") {
+        const askedBefore = await AsyncStorage.getItem(PERMISSION_ASKED_KEY);
+        if (!askedBefore) {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          await AsyncStorage.setItem(PERMISSION_ASKED_KEY, "true");
+          existingStatus = status;
+        }
+      }
+
+      if (existingStatus !== "granted") {
         setErrorMsg("تم رفض صلاحية الوصول إلى الموقع");
         setAddress("الموقع غير متاح");
         setIsLoading(false);
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
+      // Try to get current position with a reasonable configuration
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
       setLocation(location);
 
-      const reverseGeocode = await Location.reverseGeocodeAsync({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
+      let reverseGeocode: Location.LocationGeocodedAddress[] = [];
+      try {
+        reverseGeocode = await Location.reverseGeocodeAsync({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      } catch (e) {
+        // Non-fatal: continue with generic address
+      }
 
       if (reverseGeocode.length > 0) {
         const addr = reverseGeocode[0];
@@ -82,6 +117,21 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     await getCurrentLocation();
   };
 
+  const openLocationSettingsAndRefresh = async () => {
+    try {
+      // Open platform location settings (Android). On iOS, this opens app settings.
+      await Location.enableNetworkProviderAsync().catch(() => {});
+    } catch {}
+    try {
+      // Open app settings page as a fallback (works on iOS and Android)
+      await Linking.openSettings();
+    } catch {}
+    // Small delay to allow user to toggle then return
+    setTimeout(() => {
+      refreshLocation();
+    }, 1000);
+  };
+
   useEffect(() => {
     getCurrentLocation();
   }, []);
@@ -94,6 +144,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         errorMsg,
         isLoading,
         refreshLocation,
+        openLocationSettingsAndRefresh,
       }}
     >
       {children}
@@ -108,4 +159,3 @@ export const useLocation = (): LocationContextType => {
   }
   return context;
 };
-
