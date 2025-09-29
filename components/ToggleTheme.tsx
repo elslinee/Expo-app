@@ -1,4 +1,4 @@
-import { View, Text } from "@/components/Themed";
+import { View, Text } from "react-native";
 import React from "react";
 import { Switch } from "react-native-switch";
 import { Colors } from "@/constants/Colors";
@@ -6,14 +6,16 @@ import { useTheme } from "@/context/ThemeContext";
 
 const ToggleTheme = () => {
   const { theme, toggleTheme } = useTheme();
-  const color = Colors[theme]; 
+  const color = Colors[theme];
 
   return (
     <View
-      style={{ backgroundColor: color.grey }}
+      style={{ backgroundColor: color.neutral }}
       className="px-4 py-2 flex flex-row items-center justify-between"
     >
-      <Text className="text-lg font-medium">الوضع الليلي</Text>
+      <Text style={{ color: color.text }} className="text-lg font-medium">
+        الوضع الليلي
+      </Text>
       <Switch
         value={theme === "dark"}
         onValueChange={toggleTheme}

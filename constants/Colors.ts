@@ -7,22 +7,29 @@ export const Colors = {
     primary: primaryLight,
     text: "#1A1A1A",
     white: "#FFFFFF",
+    black: "#1A1A1A",
     background: "#FFFFFF",
-    grey: "#ECECEC",
+    grey: "#ADADAD",
+    neutral: "#f5f5f5",
     tint: primaryLight,
     tabIconDefault: "#808080",
     tabIconSelected: primaryLight,
-    border: "#dddddd",
+    border: "#f5f5f5",
+   
   },
   dark: {
     primary: primaryDark,
     text: "#F5F5F5",
+    white: "#1A1A1A",
+    black: "#FFFFFF",
     background: "#0D0D0D",
-    grey: "#1A1A1A",
+    grey: "#ADADAD",
+    neutral: "#1a1a1a",
     tint: primaryDark,
     tabIconDefault: "#999999",
     tabIconSelected: primaryDark,
     border: "#333333",
+    
   },
 };
 

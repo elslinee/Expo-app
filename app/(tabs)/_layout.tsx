@@ -1,6 +1,5 @@
 import React from "react";
 import { Link, Tabs } from "expo-router";
-import { Pressable } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 import { Colors } from "@/constants/Colors";
@@ -24,27 +23,30 @@ export default function TabLayout() {
         sceneStyle: {
           backgroundColor: Colors[theme].background,
         },
-        tabBarActiveTintColor: Colors[theme].tint,
+        tabBarActiveTintColor: Colors[theme].primary,
         tabBarStyle: {
+          height: 80,
+          shadowColor: Colors[theme].border,
           borderWidth: 1,
           borderColor: Colors[theme].border,
           backgroundColor: Colors[theme].background,
         },
+
         headerShown: useClientOnlyValue(false, true),
         headerTitleAlign: "center",
         headerStyle: {
+          shadowColor: Colors[theme].border,
+          borderBottomColor: Colors[theme].border,
           backgroundColor: Colors[theme].background,
-          height: 70,
         },
         headerTitleStyle: {
           color: Colors[theme].text,
           fontFamily: FontFamily.regular,
-          fontSize: 20,
+          fontSize: 16,
         },
         tabBarLabelStyle: {
-          display: "none",
           fontFamily: FontFamily.bold,
-          fontSize: 14,
+          fontSize: 10,
         },
       }}
     >
