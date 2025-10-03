@@ -176,7 +176,7 @@ export default function AladhanVoice({ color }: { color: any }) {
   return (
     <ScrollView
       className="flex-1"
-      showsVerticalScrollIndicator={true}
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 20 }}
     >
       <View

@@ -21,7 +21,6 @@ export default function usePushNotifications() {
 
   const registerForPushNotificationsAsync = async () => {
     if (!Device.isDevice) {
-      alert("Must use physical device for Push Notifications");
       return null;
     }
 
@@ -35,7 +34,6 @@ export default function usePushNotifications() {
     }
 
     if (finalStatus !== "granted") {
-      alert("Permission for push notifications was denied");
       return null;
     }
 

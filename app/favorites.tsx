@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   FlatList,
 } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
@@ -61,7 +59,6 @@ export default function FavoritesScreen() {
       }
     } catch (error) {
       console.error("Error loading favorite ayahs:", error);
-      Alert.alert("خطأ", "فشل في تحميل الآيات المفضلة");
     } finally {
       setLoading(false);
     }

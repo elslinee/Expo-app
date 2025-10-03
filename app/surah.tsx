@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/context/ThemeContext";
@@ -199,7 +198,6 @@ export default function SurahScreen() {
     } catch (err) {
       console.error("Error fetching surah data:", err);
       setError("فشل في تحميل السورة");
-      Alert.alert("خطأ", "فشل في تحميل السورة. يرجى المحاولة مرة أخرى.");
     } finally {
       setLoading(false);
     }
