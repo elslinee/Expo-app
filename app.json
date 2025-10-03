@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/logotranspernt.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#FBF5EA"
     },
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logotranspernt.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#FBF5EA"
       },
       "edgeToEdgeEnabled": true,
@@ -29,7 +29,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/logotranspernt.png"
+      "favicon": "./assets/logo.png"
     },
     "plugins": ["expo-router"],
     "experiments": {
