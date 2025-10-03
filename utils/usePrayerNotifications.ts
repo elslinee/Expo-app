@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { toZonedTime, format } from "date-fns-tz";
 import { addDays, isBefore } from "date-fns";
@@ -42,7 +43,9 @@ export default function usePrayerNotifications(
   // Ensure permissions/channel are set-up (returns token but we don't use it here)
   usePushNotifications();
 
-  const scheduledOnceRef = useRef(false);
+  const lastIncludeRef = useRef<string>("");
+  const lastTimingsRef = useRef<string>("");
+  const isSchedulingRef = useRef(false);
   const { enabled = true, include = {}, titlePrefix } = options;
 
   useEffect(() => {
@@ -50,39 +53,72 @@ export default function usePrayerNotifications(
       return;
     }
 
-    // Debounce initial mount re-runs
-    if (
-      scheduledOnceRef.current &&
-      !titlePrefix &&
-      Object.keys(include).length === 0
-    ) {
-      return;
-    }
-
     const tz = prayerTimes.meta.timezone || "Africa/Cairo";
     const now = new Date();
 
-    const schedule = async () => {
-      try {
-        // Clear previously scheduled notifications to avoid duplicates
-        await Notifications.cancelAllScheduledNotificationsAsync();
+    type IdMap = Partial<Record<PrayerKey, string>>;
+    const IDS_KEY = "prayer_notification_ids_v1";
 
+    const schedulePerPrayer = async () => {
+      // Prevent concurrent executions
+      if (isSchedulingRef.current) {
+        return;
+      }
+
+      // Check if include map or timings have changed
+      const currentInclude = JSON.stringify(include);
+      const currentTimings = JSON.stringify({
+        Fajr: prayerTimes.timings.Fajr,
+        Sunrise: prayerTimes.timings.Sunrise,
+        Dhuhr: prayerTimes.timings.Dhuhr,
+        Asr: prayerTimes.timings.Asr,
+        Maghrib: prayerTimes.timings.Maghrib,
+        Isha: prayerTimes.timings.Isha,
+      });
+
+      // Only skip if both include map AND timings haven't changed
+      if (
+        lastIncludeRef.current === currentInclude &&
+        lastTimingsRef.current === currentTimings
+      ) {
+        return;
+      }
+
+      isSchedulingRef.current = true;
+      lastIncludeRef.current = currentInclude;
+      lastTimingsRef.current = currentTimings;
+
+      try {
         const todayInTZ = toZonedTime(now, tz);
         const yyyyMMdd = format(todayInTZ, "yyyy-MM-dd", { timeZone: tz });
 
-        const ids: string[] = [];
+        console.log("📅 جدولة الإشعارات للصلوات:", include);
+
+        // Cancel ALL scheduled notifications first to prevent duplicates
+        await Notifications.cancelAllScheduledNotificationsAsync();
+        console.log("🗑️ تم إلغاء جميع الإشعارات السابقة");
+
+        // Clear stored IDs
+        try {
+          await AsyncStorage.removeItem(IDS_KEY);
+        } catch {}
+
+        const nextStored: IdMap = {};
 
         for (const key of PRAYER_ORDER) {
-          if (include[key] === false) continue; // skip if explicitly disabled
+          const included = include[key] !== false; // default true
+
+          if (!included) {
+            // Do not schedule for excluded prayer
+            console.log(`❌ ${key}: الإشعار معطل`);
+            continue;
+          }
 
           const hhmm = prayerTimes.timings[key];
           if (!hhmm) continue;
 
-          // Construct an ISO-like string in the API timezone then convert to UTC instant
           const targetLocalString = `${yyyyMMdd}T${hhmm}:00`;
           const targetUtc = toZonedTime(targetLocalString, tz);
-
-          // If time already passed, schedule for tomorrow
           const targetInstant = isBefore(targetUtc, now)
             ? addDays(targetUtc, 1)
             : targetUtc;
@@ -92,32 +128,41 @@ export default function usePrayerNotifications(
               title: titlePrefix
                 ? `${titlePrefix} ${PRAYER_TITLES[key]}`
                 : PRAYER_TITLES[key],
-              body: `الآن ${key}`,
+              body: `حان الآن وقت ${PRAYER_TITLES[key]}`,
               sound: "default",
             },
-            // Passing a Date schedules at that exact instant
             trigger: {
               type: Notifications.SchedulableTriggerInputTypes.DAILY,
               hour: targetInstant.getHours(),
               minute: targetInstant.getMinutes(),
             },
           });
-          ids.push(identifier);
+          nextStored[key] = identifier;
+          console.log(
+            `✅ ${key}: تم جدولة الإشعار في ${targetInstant.getHours()}:${targetInstant.getMinutes()}`
+          );
         }
 
-        scheduledOnceRef.current = true;
-        return ids;
+        // Persist latest identifiers map
+        try {
+          await AsyncStorage.setItem(IDS_KEY, JSON.stringify(nextStored));
+        } catch {}
+
+        console.log("✅ تم جدولة جميع الإشعارات بنجاح");
       } catch (err) {
         console.error("Failed scheduling prayer notifications:", err);
+      } finally {
+        isSchedulingRef.current = false;
       }
     };
 
-    schedule();
-  }, [
-    enabled,
-    prayerTimes?.timings,
-    prayerTimes?.meta?.timezone,
-    titlePrefix,
-    JSON.stringify(options.include),
-  ]);
+    schedulePerPrayer();
+
+    // Cleanup function when notifications are disabled
+    return () => {
+      if (!enabled) {
+        Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
+      }
+    };
+  }, [enabled, prayerTimes, include]);
 }

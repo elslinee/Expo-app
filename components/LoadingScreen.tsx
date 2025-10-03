@@ -1,96 +1,134 @@
-import React from "react";
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, Text, Animated, Easing, Image } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import AppLogo from "@/components/AppLogo";
 
 interface LoadingScreenProps {
   message?: string;
   showIcon?: boolean;
-  iconName?: string;
-  iconSize?: number;
   customIcon?: React.ReactNode;
 }
 
 export default function LoadingScreen({
   message = "جاري التحميل...",
   showIcon = true,
-  iconName = "quran",
-  iconSize = 48,
   customIcon,
 }: LoadingScreenProps) {
-  const { theme } = useTheme();
-  const color = Colors[theme];
+  const { theme, colorScheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
+
+  // Animation values
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Logo scale and fade in animation
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Continuous rotation animation
+    Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 700,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
+
+  const rotate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
 
   return (
-    <View style={[styles.container, { backgroundColor: color.background }]}>
-      <View style={styles.content}>
-        {/* Icon */}
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: color.background,
+      }}
+    >
+      <View style={{ alignItems: "center", padding: 40 }}>
+        {/* Logo */}
         {showIcon && (
-          <View style={styles.iconContainer}>
+          <Animated.View
+            style={{
+              marginBottom: 20,
+              opacity: opacityAnim,
+              transform: [{ scale: scaleAnim }],
+            }}
+          >
             {customIcon ? (
               customIcon
             ) : (
-              <FontAwesome5
-                name={iconName}
-                size={iconSize}
-                color={color.primary}
-                style={styles.icon}
+              <AppLogo
+                size={120}
+                primaryColor={color.primary}
+                secondaryColor={color.focusColor}
+                backgroundColor="transparent"
               />
             )}
-          </View>
+          </Animated.View>
         )}
 
-        {/* Loading Indicator */}
-        <ActivityIndicator
-          size="large"
-          color={color.primary}
-          style={styles.spinner}
+        {/* Rotating Circle Loader */}
+        <Animated.View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 25,
+            borderWidth: 3,
+            borderTopColor: color.primary,
+            borderRightColor: color.primary,
+            borderBottomColor: "transparent",
+            borderLeftColor: "transparent",
+            marginBottom: 12,
+            transform: [{ rotate }],
+          }}
         />
 
         {/* Loading Message */}
-        <Text style={[styles.message, { color: color.text }]}>{message}</Text>
+        <Text
+          style={{
+            fontSize: 16,
+            fontFamily: FontFamily.bold,
+            textAlign: "center",
+            marginBottom: 8,
+            color: color.darkText,
+          }}
+        >
+          {message}
+        </Text>
 
         {/* Subtitle */}
-        <Text style={[styles.subtitle, { color: color.text }]}>
+        <Text
+          style={{
+            fontSize: 14,
+            fontFamily: FontFamily.regular,
+            textAlign: "center",
+            color: color.darkText,
+          }}
+        >
           يرجى الانتظار...
         </Text>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
-    alignItems: "center",
-    padding: 40,
-  },
-  iconContainer: {
-    marginBottom: 24,
-    opacity: 0.8,
-  },
-  icon: {
-    opacity: 0.7,
-  },
-  spinner: {
-    marginBottom: 24,
-  },
-  message: {
-    fontSize: 18,
-    fontFamily: FontFamily.medium,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    fontFamily: FontFamily.regular,
-    textAlign: "center",
-    opacity: 0.7,
-  },
-});

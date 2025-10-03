@@ -5,7 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
-import { I18nManager, Platform, DevSettings } from "react-native";
+import { I18nManager, Platform, DevSettings, View } from "react-native";
 import { FontFamily } from "@/constants/FontFamily";
 export { ErrorBoundary } from "expo-router";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -13,8 +13,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { PrayerTimesProvider } from "@/context/PrayerTimesContext";
 import { LocationProvider } from "@/context/LocationContext";
 import { StatusBar } from "expo-status-bar";
-import usePushNotifications from "@/utils/usePushNotifications";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export const unstable_settings = {
@@ -24,16 +23,16 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const expoPushToken = usePushNotifications();
-
   const [loaded, error] = useFonts({
-    [FontFamily.extraLight]: require("../assets/fonts/ExtraLight.ttf"),
-    [FontFamily.light]: require("../assets/fonts/Light.ttf"),
-    [FontFamily.regular]: require("../assets/fonts/Regular.ttf"),
-    [FontFamily.medium]: require("../assets/fonts/Medium.ttf"),
-    [FontFamily.bold]: require("../assets/fonts/Bold.ttf"),
-    [FontFamily.extraBold]: require("../assets/fonts/ExtraBold.ttf"),
-    [FontFamily.black]: require("../assets/fonts/Black.ttf"),
+    [FontFamily.extraLight]: require("../assets/fonts/Cairo/Cairo-ExtraLight.ttf"),
+    [FontFamily.light]: require("../assets/fonts/Cairo/Cairo-Light.ttf"),
+    [FontFamily.regular]: require("../assets/fonts/Cairo/Cairo-Regular.ttf"),
+    [FontFamily.medium]: require("../assets/fonts/Cairo/Cairo-Medium.ttf"),
+    [FontFamily.bold]: require("../assets/fonts/Cairo/Cairo-Bold.ttf"),
+    [FontFamily.extraBold]: require("../assets/fonts/Cairo/Cairo-ExtraBold.ttf"),
+    [FontFamily.black]: require("../assets/fonts/Cairo/Cairo-Black.ttf"),
+    [FontFamily.quran]: require("../assets/fonts/Amiri/Amiri-Regular.ttf"),
+    [FontFamily.quranBold]: require("../assets/fonts/Amiri/Amiri-Bold.ttf"),
     ...FontAwesome.font,
   });
   useEffect(() => {
@@ -56,7 +55,11 @@ export default function RootLayout() {
   }, []);
 
   if (!loaded) {
-    return null;
+    return (
+      <View style={{ flex: 1, backgroundColor: "#1D1915" }}>
+        <StatusBar style="light" backgroundColor="#1D1915" />
+      </View>
+    );
   }
   return (
     <ThemeProvider>
@@ -69,7 +72,8 @@ export default function RootLayout() {
   );
 }
 function RootLayoutNav() {
-  const { theme } = useTheme();
+  const { theme, colorScheme } = useTheme();
+  const Colors = getColors(theme, colorScheme);
 
   return (
     <SafeAreaView
@@ -106,14 +110,14 @@ function RootLayoutNav() {
           name="quran"
           options={{
             title: "القرآن الكريم",
-            headerShown: true,
+            headerShown: false,
           }}
         />
         <Stack.Screen
           name="about"
           options={{
             title: "حول التطبيق",
-            headerShown: true,
+            headerShown: false,
           }}
         />
         <Stack.Screen
@@ -134,14 +138,14 @@ function RootLayoutNav() {
           name="tasbeeh"
           options={{
             title: "التسبيح",
-            headerShown: true,
+            headerShown: false,
           }}
         />
         <Stack.Screen
           name="tasbeeh/[id]"
           options={{
             title: "التسبيح",
-            headerShown: true,
+            headerShown: false,
           }}
         />
       </Stack>

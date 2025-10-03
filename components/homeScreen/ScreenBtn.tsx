@@ -38,18 +38,21 @@ export default function ScreenBtn({
 
   return (
     <Pressable
+      style={{
+        flex: 1,
+      }}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={onPress}
     >
       <Animated.View
         style={{
-          borderRadius: 6,
-          borderColor: color.primary,
-          backgroundColor: pressed ? color.primary : color.background,
+          borderRadius: 16,
+          borderWidth: 0,
+          backgroundColor: pressed ? color.primary : color.primary20,
           transform: [{ scale }],
         }}
-        className="flex p-3 min-w-[100px]  border justify-center     items-center gap-1"
+        className="flex  p-3   border justify-center     items-center gap-1"
       >
         <Icon
           color={pressed ? color.white : color.primary}

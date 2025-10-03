@@ -8,7 +8,7 @@ import {
   TextInput,
 } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import { useRouter } from "expo-router";
 import { QuranIcon } from "@/constants/Icons";
@@ -16,6 +16,8 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingScreen from "@/components/LoadingScreen";
+import EvilIcons from "@expo/vector-icons/EvilIcons";
+import GoBack from "@/components/GoBack";
 
 // بيانات السور
 const surahsData = [
@@ -171,8 +173,8 @@ const surahsData = [
 ];
 
 export default function QuranScreen() {
-  const { theme } = useTheme();
-  const color = Colors[theme];
+  const { theme, colorScheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
   const router = useRouter();
   const [isReversed, setIsReversed] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -247,7 +249,7 @@ export default function QuranScreen() {
       style={[
         styles.surahItem,
         {
-          backgroundColor: color.background,
+          backgroundColor: color.bg20,
           borderColor: color.border,
         },
       ]}
@@ -257,7 +259,7 @@ export default function QuranScreen() {
     >
       <View
         style={{
-          backgroundColor: color.neutral,
+          backgroundColor: color.primary20,
           width: 60,
           height: 60,
           borderRadius: 99,
@@ -273,7 +275,7 @@ export default function QuranScreen() {
         <Text style={[styles.surahName, { color: color.text }]}>
           {item.name}
         </Text>
-        <Text style={[styles.surahDetails, { color: color.text }]}>
+        <Text style={[styles.surahDetails, { color: color.darkText }]}>
           {item.numberOfAyahs} آية •{" "}
           {item.revelationType === "Meccan" ? "مكية" : "مدنية"}
         </Text>
@@ -294,11 +296,17 @@ export default function QuranScreen() {
             }
             size={18}
             color={
-              pinnedSurahs.includes(item.number)
-                ? color.primary
-                : color.text + "80"
+              pinnedSurahs.includes(item.number) ? color.primary : color.text20
             }
-            style={{ transform: [{ rotate: "-20deg" }] }}
+            style={{
+              transform: [
+                {
+                  rotate: pinnedSurahs.includes(item.number)
+                    ? "0deg"
+                    : "-20deg",
+                },
+              ],
+            }}
           />
         </TouchableOpacity>
       </View>
@@ -306,12 +314,17 @@ export default function QuranScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: color.background }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: color.background, paddingTop: 50 },
+      ]}
+    >
       <View
         style={{
           padding: 20,
           paddingTop: 10,
-          borderBottomWidth: 1,
+          borderBottomWidth: 0,
           borderBottomColor: color.border,
           display: "flex",
           flexDirection: "column",
@@ -319,10 +332,17 @@ export default function QuranScreen() {
           alignItems: "center",
         }}
       >
-        <Text style={[styles.headerTitle, { color: color.text }]}>
+        <GoBack
+          style={{
+            position: "absolute",
+            left: 20,
+            top: 20,
+          }}
+        />
+        <Text style={[styles.headerTitle, { color: color.darkText }]}>
           سور القرآن الكريم
         </Text>
-        <Text style={[styles.headerSubtitle, { color: color.text }]}>
+        <Text style={[styles.headerSubtitle, { color: color.darkText }]}>
           {searchText
             ? `${filteredSurahs.length} من ${surahsData.length} سورة`
             : `${surahsData.length} سورة`}
@@ -336,11 +356,11 @@ export default function QuranScreen() {
             top: 20,
             padding: 12,
             borderRadius: 8,
-            backgroundColor: "rgba(0,0,0,0.05)",
+            backgroundColor: `${color.text20}22`,
           }}
           onPress={() => router.push("/favorites")}
         >
-          <FontAwesome5 name="heart" size={20} color={color.primary} />
+          <FontAwesome5 name="heart" size={20} color={color.text20} />
         </TouchableOpacity>
         <View
           style={{
@@ -356,18 +376,14 @@ export default function QuranScreen() {
             style={[
               styles.searchContainer,
               {
-                backgroundColor: color.neutral,
-                borderColor: color.border,
+                backgroundColor: `${color.text20}22`,
+
+                borderWidth: 0,
                 flex: 1,
               },
             ]}
           >
-            <FontAwesome5
-              name="search"
-              size={16}
-              color={color.primary}
-              style={styles.searchIcon}
-            />
+            <EvilIcons name="search" size={28} color={color.text20} />
             <TextInput
               style={[
                 styles.searchInput,
@@ -377,7 +393,7 @@ export default function QuranScreen() {
               ]}
               selectionColor={color.primary}
               placeholder="البحث في السور..."
-              placeholderTextColor={color.text + "80"}
+              placeholderTextColor={color.text20}
               value={searchText}
               onChangeText={setSearchText}
             />
@@ -394,7 +410,7 @@ export default function QuranScreen() {
             style={[
               styles.sortButton,
               {
-                backgroundColor: color.neutral,
+                backgroundColor: "transparent",
                 height: 50,
                 display: "flex",
                 justifyContent: "center",
@@ -405,8 +421,8 @@ export default function QuranScreen() {
           >
             <FontAwesome5
               name={isReversed ? "sort-amount-up" : "sort-amount-down"}
-              size={20}
-              color={color.primary}
+              size={25}
+              color={color.text20}
             />
           </TouchableOpacity>
         </View>
@@ -429,6 +445,9 @@ export default function QuranScreen() {
         </View>
       ) : (
         <FlatList
+          style={{
+            borderWidth: 0,
+          }}
           data={sortedSurahs}
           renderItem={renderSurah}
           keyExtractor={(item) => item.number.toString()}
@@ -447,8 +466,6 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     paddingTop: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
   },
   headerTitle: {
     fontSize: 20,
@@ -460,7 +477,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: FontFamily.regular,
     textAlign: "center",
-    opacity: 0.7,
+    opacity: 0.8,
   },
   searchContainer: {
     flexDirection: "row",
@@ -486,7 +503,7 @@ const styles = StyleSheet.create({
   sortButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: "rgba(0,0,0,0.05)",
+    backgroundColor: "transparent",
     height: 50,
     width: 50,
     justifyContent: "center",
@@ -501,15 +518,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    borderWidth: 0,
   },
 
   numberText: {

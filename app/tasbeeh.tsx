@@ -10,11 +10,12 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import LoadingScreen from "@/components/LoadingScreen";
 import { TasbeehIcon } from "@/constants/Icons";
 import { useRouter, useFocusEffect } from "expo-router";
+import GoBack from "@/components/GoBack";
 
 const STORAGE_KEY = "TASBEEH_LIST_V1";
 
@@ -26,9 +27,9 @@ type TasbeehItem = {
 };
 
 export default function Tasbeeh() {
-  const { theme } = useTheme();
-  const color = Colors[theme];
-  const themeColors = Colors[theme];
+  const { theme, colorScheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
+  const themeColors = getColors(theme, colorScheme)[theme];
   const router = useRouter();
   const [items, setItems] = useState<TasbeehItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -171,16 +172,10 @@ export default function Tasbeeh() {
       width: circleSize,
       height: circleSize,
       borderRadius: circleSize / 2,
-      borderWidth: 2,
-      borderColor: themeColors.border,
-      backgroundColor: themeColors.neutral,
+      borderWidth: 0,
+      backgroundColor: themeColors.bg20,
       alignItems: "center",
       justifyContent: "center",
-      shadowColor: themeColors.black,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.08,
-      shadowRadius: 16,
-      elevation: 4,
     }),
     [circleSize, themeColors]
   );
@@ -194,13 +189,12 @@ export default function Tasbeeh() {
           onPress={() =>
             router.push({ pathname: "/tasbeeh/[id]", params: { id: item.id } })
           }
-          android_ripple={{ color: themeColors.border }}
+          android_ripple={{ color: themeColors.primary20 }}
           style={{
             minHeight: 150,
             flex: 1,
-            borderWidth: 1,
-            borderColor: themeColors.border,
-            backgroundColor: themeColors.neutral,
+            borderWidth: 0,
+            backgroundColor: themeColors.bg20,
             borderRadius: 16,
             padding: 14,
             marginBottom: 12,
@@ -216,11 +210,11 @@ export default function Tasbeeh() {
           >
             <Pressable
               onPress={() => requestDelete(item.id)}
-              android_ripple={{ color: themeColors.border }}
+              android_ripple={{ color: themeColors.primary20 }}
             >
               <Text
                 style={{
-                  color: themeColors.grey,
+                  color: themeColors.darkText,
                   fontFamily: FontFamily.medium,
                 }}
               >
@@ -245,7 +239,7 @@ export default function Tasbeeh() {
           <View
             style={{
               height: 8,
-              backgroundColor: themeColors.background,
+              backgroundColor: themeColors.text20,
               borderRadius: 8,
               marginTop: 12,
               overflow: "hidden",
@@ -269,7 +263,10 @@ export default function Tasbeeh() {
             }}
           >
             <Text
-              style={{ color: themeColors.grey, fontFamily: FontFamily.medium }}
+              style={{
+                color: themeColors.darkText,
+                fontFamily: FontFamily.medium,
+              }}
             >
               {item.count} / {item.dailyGoal}
             </Text>
@@ -291,7 +288,7 @@ export default function Tasbeeh() {
         style={{
           flex: 1,
           paddingHorizontal: 20,
-          paddingTop: 32,
+          paddingTop: 60,
           backgroundColor: themeColors.background,
         }}
       >
@@ -314,7 +311,7 @@ export default function Tasbeeh() {
             >
               <Pressable
                 onPress={() => setShowAddModal(true)}
-                android_ripple={{ color: themeColors.border }}
+                android_ripple={{ color: themeColors.primary20 }}
               >
                 <View
                   style={{
@@ -336,11 +333,19 @@ export default function Tasbeeh() {
                   </Text>
                 </View>
               </Pressable>
+              <GoBack
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                }}
+              />
               <Text
                 style={{
-                  color: themeColors.text,
+                  color: themeColors.darkText,
                   fontFamily: FontFamily.bold,
                   fontSize: 20,
+                  marginLeft: 80,
                 }}
               >
                 جميع التسابيح
@@ -351,7 +356,7 @@ export default function Tasbeeh() {
               <View style={{ alignItems: "center", marginTop: 40 }}>
                 <Text
                   style={{
-                    color: themeColors.grey,
+                    color: themeColors.darkText,
                     fontFamily: FontFamily.medium,
                   }}
                 >
@@ -371,7 +376,7 @@ export default function Tasbeeh() {
                     <Text
                       style={{
                         marginTop: 8,
-                        color: themeColors.grey,
+                        color: themeColors.darkText,
                         fontFamily: FontFamily.medium,
                         fontSize: 14,
                       }}
@@ -383,12 +388,19 @@ export default function Tasbeeh() {
               </View>
             ) : (
               <FlatList
+                style={{
+                  marginTop: 20,
+                  borderWidth: 0,
+                }}
                 data={items}
                 keyExtractor={(it) => it.id}
                 renderItem={renderItem}
-                contentContainerStyle={{ paddingBottom: 24, paddingTop: 4 }}
-                numColumns={2}
-                columnWrapperStyle={{ gap: 8 }}
+                contentContainerStyle={{
+                  paddingBottom: 24,
+                  paddingTop: 4,
+                  gap: 8,
+                }}
+                numColumns={1}
               />
             )}
 
@@ -401,7 +413,7 @@ export default function Tasbeeh() {
               <View
                 style={{
                   flex: 1,
-                  backgroundColor: themeColors.black + "66",
+                  backgroundColor: themeColors.background + "66",
                   alignItems: "center",
                   justifyContent: "center",
                   padding: 20,
@@ -428,7 +440,7 @@ export default function Tasbeeh() {
 
                   <Text
                     style={{
-                      color: themeColors.grey,
+                      color: themeColors.darkText,
                       fontFamily: FontFamily.medium,
                       marginTop: 14,
                       marginBottom: 6,
@@ -440,12 +452,12 @@ export default function Tasbeeh() {
                     value={newName}
                     onChangeText={setNewName}
                     placeholder="مثال: سبحان الله"
-                    placeholderTextColor={themeColors.grey}
+                    placeholderTextColor={themeColors.darkText}
                     selectionColor={themeColors.primary}
                     style={{
                       height: 48,
-                      borderWidth: 1,
-                      borderColor: themeColors.border,
+                      borderWidth: 0,
+                      backgroundColor: themeColors.bg20,
                       borderRadius: 12,
                       paddingHorizontal: 12,
                       color: themeColors.text,
@@ -455,7 +467,7 @@ export default function Tasbeeh() {
 
                   <Text
                     style={{
-                      color: themeColors.grey,
+                      color: themeColors.darkText,
                       fontFamily: FontFamily.medium,
                       marginTop: 12,
                       marginBottom: 6,
@@ -479,12 +491,12 @@ export default function Tasbeeh() {
                     }
                     placeholder="مثال: 100"
                     keyboardType="number-pad"
-                    placeholderTextColor={themeColors.grey}
+                    placeholderTextColor={themeColors.darkText}
                     selectionColor={themeColors.primary}
                     style={{
                       height: 48,
-                      borderWidth: 1,
-                      borderColor: themeColors.border,
+                      borderWidth: 0,
+                      backgroundColor: themeColors.bg20,
                       borderRadius: 12,
                       paddingHorizontal: 12,
                       color: themeColors.text,
@@ -503,7 +515,6 @@ export default function Tasbeeh() {
                       onPress={isAddDisabled ? undefined : addTasbeeh}
                       disabled={isAddDisabled}
                       style={{ flex: 1, opacity: isAddDisabled ? 0.5 : 1 }}
-                      android_ripple={{ color: themeColors.border }}
                     >
                       <View
                         style={{
@@ -516,7 +527,7 @@ export default function Tasbeeh() {
                       >
                         <Text
                           style={{
-                            color: themeColors.white,
+                            color: themeColors.background,
                             fontFamily: FontFamily.bold,
                           }}
                         >
@@ -527,15 +538,14 @@ export default function Tasbeeh() {
                     <Pressable
                       onPress={() => setShowAddModal(false)}
                       style={{ flex: 1 }}
-                      android_ripple={{ color: themeColors.border }}
+                      android_ripple={{ color: themeColors.primary20 }}
                     >
                       <View
                         style={{
                           height: 48,
                           borderRadius: 12,
-                          borderWidth: 1,
-                          borderColor: themeColors.border,
-                          backgroundColor: themeColors.background,
+                          borderWidth: 0,
+                          backgroundColor: themeColors.bg20,
                           alignItems: "center",
                           justifyContent: "center",
                         }}
@@ -565,7 +575,7 @@ export default function Tasbeeh() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: themeColors.black + "59",
+            backgroundColor: themeColors.background + "59",
             alignItems: "center",
             justifyContent: "center",
             padding: 20,
@@ -592,7 +602,7 @@ export default function Tasbeeh() {
             <Text
               style={{
                 marginTop: 8,
-                color: themeColors.grey,
+                color: themeColors.darkText,
                 fontFamily: FontFamily.medium,
                 fontSize: 14,
                 textAlign: "center",
@@ -610,7 +620,7 @@ export default function Tasbeeh() {
               <Pressable
                 onPress={confirmDelete}
                 style={{ flex: 1 }}
-                android_ripple={{ color: themeColors.border }}
+                android_ripple={{ color: themeColors.primary20 }}
               >
                 <View
                   style={{
@@ -634,15 +644,14 @@ export default function Tasbeeh() {
               <Pressable
                 onPress={cancelDelete}
                 style={{ flex: 1 }}
-                android_ripple={{ color: themeColors.border }}
+                android_ripple={{ color: themeColors.primary20 }}
               >
                 <View
                   style={{
                     height: 48,
                     borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: themeColors.border,
-                    backgroundColor: themeColors.background,
+                    borderWidth: 0,
+                    backgroundColor: themeColors.bg20,
                     alignItems: "center",
                     justifyContent: "center",
                   }}

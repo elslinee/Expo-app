@@ -1,30 +1,26 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { Switch } from "react-native-switch";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 
 const ToggleTheme = () => {
-  const { theme, toggleTheme } = useTheme();
-  const color = Colors[theme];
+  const { theme, colorScheme, toggleTheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
 
   return (
-    <View
-      style={{ backgroundColor: color.neutral }}
-      className="px-4 py-2 flex flex-row items-center justify-between"
-    >
-      <Text style={{ color: color.text }} className="text-lg font-medium">
-        الوضع الليلي
-      </Text>
+    <View style={{ backgroundColor: color.bg20 }}>
       <Switch
         value={theme === "dark"}
         onValueChange={toggleTheme}
         circleSize={25}
         barHeight={25}
         backgroundActive={color.primary}
-        backgroundInactive={color.tabIconDefault}
+        backgroundInactive={color.primary20}
         circleActiveColor="#fff"
-        circleInActiveColor="#ccc"
+        circleInActiveColor="#fff"
+        circleBorderActiveColor="transparent"
+        circleBorderInactiveColor="transparent"
         renderActiveText={false}
         renderInActiveText={false}
         switchWidthMultiplier={2}

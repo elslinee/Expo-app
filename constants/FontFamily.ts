@@ -6,4 +6,7 @@ export const FontFamily = {
   bold: "Cairo-Bold",
   extraBold: "Cairo-ExtraBold",
   black: "Cairo-Black",
+  // Quran-specific fonts
+  quran: "Amiri-Regular",
+  quranBold: "Amiri-Bold",
 };

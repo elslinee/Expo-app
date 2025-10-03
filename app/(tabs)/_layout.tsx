@@ -2,11 +2,12 @@ import React from "react";
 import { Link, Tabs } from "expo-router";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { FontFamily } from "@/constants/FontFamily";
 import { useTheme } from "@/context/ThemeContext";
+import CustomTabBar from "@/components/CustomTabBar";
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome5>["name"];
   color: string;
@@ -15,7 +16,8 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const { theme } = useTheme();
+  const { theme, colorScheme } = useTheme();
+  const Colors = getColors(theme, colorScheme);
 
   return (
     <Tabs
@@ -24,13 +26,7 @@ export default function TabLayout() {
           backgroundColor: Colors[theme].background,
         },
         tabBarActiveTintColor: Colors[theme].primary,
-        tabBarStyle: {
-          height: 60,
-          shadowColor: Colors[theme].border,
-          borderWidth: 1,
-          borderColor: Colors[theme].border,
-          backgroundColor: Colors[theme].background,
-        },
+        tabBarStyle: { height: 64 },
 
         headerShown: true,
         headerTitleAlign: "center",
@@ -40,7 +36,7 @@ export default function TabLayout() {
           backgroundColor: Colors[theme].background,
         },
         headerTitleStyle: {
-          color: Colors[theme].text,
+          color: Colors[theme].darkText,
           fontFamily: FontFamily.regular,
           fontSize: 18,
         },
@@ -49,13 +45,14 @@ export default function TabLayout() {
           fontSize: 10,
         },
       }}
+      tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "الرئيسية",
           tabBarIcon: ({ color }) => (
-            <FontAwesome5 name="mosque" size={24} color={color} />
+            <FontAwesome5 name="mosque" size={22} color={color} />
           ),
           headerRight: () => "",
         }}

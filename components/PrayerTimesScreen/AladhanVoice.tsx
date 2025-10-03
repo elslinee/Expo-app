@@ -179,7 +179,10 @@ export default function AladhanVoice({ color }: { color: any }) {
       showsVerticalScrollIndicator={true}
       contentContainerStyle={{ paddingBottom: 20 }}
     >
-      <View style={{ gap: 24 }} className="flex flex-col">
+      <View
+        style={{ gap: 24, paddingHorizontal: 16 }}
+        className="flex flex-col"
+      >
         {prayers.map((prayer, index) => {
           const isCurrentTime = isCurrentPrayerTime(
             prayer.time24,
@@ -189,24 +192,25 @@ export default function AladhanVoice({ color }: { color: any }) {
           return (
             <View
               style={{
+                borderRadius: 16,
                 backgroundColor: isCurrentTime
-                  ? `${color.primary}33`
-                  : color.neutral,
+                  ? `${color.primary}`
+                  : color.bg20,
               }}
               key={index}
-              className="flex px-4 py-2 flex-row items-center justify-between"
+              className="flex p-4 flex-row items-center justify-between"
             >
               <View style={{ gap: 20 }} className="flex flex-row items-center">
                 <prayer.icon
-                  width={21}
-                  height={21}
-                  color={isCurrentTime ? color.primary : `${color.black}`}
+                  width={24}
+                  height={24}
+                  color={isCurrentTime ? color.white : `${color.black}`}
                 />
                 <Text
                   style={{
-                    color: isCurrentTime ? color.primary : `${color.black}`,
+                    color: isCurrentTime ? color.background : `${color.black}`,
                   }}
-                  className={`text-sm ${isCurrentTime ? "font-bold" : "font-medium"}`}
+                  className={`text-lg font-bold`}
                 >
                   {prayer.name}
                 </Text>
@@ -237,16 +241,22 @@ export default function AladhanVoice({ color }: { color: any }) {
                   >
                     <Ionicons
                       name="notifications"
-                      size={21}
-                      color={isCurrentTime ? color.primary : `${color.grey}`}
+                      size={24}
+                      color={
+                        isCurrentTime ? color.background : `${color.primary}`
+                      }
                     />
                   </TouchableOpacity>
                 ) : (
                   <TouchableOpacity onPress={() => toggleNotification(index)}>
                     <Ionicons
                       name="notifications-off"
-                      size={21}
-                      color={isCurrentTime ? color.primary : `${color.grey}`}
+                      size={24}
+                      color={
+                        isCurrentTime
+                          ? `${color.background}88`
+                          : `${color.primary}88`
+                      }
                     />
                   </TouchableOpacity>
                 )}
@@ -255,9 +265,10 @@ export default function AladhanVoice({ color }: { color: any }) {
                     width: 50,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    color: isCurrentTime ? color.primary : `${color.black}`,
+                    color: isCurrentTime ? color.background : `${color.black}`,
                   }}
-                  className={`overflow-hidden !text-nowrap text-ellipsis text-sm ${isCurrentTime ? "font-bold" : "font-medium"}`}
+                  numberOfLines={1}
+                  className={`overflow-hidden !text-nowrap text-ellipsis text-sm font-bold`}
                 >
                   {prayer.time}
                 </Text>

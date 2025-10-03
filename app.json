@@ -1,33 +1,34 @@
 {
   "expo": {
-    "name": "Gaza",
-    "slug": "Gaza",
+    "name": "3een",
+    "slug": "3een",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "gaza",
+    "icon": "./assets/logotranspernt.png",
+    "scheme": "3een",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/logotranspernt.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FBF5EA"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "backgroundColor": "#FBF5EA"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logotranspernt.png",
+        "backgroundColor": "#FBF5EA"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.elsline.Gaza"
+      "package": "com.elsline.een"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/logotranspernt.png"
     },
     "plugins": [
       "expo-router"
@@ -38,7 +39,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "34dcc52e-acbe-4ba1-b8e5-03bc9587c18a"
+        "projectId": "959de6c5-f3e3-40b1-814e-fcb498b2e579"
       }
     }
   }

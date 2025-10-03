@@ -1,28 +1,29 @@
-import { View } from "react-native";
-import DateAndLocation from "@/components/homeScreen/DateAndLocation";
+import { View, ScrollView } from "react-native";
+import HeroSection from "@/components/homeScreen/HeroSection";
 import PrayerTimesComponent from "@/components/homeScreen/PrayerTimesComponent";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
-import MosqueBackground from "@/components/homeScreen/MosqueBackground";
 import ScreenBtn from "@/components/homeScreen/ScreenBtn";
 import { QuranIcon, TasbeehIcon } from "@/constants/Icons";
 import { useRouter } from "expo-router";
 import { navigateToPage } from "@/utils/navigationUtils";
+
 export default function HomeScreen() {
-  const { theme } = useTheme();
-  const color = Colors[theme];
+  const { theme, colorScheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
   const router = useRouter();
+
   return (
-    <View>
-      <DateAndLocation color={color} />
+    <ScrollView style={{ flex: 1, backgroundColor: color.background }}>
+      <HeroSection color={color} />
       <PrayerTimesComponent color={color} />
-      <MosqueBackground color={color} />
       <View
         style={{
-          flexWrap: "wrap",
-          gap: 24,
+          flexDirection: "row",
+          gap: 16,
+          paddingHorizontal: 16,
+          marginTop: 24,
         }}
-        className=" px-6 flex-row      items-center "
       >
         <ScreenBtn
           color={color}
@@ -36,13 +37,7 @@ export default function HomeScreen() {
           Icon={TasbeehIcon}
           onPress={() => router.push("/tasbeeh")}
         />
-
-        {/* <ScreenBtn
-          color={color}
-          title="القرآن الكريم"
-          icon={<QuranIcon width={55} height={55} color={color.primary} />}
-        /> */}
       </View>
-    </View>
+    </ScrollView>
   );
 }

@@ -9,7 +9,7 @@ import {
   FlatList,
 } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import { useRouter } from "expo-router";
 import { getSurahByNumber } from "@/utils/QuranApis";
@@ -25,8 +25,8 @@ interface FavoriteAyah {
 }
 
 export default function FavoritesScreen() {
-  const { theme } = useTheme();
-  const color = Colors[theme];
+  const { theme, colorScheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
   const router = useRouter();
 
   const [favoriteAyahs, setFavoriteAyahs] = useState<FavoriteAyah[]>([]);
@@ -125,14 +125,13 @@ export default function FavoritesScreen() {
   const renderFavoriteAyah = ({ item }: { item: FavoriteAyah }) => (
     <TouchableOpacity
       style={{
-        backgroundColor: color.neutral,
+        borderRadius: 16,
+        backgroundColor: color.bg20,
         marginBottom: 8,
         paddingVertical: 12,
         paddingHorizontal: 16,
-        borderRadius: 8,
         width: "100%",
-        borderWidth: 1,
-        borderColor: color.border,
+        borderWidth: 0,
       }}
       onPress={() => handleAyahPress(item)}
       activeOpacity={0.7}
@@ -148,19 +147,18 @@ export default function FavoritesScreen() {
           style={{
             width: 32,
             height: 32,
-            borderRadius: 16,
+            borderRadius: 99,
             backgroundColor: color.primary,
             justifyContent: "center",
             alignItems: "center",
-            borderWidth: 1,
-            borderColor: "#fff",
-            marginRight: 12,
+            borderWidth: 0,
+            marginRight: 8,
           }}
         >
           <Text
             style={{
               fontSize: 12,
-           
+
               color: "#fff",
             }}
           >
@@ -172,12 +170,9 @@ export default function FavoritesScreen() {
           <Text
             style={{
               fontSize: 18,
-          
-              fontFamily: FontFamily.medium,
-              lineHeight: 32,
-
-              color: color.text,
-              marginBottom: 4,
+              fontFamily: FontFamily.quran,
+              color: color.darkText,
+              letterSpacing: 5,
             }}
           >
             {item.text}
@@ -188,8 +183,8 @@ export default function FavoritesScreen() {
             style={{
               fontSize: 12,
               fontFamily: FontFamily.medium,
-              color: color.text,
-              opacity: 0.6,
+              color: color.text20,
+              opacity: 1,
               textAlign: "right",
             }}
           >
@@ -229,21 +224,17 @@ export default function FavoritesScreen() {
 
   if (favoriteAyahs.length === 0) {
     return (
-      <View style={{ flex: 1, backgroundColor: color.background }}>
+      <View
+        style={{ flex: 1, backgroundColor: color.background, paddingTop: 40 }}
+      >
         {/* Header */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             padding: 20,
-            borderBottomWidth: 2,
-            borderBottomColor: color.border,
+            borderBottomWidth: 0,
             backgroundColor: color.background,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 3,
-            elevation: 3,
           }}
         >
           <TouchableOpacity
@@ -346,14 +337,8 @@ export default function FavoritesScreen() {
           flexDirection: "row",
           alignItems: "center",
           padding: 20,
-          borderBottomWidth: 2,
-          borderBottomColor: color.border,
+          borderBottomWidth: 0,
           backgroundColor: color.background,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 3,
-          elevation: 3,
         }}
       >
         <TouchableOpacity

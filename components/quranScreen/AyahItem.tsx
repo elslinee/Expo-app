@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { FontFamily } from "@/constants/FontFamily";
 
@@ -24,8 +24,8 @@ export default function AyahItem({
   isBookmarked = false,
   onToggleBookmark,
 }: AyahItemProps) {
-  const { theme } = useTheme();
-  const color = Colors[theme];
+  const { theme, colorScheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
 
   const handleBookmarkPress = (e: any) => {
     e.stopPropagation();
@@ -38,14 +38,13 @@ export default function AyahItem({
     <TouchableOpacity
       key={ayah.numberInSurah}
       style={{
-        backgroundColor: color.neutral,
+        backgroundColor: color.bg20,
         marginBottom: 8,
         paddingVertical: 12,
         paddingHorizontal: 16,
-        borderRadius: 8,
+        borderRadius: 16,
         width: "100%",
-        borderWidth: 1,
-        borderColor: color.border,
+        borderWidth: 0,
       }}
       onPress={() => onPress(ayah)}
       activeOpacity={0.7}
@@ -62,13 +61,13 @@ export default function AyahItem({
             display: "flex",
             width: 32,
             height: 32,
-            borderRadius: 16,
+            padding: 2,
+            borderRadius: 99,
             backgroundColor: `${color.primary}`,
             justifyContent: "center",
             alignItems: "center",
-            borderWidth: 1,
-            borderColor: "#fff",
-            marginLeft: 12,
+            borderWidth: 0,
+            marginRight: 4,
           }}
         >
           <Text
@@ -77,7 +76,8 @@ export default function AyahItem({
               justifyContent: "center",
               alignItems: "center",
               fontSize: 12,
-              fontFamily: FontFamily.bold,
+
+              fontFamily: FontFamily.quran,
               color: "#fff",
             }}
           >
@@ -88,10 +88,12 @@ export default function AyahItem({
         <Text
           style={{
             fontSize: 18,
-            fontFamily: FontFamily.medium,
-            lineHeight: 32,
+            letterSpacing: 5,
+
+            fontFamily: FontFamily.quran,
+
             flex: 1,
-            color: color.text,
+            color: color.darkText,
           }}
         >
           {ayah.text}

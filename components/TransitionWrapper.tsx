@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 
 interface TransitionWrapperProps {
   children: React.ReactNode;
@@ -13,7 +13,7 @@ export default function TransitionWrapper({
   const { theme } = useTheme();
 
   // خلفية فورية تطابق الـ theme
-  const backgroundColor = Colors[theme].background;
+  const backgroundColor = getColors(theme, "warm").background;
 
   return (
     <View style={[styles.container, { backgroundColor }]}>{children}</View>

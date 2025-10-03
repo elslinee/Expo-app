@@ -8,7 +8,7 @@ import {
   Share,
 } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -47,8 +47,8 @@ export default function AyahModal({
   onRemoveFromFavorites,
   showRemoveButton = false,
 }: AyahModalProps) {
-  const { theme } = useTheme();
-  const color = Colors[theme];
+  const { theme, colorScheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
 
   const handleShare = async () => {
     if (!ayah) return;
@@ -97,6 +97,7 @@ export default function AyahModal({
         style={{
           flex: 1,
           backgroundColor: "rgba(0,0,0,0.5)",
+
           justifyContent: "center",
           alignItems: "center",
         }}
@@ -121,11 +122,10 @@ export default function AyahModal({
           <Text
             style={{
               fontSize: 20,
-
-              lineHeight: 32,
+              letterSpacing: 5,
               marginBottom: 16,
               color: color.text,
-              fontFamily: FontFamily.medium,
+              fontFamily: FontFamily.quran,
             }}
           >
             {ayah?.text}
@@ -229,7 +229,7 @@ export default function AyahModal({
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: isFavorite ? color.primary : color.border,
+                  backgroundColor: isFavorite ? color.primary : color.primary20,
                   paddingHorizontal: 16,
                   paddingVertical: 10,
                   borderRadius: 20,

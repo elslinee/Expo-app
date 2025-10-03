@@ -12,6 +12,7 @@ import {
 import { usePrayerTimes } from "@/context/PrayerTimesContext";
 import { formatTo12Hour } from "@/utils/formatTo12Hour";
 import { isCurrentPrayerTime } from "@/utils/isCurrentPrayerTime";
+import { FontFamily } from "@/constants/FontFamily";
 
 export default function PrayerTimesComponent({ color }: { color: any }) {
   const { prayerTimes, loading } = usePrayerTimes();
@@ -55,11 +56,16 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
     },
   ];
   return (
-    <View
-      style={{ backgroundColor: `${color.primary}33` }}
-      className="mt-3 h-[88px] "
-    >
-      <View className="flex h-full p-2  flex-row justify-around gap-2 items-center">
+    <View className="px-6 mt-4">
+      <View
+        style={{
+          backgroundColor: `${color.primary}1A`,
+          borderRadius: 16,
+          padding: 8,
+          overflow: "hidden",
+        }}
+        className="flex-row  "
+      >
         {prayers.map((prayer, index) => {
           const isCurrentTime = isCurrentPrayerTime(
             prayer.time24,
@@ -68,31 +74,35 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
           );
           return (
             <View
+              key={index}
               style={{
                 backgroundColor: isCurrentTime ? color.primary : "transparent",
-                borderRadius: 4,
+                borderRadius: 16,
+                padding: 8,
+                flex: 1,
+                alignItems: "center",
+                overflow: "hidden",
               }}
-              key={index}
-              className={`flex flex-1 justify-center  h-full flex-col items-center `}
             >
-              <prayer.icon
-                width={18}
-                height={18}
-                color={isCurrentTime ? color.white : color.primary}
-              />
               <Text
-                className="font-light text-sm"
                 style={{
-                  color: isCurrentTime ? color.white : color.primary,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  fontSize: 10,
+                  fontFamily: FontFamily.medium,
+                  color: isCurrentTime ? "white" : color.text20,
                 }}
+                numberOfLines={1}
               >
                 {prayer.name}
               </Text>
               <Text
-                className="font-light text-[9px]"
                 style={{
-                  color: isCurrentTime ? color.white : color.primary,
+                  fontSize: 9,
+                  fontFamily: FontFamily.bold,
+                  color: isCurrentTime ? "white" : color.darkText,
                 }}
+                numberOfLines={1}
               >
                 {prayer.time}
               </Text>

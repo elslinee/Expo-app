@@ -38,6 +38,8 @@ module.exports = {
         bold: FontFamily.bold,
         extraBold: FontFamily.extraBold,
         black: FontFamily.black,
+        quran: FontFamily.quran,
+        quranBold: FontFamily.quranBold,
       },
     },
   },

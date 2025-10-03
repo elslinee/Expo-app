@@ -45,7 +45,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       // Ensure device location services are enabled (separate from permission)
       const servicesEnabled = await Location.hasServicesEnabledAsync();
       if (!servicesEnabled) {
-        setErrorMsg("خدمات الموقع معطّلة");
+        setErrorMsg("الرجاء تفعيل خدمات الموقع");
         setAddress("الرجاء تفعيل خدمات الموقع");
         setIsLoading(false);
         return;
@@ -119,6 +119,9 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
 
   const openLocationSettingsAndRefresh = async () => {
     try {
+      // إعادة تعيين العلامة للسماح بطلب الإذن مرة أخرى عند الضغط على الجملة
+      await AsyncStorage.removeItem("locationPermissionAsked");
+
       // Open platform location settings (Android). On iOS, this opens app settings.
       await Location.enableNetworkProviderAsync().catch(() => {});
     } catch {}

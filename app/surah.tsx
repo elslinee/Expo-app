@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/context/ThemeContext";
-import { Colors } from "@/constants/Colors";
+import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getSurahByNumber } from "@/utils/QuranApis";
@@ -33,8 +33,8 @@ interface SurahData {
 }
 
 export default function SurahScreen() {
-  const { theme } = useTheme();
-  const color = Colors[theme];
+  const { theme, colorScheme } = useTheme();
+  const color = getColors(theme, colorScheme)[theme];
   const router = useRouter();
   const { surahNumber } = useLocalSearchParams();
 
@@ -353,21 +353,15 @@ export default function SurahScreen() {
 
   return (
     <View
-      style={{ flex: 1, backgroundColor: color.background, paddingTop: 40 }}
+      style={{ flex: 1, backgroundColor: color.background, paddingTop: 32 }}
     >
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
           padding: 20,
-          borderBottomWidth: 2,
-          borderBottomColor: color.border,
+          borderBottomWidth: 0,
           backgroundColor: color.background,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 3,
-          elevation: 3,
         }}
       >
         <View style={{ flex: 1, alignItems: "center" }}>
@@ -416,11 +410,11 @@ export default function SurahScreen() {
 
           <Text
             style={{
-              fontSize: 18,
-              fontFamily: FontFamily.bold,
+              fontSize: 20,
+              fontFamily: FontFamily.quran,
               textAlign: "center",
               marginBottom: 6,
-              color: color.text,
+              color: color.darkText,
             }}
           >
             {surahData.name}
@@ -430,9 +424,10 @@ export default function SurahScreen() {
               fontSize: 16,
               fontFamily: FontFamily.regular,
               textAlign: "center",
-              opacity: 0.7,
+              opacity: 0.9,
               marginBottom: 4,
-              color: color.text,
+
+              color: `${color.text20}`,
             }}
           >
             {surahData.englishName}
@@ -442,8 +437,8 @@ export default function SurahScreen() {
               fontSize: 14,
               fontFamily: FontFamily.regular,
               textAlign: "center",
-              opacity: 0.7,
-              color: color.text,
+              opacity: 0.9,
+              color: `${color.text20}`,
             }}
           >
             {surahData.numberOfAyahs} آية •{" "}
@@ -466,7 +461,7 @@ export default function SurahScreen() {
         >
           {surahData.ayahs.map((ayah, index) => {
             const cleanText = ayah.text
-              .replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*/g, "")
+              .replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/, "")
               .trim();
             const updatedAyah = { ...ayah, text: cleanText };
             return (
