@@ -4,7 +4,7 @@
     "slug": "3een",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logotranspernt.png",
+    "icon": "./assets/logo.png",
     "scheme": "3een",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -23,16 +23,15 @@
         "backgroundColor": "#FBF5EA"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.elsline.een"
+      "package": "com.elsline.een",
+      "supportsRtl": true
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/logotranspernt.png"
     },
-    "plugins": [
-      "expo-router"
-    ],
+    "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true
     },

@@ -5,7 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
-import { I18nManager, Platform, DevSettings, View } from "react-native";
+import { View } from "react-native";
 import { FontFamily } from "@/constants/FontFamily";
 export { ErrorBoundary } from "expo-router";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -43,16 +43,6 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
-  useEffect(() => {
-    if (Platform.OS === "web") return;
-    if (!I18nManager.isRTL) {
-      I18nManager.allowRTL(true);
-      I18nManager.forceRTL(true);
-      try {
-        DevSettings.reload();
-      } catch {}
-    }
-  }, []);
 
   if (!loaded) {
     return (
