@@ -18,12 +18,12 @@ const PRAYER_ORDER: PrayerKey[] = [
 ];
 
 const PRAYER_TITLES: Record<PrayerKey, string> = {
-  Fajr: "موعد صلاة الفجر",
-  Sunrise: "موعد الشروق",
-  Dhuhr: "موعد صلاة الظهر",
-  Asr: "موعد صلاة العصر",
-  Maghrib: "موعد صلاة المغرب",
-  Isha: "موعد صلاة العشاء",
+  Fajr: "أذان  صلاة الفجر",
+  Sunrise: "أذان صلاة الشروق",
+  Dhuhr: "أذان  صلاة الظهر",
+  Asr: "أذان  صلاة العصر",
+  Maghrib: "أذان  صلاة المغرب",
+  Isha: "أذان  صلاة العشاء",
 };
 
 interface UsePrayerNotificationsOptions {
@@ -128,8 +128,12 @@ export default function usePrayerNotifications(
               title: titlePrefix
                 ? `${titlePrefix} ${PRAYER_TITLES[key]}`
                 : PRAYER_TITLES[key],
-              body: `حان الآن وقت ${PRAYER_TITLES[key]}`,
+              body: `حان الآن  ${PRAYER_TITLES[key]}`,
               sound: "default",
+              data: {
+                type: "prayer",
+                screen: "PrayerTimes",
+              },
             },
             trigger: {
               type: Notifications.SchedulableTriggerInputTypes.DAILY,

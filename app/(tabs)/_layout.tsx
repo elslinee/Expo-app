@@ -1,13 +1,11 @@
 import React from "react";
-import { Link, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-
 import { getColors } from "@/constants/Colors";
-
-import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { FontFamily } from "@/constants/FontFamily";
 import { useTheme } from "@/context/ThemeContext";
 import CustomTabBar from "@/components/CustomTabBar";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome5>["name"];
   color: string;
@@ -61,14 +59,27 @@ export default function TabLayout() {
         name="PrayerTimes"
         options={{
           title: "مواقيت الصلاة",
-          tabBarIcon: ({ color }) => <TabBarIcon name="clock" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="clock" size={25} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="tasbeeh"
+        options={{
+          title: "التسابيح",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="hands" size={24} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="Settings"
         options={{
           title: "الإعدادات",
-          tabBarIcon: ({ color }) => <TabBarIcon name="cog" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="cog" size={24} color={color} />
+          ),
         }}
       />
     </Tabs>

@@ -237,57 +237,109 @@ export default function Settings() {
           عام
         </Text>
 
-        <Pressable
-          onPress={() => navigateToPage("/about")}
-          android_ripple={{ color: color.primary20 }}
+        <View
           style={{
             borderRadius: 16,
             borderWidth: 0,
-            padding: 16,
-            marginBottom: 8,
-
             backgroundColor: color.bg20,
           }}
         >
-          <View
+          <Pressable
+            onPress={() => navigateToPage("/about")}
+            android_ripple={{ color: color.primary20 }}
             style={{
-              flexDirection: "row-reverse",
-              alignItems: "center",
-              justifyContent: "space-between",
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: `${color.text}10`,
             }}
           >
             <View
               style={{
                 flexDirection: "row-reverse",
                 alignItems: "center",
-                flex: 1,
+                justifyContent: "space-between",
               }}
             >
-              <InfoIcon color={color.primary} size={26} />
-              <View style={{ marginRight: 12, flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontFamily: FontFamily.bold,
-                    marginBottom: 4,
-                    color: color.text,
-                  }}
-                >
-                  حول التطبيق
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontFamily: FontFamily.regular,
-                    color: color.darkText,
-                  }}
-                >
-                  معلومات عن تطبيق عين
-                </Text>
+              <View
+                style={{
+                  flexDirection: "row-reverse",
+                  alignItems: "center",
+                  flex: 1,
+                }}
+              >
+                <InfoIcon color={color.primary} size={26} />
+                <View style={{ marginRight: 12, flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontFamily: FontFamily.bold,
+                      marginBottom: 4,
+                      color: color.text,
+                    }}
+                  >
+                    حول التطبيق
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontFamily: FontFamily.regular,
+                      color: color.darkText,
+                    }}
+                  >
+                    معلومات عن تطبيق عين
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
-        </Pressable>
+          </Pressable>
+
+          <Pressable
+            onPress={() => navigateToPage("/changelog")}
+            android_ripple={{ color: color.primary20 }}
+            style={{
+              padding: 16,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row-reverse",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row-reverse",
+                  alignItems: "center",
+                  flex: 1,
+                }}
+              >
+                <FontAwesome5 name="history" size={24} color={color.primary} />
+                <View style={{ marginRight: 12, flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontFamily: FontFamily.bold,
+                      marginBottom: 4,
+                      color: color.text,
+                    }}
+                  >
+                    سجل التغييرات
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontFamily: FontFamily.regular,
+                      color: color.darkText,
+                    }}
+                  >
+                    آخر التحديثات والتحسينات
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Pressable>
+        </View>
       </View>
 
       {/* معلومات الإصدار */}
@@ -306,7 +358,7 @@ export default function Settings() {
             color: color.darkText,
           }}
         >
-          الإصدار 1.0.0
+          الإصدار 0.2 ( beta )
         </Text>
         <Text
           style={{

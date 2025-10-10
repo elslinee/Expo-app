@@ -16,7 +16,7 @@ import {
   El3shaIcon,
 } from "@/constants/Icons";
 import { formatTo12Hour } from "@/utils/formatTo12Hour";
-import { isCurrentPrayerTime } from "@/utils/isCurrentPrayerTime";
+import getNextPrayerTime from "@/utils/getNextPrayerTime";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Notifications from "expo-notifications";
 import usePrayerNotifications from "@/utils/usePrayerNotifications";
@@ -173,42 +173,66 @@ export default function AladhanVoice({ color }: { color: any }) {
   // Schedule notifications according to toggles
   usePrayerNotifications(prayerTimes, { enabled: true, include: includeMap });
 
+  // Get next prayer info
+  const nextPrayerInfo = prayerTimes?.timings
+    ? getNextPrayerTime(prayerTimes.timings)
+    : null;
+
   return (
     <ScrollView
       className="flex-1"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 20 }}
+      contentContainerStyle={{ paddingBottom: 20  }}
     >
       <View
         style={{ gap: 24, paddingHorizontal: 16 }}
         className="flex flex-col"
       >
         {prayers.map((prayer, index) => {
-          const isCurrentTime = isCurrentPrayerTime(
-            prayer.time24,
-            index,
-            prayerTimes?.timings || {}
-          );
+          // Check if this prayer is the next prayer
+          const isNextPrayer = nextPrayerInfo?.nextPrayer === prayer.name;
+
           return (
             <View
               style={{
                 borderRadius: 16,
-                backgroundColor: isCurrentTime
-                  ? `${color.primary}`
-                  : color.bg20,
+                backgroundColor: isNextPrayer ? `${color.primary}` : color.bg20,
               }}
               key={index}
-              className="flex p-4 flex-row items-center justify-between"
+              className="flex  relative p-4 flex-row items-center justify-between"
             >
+              {isNextPrayer && (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -16,
+                    left: 0,
+                    backgroundColor: color.primary20,
+                    padding: 4,
+                    borderRadius: 16,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 9.5,
+                      color: color.darkText,
+                      lineHeight: 16,
+                    }}
+                    className=" font-bold px-2 "
+                  >
+                    الصلاة التالية
+                  </Text>
+                </View>
+              )}
               <View style={{ gap: 20 }} className="flex flex-row items-center">
                 <prayer.icon
                   width={24}
                   height={24}
-                  color={isCurrentTime ? color.white : `${color.black}`}
+                  color={isNextPrayer ? color.white : `${color.black}`}
                 />
                 <Text
                   style={{
-                    color: isCurrentTime ? color.background : `${color.black}`,
+                    color: isNextPrayer ? color.background : `${color.black}`,
                   }}
                   className={`text-lg font-bold`}
                 >
@@ -221,7 +245,7 @@ export default function AladhanVoice({ color }: { color: any }) {
                     <AladhanVoiceOnIcon
                       width={21}
                       height={21}
-                      color={isCurrentTime ? color.primary : `${color.grey}`}
+                      color={isNextPrayer ? color.primary : `${color.grey}`}
                     />
                   </TouchableOpacity>
                 ) : (
@@ -229,7 +253,7 @@ export default function AladhanVoice({ color }: { color: any }) {
                     <AladhanVoiceOffIcon
                       width={21}
                       height={21}
-                      color={isCurrentTime ? color.primary : `${color.grey}`}
+                      color={isNextPrayer ? color.primary : `${color.grey}`}
                     />
                   </TouchableOpacity>
                 )} */}
@@ -243,7 +267,7 @@ export default function AladhanVoice({ color }: { color: any }) {
                       name="notifications"
                       size={24}
                       color={
-                        isCurrentTime ? color.background : `${color.primary}`
+                        isNextPrayer ? color.background : `${color.primary}`
                       }
                     />
                   </TouchableOpacity>
@@ -253,7 +277,7 @@ export default function AladhanVoice({ color }: { color: any }) {
                       name="notifications-off"
                       size={24}
                       color={
-                        isCurrentTime
+                        isNextPrayer
                           ? `${color.background}88`
                           : `${color.primary}88`
                       }
@@ -265,7 +289,7 @@ export default function AladhanVoice({ color }: { color: any }) {
                     width: 50,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    color: isCurrentTime ? color.background : `${color.black}`,
+                    color: isNextPrayer ? color.background : `${color.black}`,
                   }}
                   numberOfLines={1}
                   className={`overflow-hidden !text-nowrap text-ellipsis text-sm font-bold`}

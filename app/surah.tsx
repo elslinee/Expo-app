@@ -220,11 +220,19 @@ export default function SurahScreen() {
     if (!favorites.includes(ayahNumber) && surahData) {
       const ayah = surahData.ayahs.find((a) => a.numberInSurah === ayahNumber);
       if (ayah) {
+        // Remove "بسم الله الرحمن الرحيم" if it's the first ayah
+        const cleanText =
+          ayahNumber === 1
+            ? ayah.text
+                .replace("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ ", "")
+                .trim()
+            : ayah.text;
+
         await saveFavoriteWithSurahInfo(
           ayahNumber,
           surahData.number,
           surahData.name,
-          ayah.text
+          cleanText
         );
       }
     }
@@ -408,8 +416,8 @@ export default function SurahScreen() {
 
           <Text
             style={{
-              fontSize: 20,
-              fontFamily: FontFamily.quran,
+              fontSize: 22,
+              fontFamily: FontFamily.quranBold,
               textAlign: "center",
               marginBottom: 6,
               color: color.darkText,
@@ -451,6 +459,28 @@ export default function SurahScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
       >
+        {/* Bismillah section - skip for Surah At-Tawbah (number 9) */}
+        {surahData.number !== 9 && surahData.number !== 1 && (
+          <View
+            style={{
+              alignItems: "center",
+
+              marginBottom: 20,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 24,
+                fontFamily: FontFamily.quranBold,
+                color: color.primary,
+                textAlign: "center",
+              }}
+            >
+              بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ
+            </Text>
+          </View>
+        )}
+
         <View
           style={{
             flexDirection: "column",
@@ -458,9 +488,13 @@ export default function SurahScreen() {
           }}
         >
           {surahData.ayahs.map((ayah, index) => {
-            const cleanText = ayah.text
-              .replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/, "")
-              .trim();
+            // Remove "بسم الله الرحمن الرحيم" only from the first ayah
+            const cleanText =
+              index === 0
+                ? ayah.text
+                    .replace("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ ", "")
+                    .trim()
+                : ayah.text;
             const updatedAyah = { ...ayah, text: cleanText };
             return (
               <View key={ayah.numberInSurah}>

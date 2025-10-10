@@ -14,16 +14,26 @@ import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import LoadingScreen from "@/components/LoadingScreen";
 import { TasbeehIcon } from "@/constants/Icons";
+import Svg, { Path } from "react-native-svg";
 import { useRouter, useFocusEffect } from "expo-router";
-import GoBack from "@/components/GoBack";
 
-const STORAGE_KEY = "TASBEEH_LIST_V1";
+const STORAGE_KEY = "TASBEEH_LIST_V2";
+const STATS_KEY = "TASBEEH_STATS_V1";
 
 type TasbeehItem = {
   id: string;
   name: string;
   count: number;
   dailyGoal: number;
+  totalCount?: number;
+  lastUsedDate?: string;
+  history?: { date: string; count: number }[];
+};
+
+type TasbeehStats = {
+  totalTasbeeh: number;
+  consecutiveDays: number;
+  lastActiveDate: string;
 };
 
 export default function Tasbeeh() {
@@ -32,6 +42,11 @@ export default function Tasbeeh() {
   const themeColors = getColors(theme, colorScheme)[theme];
   const router = useRouter();
   const [items, setItems] = useState<TasbeehItem[]>([]);
+  const [stats, setStats] = useState<TasbeehStats>({
+    totalTasbeeh: 0,
+    consecutiveDays: 0,
+    lastActiveDate: "",
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [hasHydrated, setHasHydrated] = useState<boolean>(false);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -53,13 +68,96 @@ export default function Tasbeeh() {
     return !trimmedName || !Number.isFinite(parsedGoal) || parsedGoal <= 0;
   }, [newName, newGoal]);
 
+  // Helper function to calculate consecutive days
+  const calculateConsecutiveDays = useCallback((items: TasbeehItem[]) => {
+    const today = new Date().toISOString().split("T")[0];
+    const uniqueDates = new Set<string>();
+
+    items.forEach((item) => {
+      if (item.history && Array.isArray(item.history)) {
+        item.history.forEach((h) => uniqueDates.add(h.date));
+      }
+    });
+
+    const sortedDates = Array.from(uniqueDates).sort().reverse();
+    if (sortedDates.length === 0) return 0;
+
+    let consecutive = 0;
+    let currentDate = new Date(today);
+
+    for (const dateStr of sortedDates) {
+      const checkDate = currentDate.toISOString().split("T")[0];
+      if (dateStr === checkDate) {
+        consecutive++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    return consecutive;
+  }, []);
+
   useEffect(() => {
     const load = async () => {
       try {
+        // Migration from V1 to V2
+        const oldData = await AsyncStorage.getItem("TASBEEH_LIST_V1");
+        if (oldData && !(await AsyncStorage.getItem(STORAGE_KEY))) {
+          try {
+            const oldItems: TasbeehItem[] = JSON.parse(oldData);
+            const migratedItems = oldItems.map((item) => ({
+              ...item,
+              totalCount: item.count || 0,
+              lastUsedDate: new Date().toISOString().split("T")[0],
+              history:
+                item.count > 0
+                  ? [
+                      {
+                        date: new Date().toISOString().split("T")[0],
+                        count: item.count,
+                      },
+                    ]
+                  : [],
+            }));
+            await AsyncStorage.setItem(
+              STORAGE_KEY,
+              JSON.stringify(migratedItems)
+            );
+            await AsyncStorage.removeItem("TASBEEH_LIST_V1");
+          } catch {
+            // ignore migration errors
+          }
+        }
+
         const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        const savedStats = await AsyncStorage.getItem(STATS_KEY);
+
         if (saved) {
           const parsed: TasbeehItem[] = JSON.parse(saved);
-          if (Array.isArray(parsed)) setItems(parsed);
+          if (Array.isArray(parsed)) {
+            setItems(parsed);
+
+            // Calculate stats
+            const totalTasbeeh = parsed.reduce(
+              (sum, item) => sum + (item.totalCount || 0),
+              0
+            );
+            const consecutiveDays = calculateConsecutiveDays(parsed);
+            const lastActiveDate =
+              parsed
+                .map((item) => item.lastUsedDate || "")
+                .filter(Boolean)
+                .sort()
+                .reverse()[0] || "";
+
+            setStats({ totalTasbeeh, consecutiveDays, lastActiveDate });
+          }
+        }
+
+        if (savedStats) {
+          const parsedStats: TasbeehStats = JSON.parse(savedStats);
+          setStats((prev) => ({ ...prev, ...parsedStats }));
         }
       } catch {
         // ignore
@@ -69,7 +167,7 @@ export default function Tasbeeh() {
       }
     };
     load();
-  }, []);
+  }, [calculateConsecutiveDays]);
 
   useEffect(() => {
     if (!hasHydrated) return;
@@ -85,7 +183,41 @@ export default function Tasbeeh() {
           if (!isActive) return;
           if (saved) {
             const parsed: TasbeehItem[] = JSON.parse(saved);
-            if (Array.isArray(parsed)) setItems(parsed);
+            if (Array.isArray(parsed)) {
+              // Reset daily count if it's a new day
+              const today = new Date().toISOString().split("T")[0];
+              const updatedItems = parsed.map((item) => {
+                if (item.lastUsedDate && item.lastUsedDate !== today) {
+                  return { ...item, count: 0 };
+                }
+                return item;
+              });
+
+              setItems(updatedItems);
+
+              // Save updated items if any were reset
+              if (JSON.stringify(updatedItems) !== JSON.stringify(parsed)) {
+                await AsyncStorage.setItem(
+                  STORAGE_KEY,
+                  JSON.stringify(updatedItems)
+                );
+              }
+
+              // Recalculate stats
+              const totalTasbeeh = updatedItems.reduce(
+                (sum, item) => sum + (item.totalCount || 0),
+                0
+              );
+              const consecutiveDays = calculateConsecutiveDays(updatedItems);
+              const lastActiveDate =
+                updatedItems
+                  .map((item) => item.lastUsedDate || "")
+                  .filter(Boolean)
+                  .sort()
+                  .reverse()[0] || "";
+
+              setStats({ totalTasbeeh, consecutiveDays, lastActiveDate });
+            }
           }
         } catch {
           // ignore
@@ -95,7 +227,7 @@ export default function Tasbeeh() {
       return () => {
         isActive = false;
       };
-    }, [])
+    }, [calculateConsecutiveDays])
   );
 
   const addTasbeeh = useCallback(() => {
@@ -122,6 +254,9 @@ export default function Tasbeeh() {
       name: trimmedName,
       count: 0,
       dailyGoal: parsedGoal,
+      totalCount: 0,
+      lastUsedDate: "",
+      history: [],
     };
     setItems((prev) => [newItem, ...prev]);
     setShowAddModal(false);
@@ -184,6 +319,8 @@ export default function Tasbeeh() {
     ({ item }: { item: TasbeehItem }) => {
       const progress =
         item.dailyGoal > 0 ? Math.min(item.count / item.dailyGoal, 1) : 0;
+      const isCompleted = progress >= 1;
+
       return (
         <Pressable
           onPress={() =>
@@ -191,95 +328,140 @@ export default function Tasbeeh() {
           }
           android_ripple={{ color: themeColors.primary20 }}
           style={{
-            minHeight: 150,
-            flex: 1,
-            borderWidth: 0,
             backgroundColor: themeColors.bg20,
-            borderRadius: 16,
-            padding: 14,
-            marginBottom: 12,
-            marginHorizontal: 4,
+            borderRadius: 20,
+            padding: 20,
+            overflow: "hidden",
           }}
         >
+          {/* Header */}
           <View
             style={{
               flexDirection: "row-reverse",
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: "flex-start",
+              marginBottom: 16,
             }}
           >
-            <Pressable
-              onPress={() => requestDelete(item.id)}
-              android_ripple={{ color: themeColors.primary20 }}
-            >
+            <View style={{ flex: 1, marginLeft: 12 }}>
               <Text
                 style={{
-                  color: themeColors.darkText,
-                  fontFamily: FontFamily.medium,
+                  color: themeColors.text,
+                  fontFamily: FontFamily.bold,
+                  fontSize: 18,
+                  marginBottom: 4,
                 }}
+                numberOfLines={1}
               >
-                حذف
+                {item.name}
               </Text>
-            </Pressable>
-            <Text
-              style={{
-                color: themeColors.text,
-                fontFamily: FontFamily.bold,
-                fontSize: 15,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-
-                maxWidth: "80%",
-              }}
-            >
-              {item.name}
-            </Text>
+            </View>
           </View>
 
+          {/* Progress Bar */}
           <View
             style={{
-              height: 8,
-              backgroundColor: themeColors.text20,
-              borderRadius: 8,
-              marginTop: 12,
+              height: 12,
+              backgroundColor: themeColors.background,
+              borderRadius: 12,
               overflow: "hidden",
+              marginBottom: 12,
             }}
           >
             <View
               style={{
                 width: `${progress * 100}%`,
                 height: "100%",
-                backgroundColor: themeColors.primary,
+                backgroundColor: isCompleted
+                  ? themeColors.focusColor
+                  : themeColors.primary,
+                borderRadius: 12,
               }}
             />
           </View>
 
+          {/* Footer */}
           <View
             style={{
               flexDirection: "row-reverse",
               alignItems: "center",
               justifyContent: "space-between",
-              marginTop: "auto",
             }}
           >
-            <Text
+            <View
               style={{
-                color: themeColors.darkText,
-                fontFamily: FontFamily.medium,
+                flexDirection: "row-reverse",
+                alignItems: "center",
+                gap: 8,
               }}
             >
-              {item.count} / {item.dailyGoal}
-            </Text>
-            <Text
-              style={{ color: themeColors.text, fontFamily: FontFamily.bold }}
-            >
-              فتح
-            </Text>
+              <Text
+                style={{
+                  color: themeColors.text,
+                  fontFamily: FontFamily.black,
+                  fontSize: 20,
+                }}
+              >
+                {item.count}
+              </Text>
+              <Text
+                style={{
+                  color: themeColors.darkText,
+                  fontFamily: FontFamily.medium,
+                  fontSize: 14,
+                }}
+              >
+                {item.dailyGoal} /
+              </Text>
+             
+            </View>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <View
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 10,
+                  backgroundColor: themeColors.primary,
+                }}
+              >
+                <Text
+                  style={{
+                    color: themeColors.white,
+                    fontFamily: FontFamily.bold,
+                    fontSize: 13,
+                  }}
+                >
+                  فتح التسبيح
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => requestDelete(item.id)}
+                android_ripple={{ color: themeColors.primary20 }}
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingHorizontal: 12,
+                  paddingVertical: 3,
+                  borderRadius: 8,
+                  backgroundColor: themeColors.background,
+                }}
+              >
+                <Text
+                  style={{
+                    color: themeColors.darkText,
+                    fontFamily: FontFamily.medium,
+                    fontSize: 12,
+                  }}
+                >
+                  حذف
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </Pressable>
       );
     },
-    [themeColors, router, removeItem]
+    [themeColors, router, requestDelete]
   );
 
   return (
@@ -287,8 +469,6 @@ export default function Tasbeeh() {
       <View
         style={{
           flex: 1,
-          paddingHorizontal: 20,
-          paddingTop: 60,
           backgroundColor: themeColors.background,
         }}
       >
@@ -301,104 +481,187 @@ export default function Tasbeeh() {
           />
         ) : (
           <>
+            {/* Statistics Section */}
             <View
               style={{
-                flexDirection: "row-reverse",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 16,
+                paddingHorizontal: 20,
+                paddingTop: 20,
+                paddingBottom: 16,
               }}
             >
+              <View
+                style={{
+                  flexDirection: "row-reverse",
+                  gap: 12,
+                  marginBottom: 16,
+                }}
+              >
+                {/* Total Tasbeeh Card */}
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row-reverse",
+                    backgroundColor: themeColors.primary,
+                    borderRadius: 20,
+                    paddingVertical: 45,
+                    alignItems: "center",
+                  }}
+                >
+                  <View
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 4,
+                      flex: 1,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: themeColors.white,
+                        fontFamily: FontFamily.black,
+                        fontSize: 38,
+                        lineHeight: 30,
+                      }}
+                    >
+                      {stats.totalTasbeeh}
+                    </Text>
+                    <Text
+                      style={{
+                        color: themeColors.white,
+                        fontFamily: FontFamily.medium,
+                        fontSize: 14,
+                        opacity: 0.9,
+                      }}
+                    >
+                      اجمالي التسابيح
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row-reverse",
+                    backgroundColor: themeColors.bg20,
+                    borderRadius: 20,
+                    paddingVertical: 45,
+                    alignItems: "center",
+                  }}
+                >
+                  <View
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 4,
+                      flex: 1,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: themeColors.darkText,
+                        fontFamily: FontFamily.black,
+                        fontSize: 38,
+                        lineHeight: 30,
+                      }}
+                    >
+                      {stats.consecutiveDays}
+                    </Text>
+                    <Text
+                      style={{
+                        color: themeColors.darkText,
+                        fontFamily: FontFamily.medium,
+                        fontSize: 14,
+                        opacity: 0.9,
+                      }}
+                    >
+                      ايام متتالية
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Consecutive Days Card */}
+              </View>
+
+              {/* Add Button */}
               <Pressable
                 onPress={() => setShowAddModal(true)}
                 android_ripple={{ color: themeColors.primary20 }}
               >
                 <View
                   style={{
-                    height: 40,
-                    paddingHorizontal: 14,
-                    borderRadius: 12,
+                    height: 52,
+                    borderRadius: 16,
                     backgroundColor: themeColors.primary,
                     alignItems: "center",
                     justifyContent: "center",
+                    flexDirection: "row-reverse",
+                    gap: 8,
                   }}
                 >
                   <Text
                     style={{
                       color: themeColors.white,
                       fontFamily: FontFamily.bold,
+                      fontSize: 16,
                     }}
                   >
-                    + إضافة
+                    إضافة تسبيح جديد
+                  </Text>
+                  <Text
+                    style={{
+                      color: themeColors.white,
+                      fontFamily: FontFamily.black,
+                      fontSize: 20,
+                    }}
+                  >
+                    +
                   </Text>
                 </View>
               </Pressable>
-              <GoBack
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                }}
-              />
-              <Text
-                style={{
-                  color: themeColors.darkText,
-                  fontFamily: FontFamily.bold,
-                  fontSize: 20,
-                  marginLeft: 80,
-                }}
-              >
-                جميع التسابيح
-              </Text>
             </View>
 
             {items.length === 0 ? (
-              <View style={{ alignItems: "center", marginTop: 40 }}>
+              <View
+                style={{
+                  alignItems: "center",
+                  marginTop: 60,
+                  paddingHorizontal: 20,
+                }}
+              >
+                <Text
+                  style={{
+                    color: themeColors.text,
+                    fontFamily: FontFamily.bold,
+                    fontSize: 18,
+                    marginTop: 20,
+                    textAlign: "center",
+                  }}
+                >
+                  ابدأ رحلتك الروحانية
+                </Text>
                 <Text
                   style={{
                     color: themeColors.darkText,
                     fontFamily: FontFamily.medium,
+                    fontSize: 14,
+                    marginTop: 8,
+                    textAlign: "center",
                   }}
                 >
-                  لا توجد تسابيح بعد. اضغط "إضافة" لإضافة تسبيح جديد.
+                  أضف تسبيحك الأول واحصل على الأجر والثواب
                 </Text>
-                <View style={{ marginTop: 20 }}>
-                  <View style={ringStyle}>
-                    <Text
-                      style={{
-                        color: themeColors.primary,
-                        fontFamily: FontFamily.black,
-                        fontSize: 32,
-                      }}
-                    >
-                      0
-                    </Text>
-                    <Text
-                      style={{
-                        marginTop: 8,
-                        color: themeColors.darkText,
-                        fontFamily: FontFamily.medium,
-                        fontSize: 14,
-                      }}
-                    >
-                      أضف أول تسبيح لك
-                    </Text>
-                  </View>
-                </View>
               </View>
             ) : (
               <FlatList
                 style={{
-                  marginTop: 20,
-                  borderWidth: 0,
+                  flex: 1,
+                  paddingHorizontal: 20,
                 }}
                 data={items}
                 keyExtractor={(it) => it.id}
                 renderItem={renderItem}
                 contentContainerStyle={{
                   paddingBottom: 24,
-                  paddingTop: 4,
-                  gap: 8,
+                  gap: 12,
                 }}
                 numColumns={1}
               />

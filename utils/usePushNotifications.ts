@@ -14,7 +14,15 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export default function usePushNotifications() {
+interface UsePushNotificationsOptions {
+  onNotificationResponse?: (
+    response: Notifications.NotificationResponse
+  ) => void;
+}
+
+export default function usePushNotifications(
+  options?: UsePushNotificationsOptions
+) {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const notificationListener = useRef<any>(null);
   const responseListener = useRef<any>(null);
@@ -59,7 +67,11 @@ export default function usePushNotifications() {
       Notifications.addNotificationReceivedListener((notification) => {});
 
     responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {});
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        if (options?.onNotificationResponse) {
+          options.onNotificationResponse(response);
+        }
+      });
 
     return () => {
       if (notificationListener.current) {
@@ -71,7 +83,7 @@ export default function usePushNotifications() {
         Notifications.removeNotificationSubscription(responseListener.current);
       }
     };
-  }, []);
+  }, [options]);
 
   return expoPushToken;
 }

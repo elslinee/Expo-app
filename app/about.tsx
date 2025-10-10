@@ -90,7 +90,7 @@ export default function AboutScreen() {
         </Text>
         <View style={[styles.versionBadge, { backgroundColor: color.primary }]}>
           <Text style={[styles.versionText, { color: color.background }]}>
-            الإصدار 1.0.0
+            الإصدار 0.2 ( beta )
           </Text>
         </View>
       </View>

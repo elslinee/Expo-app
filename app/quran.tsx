@@ -223,16 +223,22 @@ export default function QuranScreen() {
     surah.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // First, sort by pin status (pinned first, preserving original order), then apply reverse if needed
+  // Separate pinned and unpinned surahs
   const pinnedSet = new Set(pinnedSurahs);
-  const prioritized = [...filteredSurahs].sort((a, b) => {
-    const aPinned = pinnedSet.has(a.number) ? 1 : 0;
-    const bPinned = pinnedSet.has(b.number) ? 1 : 0;
-    if (aPinned !== bPinned) return bPinned - aPinned; // pinned first
-    return 0; // keep relative order otherwise
-  });
+  const pinnedSurahsList = filteredSurahs.filter((surah) =>
+    pinnedSet.has(surah.number)
+  );
+  const unpinnedSurahsList = filteredSurahs.filter(
+    (surah) => !pinnedSet.has(surah.number)
+  );
 
-  const sortedSurahs = isReversed ? [...prioritized].reverse() : prioritized;
+  // Apply reverse if needed
+  const sortedPinnedSurahs = isReversed
+    ? [...pinnedSurahsList].reverse()
+    : pinnedSurahsList;
+  const sortedUnpinnedSurahs = isReversed
+    ? [...unpinnedSurahsList].reverse()
+    : unpinnedSurahsList;
 
   // Show loading screen while loading
   if (isLoading) {
@@ -428,7 +434,7 @@ export default function QuranScreen() {
         </View>
       </View>
 
-      {sortedSurahs.length === 0 && searchText ? (
+      {filteredSurahs.length === 0 && searchText ? (
         <View style={styles.noResultsContainer}>
           <FontAwesome5
             name="search"
@@ -448,11 +454,60 @@ export default function QuranScreen() {
           style={{
             borderWidth: 0,
           }}
-          data={sortedSurahs}
-          renderItem={renderSurah}
-          keyExtractor={(item) => item.number.toString()}
+          data={[]}
+          renderItem={() => null}
+          keyExtractor={(item, index) => index.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
+          ListHeaderComponent={
+            <>
+              {/* Pinned Surahs Section */}
+              {sortedPinnedSurahs.length > 0 && (
+                <View>
+                  <View style={styles.sectionHeader}>
+                    <Text
+                      style={[styles.sectionTitle, { color: color.primary }]}
+                    >
+                      السور المثبتة
+                    </Text>
+                    <FontAwesome5
+                      name="thumbtack"
+                      size={16}
+                      color={color.primary}
+                      style={{ marginLeft: 8 }}
+                    />
+                  </View>
+                  {sortedPinnedSurahs.map((item) => (
+                    <View key={item.number}>{renderSurah({ item })}</View>
+                  ))}
+                  <View
+                    style={[
+                      styles.sectionDivider,
+                      { backgroundColor: color.border },
+                    ]}
+                  />
+                </View>
+              )}
+
+              {/* Unpinned Surahs Section */}
+              {sortedUnpinnedSurahs.length > 0 && (
+                <View>
+                  {sortedPinnedSurahs.length > 0 && (
+                    <View style={styles.sectionHeader}>
+                      <Text
+                        style={[styles.sectionTitle, { color: color.darkText }]}
+                      >
+                        جميع السور
+                      </Text>
+                    </View>
+                  )}
+                  {sortedUnpinnedSurahs.map((item) => (
+                    <View key={item.number}>{renderSurah({ item })}</View>
+                  ))}
+                </View>
+              )}
+            </>
+          }
         />
       )}
     </View>
@@ -576,5 +631,23 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     textAlign: "center",
     opacity: 0.7,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    marginBottom: 12,
+    marginTop: 0,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontFamily: FontFamily.bold,
+  },
+  sectionDivider: {
+    height: 2,
+    marginTop: 18,
+    marginBottom: 12,
+    marginHorizontal: 0,
+    borderRadius: 1,
   },
 });

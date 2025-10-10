@@ -15,7 +15,6 @@ export default function PrayerTimes() {
       style={{ backgroundColor: color.background }}
     >
       <CountdownTimer color={color} />
-      {/* <ClockComponent color={color} /> */}
       <AladhanVoice color={color} />
     </ScrollView>
   );

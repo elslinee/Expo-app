@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  Animated,
+  Easing,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
@@ -31,6 +34,8 @@ export default function FavoritesScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedAyah, setSelectedAyah] = useState<FavoriteAyah | null>(null);
   const [showAyahModal, setShowAyahModal] = useState(false);
+  const [copiedAyahId, setCopiedAyahId] = useState<string | null>(null);
+  const copiedAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     loadFavoriteAyahs();
@@ -46,12 +51,22 @@ export default function FavoritesScreen() {
       );
       if (detailedFavorites) {
         const detailedData = JSON.parse(detailedFavorites);
-        const ayahsData: FavoriteAyah[] = detailedData.map((item: any) => ({
-          surahNumber: item.surahNumber,
-          surahName: item.surahName,
-          ayahNumber: item.ayahNumber,
-          text: item.text,
-        }));
+        const ayahsData: FavoriteAyah[] = detailedData.map((item: any) => {
+          // Remove "بسم الله الرحمن الرحيم" if it's the first ayah
+          const cleanText =
+            item.ayahNumber === 1
+              ? item.text
+                  .replace("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ ", "")
+                  .trim()
+              : item.text;
+
+          return {
+            surahNumber: item.surahNumber,
+            surahName: item.surahName,
+            ayahNumber: item.ayahNumber,
+            text: cleanText,
+          };
+        });
         setFavoriteAyahs(ayahsData);
       } else {
         // If no detailed favorites exist, show empty state
@@ -68,6 +83,36 @@ export default function FavoritesScreen() {
     setSelectedAyah(ayah);
     setShowAyahModal(true);
   };
+
+  const copyToClipboard = useCallback(
+    async (item: FavoriteAyah) => {
+      const textToCopy = `${item.text}\n\n${item.surahName} - الآية ${item.ayahNumber}`;
+      await Clipboard.setStringAsync(textToCopy);
+
+      const ayahId = `${item.surahNumber}-${item.ayahNumber}`;
+      setCopiedAyahId(ayahId);
+
+      Animated.sequence([
+        Animated.timing(copiedAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.cubic),
+        }),
+        Animated.delay(1500),
+        Animated.timing(copiedAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+          easing: Easing.in(Easing.cubic),
+        }),
+      ]).start(() => {
+        setCopiedAyahId(null);
+        copiedAnim.setValue(0);
+      });
+    },
+    [copiedAnim]
+  );
 
   const removeFromFavorites = async (
     ayahNumber: number,
@@ -119,78 +164,132 @@ export default function FavoritesScreen() {
     }
   };
 
-  const renderFavoriteAyah = ({ item }: { item: FavoriteAyah }) => (
-    <TouchableOpacity
-      style={{
-        borderRadius: 16,
-        backgroundColor: color.bg20,
-        marginBottom: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        width: "100%",
-        borderWidth: 0,
-      }}
-      onPress={() => handleAyahPress(item)}
-      activeOpacity={0.7}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-        }}
-      >
-        <View
+  const renderFavoriteAyah = ({ item }: { item: FavoriteAyah }) => {
+    const ayahId = `${item.surahNumber}-${item.ayahNumber}`;
+    const isShowingCopied = copiedAyahId === ayahId;
+
+    return (
+      <View style={{ position: "relative", marginBottom: 8 }}>
+        <TouchableOpacity
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 99,
-            backgroundColor: color.primary,
-            justifyContent: "center",
-            alignItems: "center",
+            borderRadius: 16,
+            backgroundColor: color.bg20,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            width: "100%",
             borderWidth: 0,
-            marginRight: 8,
           }}
+          onPress={() => handleAyahPress(item)}
+          onLongPress={() => copyToClipboard(item)}
+          activeOpacity={0.7}
         >
-          <Text
+          <View
             style={{
-              fontSize: 12,
-
-              color: "#fff",
+              flexDirection: "row",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
             }}
           >
-            {item.ayahNumber}
-          </Text>
-        </View>
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 99,
+                backgroundColor: color.primary,
+                justifyContent: "center",
+                alignItems: "center",
+                borderWidth: 0,
+                marginRight: 8,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#fff",
+                }}
+              >
+                {item.ayahNumber}
+              </Text>
+            </View>
 
-        <View style={{ flex: 1 }}>
-          <Text
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontFamily: FontFamily.quran,
+                  color: color.darkText,
+                }}
+              >
+                {item.text}
+              </Text>
+
+              {/* Surah name in small text */}
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontFamily: FontFamily.medium,
+                  color: color.text20,
+                  opacity: 1,
+                  textAlign: "right",
+                }}
+              >
+                {item.surahName}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Copied Notification */}
+        {isShowingCopied && (
+          <Animated.View
+            pointerEvents="none"
             style={{
-              fontSize: 18,
-              fontFamily: FontFamily.quran,
-              color: color.darkText,
-              letterSpacing: 5,
+              position: "absolute",
+              top: -10,
+              left: 0,
+              right: 0,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: copiedAnim,
+              transform: [
+                {
+                  translateY: copiedAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [10, 0],
+                  }),
+                },
+              ],
+              zIndex: 1000,
             }}
           >
-            {item.text}
-          </Text>
-
-          {/* Surah name in small text */}
-          <Text
-            style={{
-              fontSize: 12,
-              fontFamily: FontFamily.medium,
-              color: color.text20,
-              opacity: 1,
-              textAlign: "right",
-            }}
-          >
-            {item.surahName}
-          </Text>
-        </View>
+            <View
+              style={{
+                backgroundColor: color.primary + "F0",
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                shadowColor: color.primary,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: color.white,
+                  fontFamily: FontFamily.bold,
+                  fontSize: 12,
+                }}
+              >
+                تم النسخ ✓
+              </Text>
+            </View>
+          </Animated.View>
+        )}
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   if (loading) {
     return (

@@ -1,5 +1,6 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState, useRef, useCallback } from "react";
+import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -26,6 +27,8 @@ export default function AyahItem({
 }: AyahItemProps) {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
+  const [showCopied, setShowCopied] = useState(false);
+  const copiedAnim = useRef(new Animated.Value(0)).current;
 
   const handleBookmarkPress = (e: any) => {
     e.stopPropagation();
@@ -34,95 +37,171 @@ export default function AyahItem({
     }
   };
 
+  const copyToClipboard = useCallback(async () => {
+    const textToCopy = ayah.translation
+      ? `${ayah.text}\n\n${ayah.translation}`
+      : ayah.text;
+
+    await Clipboard.setStringAsync(textToCopy);
+    setShowCopied(true);
+
+    Animated.sequence([
+      Animated.timing(copiedAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.cubic),
+      }),
+      Animated.delay(1500),
+      Animated.timing(copiedAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+        easing: Easing.in(Easing.cubic),
+      }),
+    ]).start(() => {
+      setShowCopied(false);
+      copiedAnim.setValue(0);
+    });
+  }, [ayah, copiedAnim]);
+
   return (
-    <TouchableOpacity
-      key={ayah.numberInSurah}
-      style={{
-        backgroundColor: color.bg20,
-        marginBottom: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 16,
-        width: "100%",
-        borderWidth: 0,
-      }}
-      onPress={() => onPress(ayah)}
-      activeOpacity={0.7}
-    >
-      <View
+    <View style={{ position: "relative", marginBottom: 8 }}>
+      <TouchableOpacity
+        key={ayah.numberInSurah}
         style={{
-          flexDirection: "row",
-          alignItems: "flex-start",
-          gap: 10,
+          backgroundColor: color.bg20,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          borderRadius: 16,
+          width: "100%",
+          borderWidth: 0,
         }}
+        onPress={() => onPress(ayah)}
+        onLongPress={copyToClipboard}
+        activeOpacity={0.7}
       >
         <View
           style={{
-            display: "flex",
-            width: 32,
-            height: 32,
-            padding: 2,
-            borderRadius: 99,
-            backgroundColor: `${color.primary}`,
-            justifyContent: "center",
-            alignItems: "center",
-            borderWidth: 0,
-            marginRight: 4,
+            flexDirection: "row",
+            alignItems: "flex-start",
+            gap: 10,
           }}
         >
-          <Text
+          <View
             style={{
               display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              fontSize: 12,
-
-              fontFamily: FontFamily.quran,
-              color: "#fff",
-            }}
-          >
-            {ayah.numberInSurah}
-          </Text>
-        </View>
-
-        <Text
-          style={{
-            fontSize: 18,
-            letterSpacing: 5,
-
-            fontFamily: FontFamily.quran,
-
-            flex: 1,
-            color: color.darkText,
-          }}
-        >
-          {ayah.text}
-        </Text>
-
-        {onToggleBookmark && (
-          <TouchableOpacity
-            style={{
               width: 32,
               height: 32,
+              padding: 2,
+              borderRadius: 99,
+              backgroundColor: `${color.primary}`,
               justifyContent: "center",
               alignItems: "center",
-              borderRadius: 99,
-              backgroundColor: isBookmarked ? color.primary : "transparent",
-              borderWidth: 1,
-              borderColor: isBookmarked ? color.primary : color.border,
-              marginLeft: 8,
+              borderWidth: 0,
+              marginRight: 4,
             }}
-            onPress={handleBookmarkPress}
-            activeOpacity={0.7}
           >
-            <FontAwesome5
-              name="bookmark"
-              size={14}
-              color={isBookmarked ? color.white : color.text}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-    </TouchableOpacity>
+            <Text
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: 12,
+
+                fontFamily: FontFamily.quran,
+                color: "#fff",
+              }}
+            >
+              {ayah.numberInSurah}
+            </Text>
+          </View>
+
+          <Text
+            style={{
+              fontSize: 19,
+              fontFamily: FontFamily.quran,
+              flex: 1,
+              color: color.darkText,
+            }}
+          >
+            {ayah.text}
+          </Text>
+
+          {onToggleBookmark && (
+            <TouchableOpacity
+              style={{
+                width: 32,
+                height: 32,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 99,
+                backgroundColor: isBookmarked ? color.primary : "transparent",
+                borderWidth: 1,
+                borderColor: isBookmarked ? color.primary : color.border,
+                marginLeft: 8,
+              }}
+              onPress={handleBookmarkPress}
+              activeOpacity={0.7}
+            >
+              <FontAwesome5
+                name="bookmark"
+                size={14}
+                color={isBookmarked ? color.white : color.text}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+      </TouchableOpacity>
+
+      {/* Copied Notification */}
+      {showCopied && (
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: -10,
+            left: 0,
+            right: 0,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: copiedAnim,
+            transform: [
+              {
+                translateY: copiedAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [10, 0],
+                }),
+              },
+            ],
+            zIndex: 1000,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: color.primary + "F0",
+              borderRadius: 12,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              shadowColor: color.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <Text
+              style={{
+                color: color.white,
+                fontFamily: FontFamily.bold,
+                fontSize: 12,
+              }}
+            >
+              تم النسخ ✓
+            </Text>
+          </View>
+        </Animated.View>
+      )}
+    </View>
   );
 }

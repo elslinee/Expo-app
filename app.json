@@ -35,6 +35,15 @@
     "experiments": {
       "typedRoutes": true
     },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/959de6c5-f3e3-40b1-814e-fcb498b2e579"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "extra": {
       "router": {},
       "eas": {

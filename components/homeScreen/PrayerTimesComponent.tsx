@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 
 import {
   ElfajrIcon,
@@ -11,11 +11,16 @@ import {
 } from "@/constants/Icons";
 import { usePrayerTimes } from "@/context/PrayerTimesContext";
 import { formatTo12Hour } from "@/utils/formatTo12Hour";
-import { isCurrentPrayerTime } from "@/utils/isCurrentPrayerTime";
+import getNextPrayerTime from "@/utils/getNextPrayerTime";
 import { FontFamily } from "@/constants/FontFamily";
 
 export default function PrayerTimesComponent({ color }: { color: any }) {
   const { prayerTimes, loading } = usePrayerTimes();
+
+  // Get next prayer info
+  const nextPrayerInfo = prayerTimes?.timings
+    ? getNextPrayerTime(prayerTimes.timings)
+    : null;
 
   const prayers = [
     {
@@ -67,17 +72,13 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
         className="flex-row  "
       >
         {prayers.map((prayer, index) => {
-          const isCurrentTime = isCurrentPrayerTime(
-            prayer.time24,
-            index,
-            prayerTimes?.timings || {}
-          );
+          const isNextPrayer = nextPrayerInfo?.nextPrayer === prayer.name;
           return (
             <View
               key={index}
               style={{
-                backgroundColor: isCurrentTime ? color.primary : "transparent",
-                borderRadius: 16,
+                backgroundColor: isNextPrayer ? color.primary : "transparent",
+                borderRadius: 10,
                 padding: 8,
                 flex: 1,
                 alignItems: "center",
@@ -90,7 +91,7 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
                   textOverflow: "ellipsis",
                   fontSize: 10,
                   fontFamily: FontFamily.medium,
-                  color: isCurrentTime ? "white" : color.text20,
+                  color: isNextPrayer ? "white" : color.text20,
                 }}
                 numberOfLines={1}
               >
@@ -100,7 +101,7 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
                 style={{
                   fontSize: 9,
                   fontFamily: FontFamily.bold,
-                  color: isCurrentTime ? "white" : color.darkText,
+                  color: isNextPrayer ? "white" : color.darkText,
                 }}
                 numberOfLines={1}
               >

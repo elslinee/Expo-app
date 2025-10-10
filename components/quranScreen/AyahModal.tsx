@@ -122,10 +122,9 @@ export default function AyahModal({
           <Text
             style={{
               fontSize: 20,
-              letterSpacing: 5,
               marginBottom: 16,
               color: color.text,
-              fontFamily: FontFamily.quran,
+              fontFamily: FontFamily.quranBold,
             }}
           >
             {ayah?.text}

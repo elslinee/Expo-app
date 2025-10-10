@@ -1,11 +1,10 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
-import { View } from "react-native";
 import { FontFamily } from "@/constants/FontFamily";
 export { ErrorBoundary } from "expo-router";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -15,6 +14,9 @@ import { LocationProvider } from "@/context/LocationContext";
 import { StatusBar } from "expo-status-bar";
 import { getColors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
+import usePushNotifications from "@/utils/usePushNotifications";
+import * as Notifications from "expo-notifications";
+import useAppUpdates from "@/utils/useAppUpdates";
 
 export const unstable_settings = {
   initialRouteName: "(tabs)",
@@ -31,25 +33,16 @@ export default function RootLayout() {
     [FontFamily.bold]: require("../assets/fonts/Cairo/Cairo-Bold.ttf"),
     [FontFamily.extraBold]: require("../assets/fonts/Cairo/Cairo-ExtraBold.ttf"),
     [FontFamily.black]: require("../assets/fonts/Cairo/Cairo-Black.ttf"),
-    [FontFamily.quran]: require("../assets/fonts/Amiri/Amiri-Regular.ttf"),
-    [FontFamily.quranBold]: require("../assets/fonts/Amiri/Amiri-Bold.ttf"),
+    [FontFamily.quran]: require("../assets/fonts/Quranic/ScheherazadeNew-Regular.ttf"),
+    [FontFamily.quranBold]: require("../assets/fonts/Quranic/ScheherazadeNew-Bold.ttf"),
     ...FontAwesome.font,
   });
   useEffect(() => {
     if (error) throw error;
   }, [error]);
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
 
   if (!loaded) {
-    return (
-      <View style={{ flex: 1, backgroundColor: "#1D1915" }}>
-        <StatusBar style="light" backgroundColor="#1D1915" />
-      </View>
-    );
+    return null;
   }
   return (
     <ThemeProvider>
@@ -62,8 +55,37 @@ export default function RootLayout() {
   );
 }
 function RootLayoutNav() {
-  const { theme, colorScheme } = useTheme();
+  const { theme, colorScheme, isReady } = useTheme();
   const Colors = getColors(theme, colorScheme);
+  const router = useRouter();
+
+  // Check for app updates
+  useAppUpdates();
+
+  // Handle notification tap
+  usePushNotifications({
+    onNotificationResponse: (response: Notifications.NotificationResponse) => {
+      const data = response.notification.request.content.data;
+
+      // Check if it's a prayer notification
+      if (data?.type === "prayer" && data?.screen === "PrayerTimes") {
+        // Navigate to PrayerTimes screen
+        router.push("/(tabs)/PrayerTimes");
+      }
+    },
+  });
+
+  // Hide splash screen only after theme is loaded
+  useEffect(() => {
+    if (isReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [isReady]);
+
+  // Wait for theme to be loaded from AsyncStorage
+  if (!isReady) {
+    return null;
+  }
 
   return (
     <SafeAreaView
@@ -111,6 +133,13 @@ function RootLayoutNav() {
           }}
         />
         <Stack.Screen
+          name="changelog"
+          options={{
+            title: "سجل التغييرات",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="surah"
           options={{
             title: "السورة",
@@ -121,13 +150,6 @@ function RootLayoutNav() {
           name="favorites"
           options={{
             title: "المفضلة",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="tasbeeh"
-          options={{
-            title: "التسبيح",
             headerShown: false,
           }}
         />
