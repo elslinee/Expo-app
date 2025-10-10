@@ -182,7 +182,6 @@ export default function AladhanVoice({ color }: { color: any }) {
     <ScrollView
       className="flex-1"
       showsVerticalScrollIndicator={false}
-      
       contentContainerStyle={{ paddingBottom: 20, paddingTop: 20 }}
     >
       <View
@@ -202,7 +201,7 @@ export default function AladhanVoice({ color }: { color: any }) {
               key={index}
               className="flex  relative p-4 flex-row items-center justify-between"
             >
-              {!isNextPrayer && (
+              {isNextPrayer && (
                 <View
                   style={{
                     position: "absolute",
