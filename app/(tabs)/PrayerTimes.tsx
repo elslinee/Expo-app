@@ -11,6 +11,7 @@ export default function PrayerTimes() {
   const color = getColors(theme, colorScheme)[theme];
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       className="flex-1"
       style={{ backgroundColor: color.background }}
     >
