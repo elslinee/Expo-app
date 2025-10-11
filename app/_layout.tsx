@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import usePushNotifications from "@/utils/usePushNotifications";
 import * as Notifications from "expo-notifications";
 import useAppUpdates from "@/utils/useAppUpdates";
+import UpdateModal from "@/components/UpdateModal";
 
 export const unstable_settings = {
   initialRouteName: "(tabs)",
@@ -60,7 +61,7 @@ function RootLayoutNav() {
   const router = useRouter();
 
   // Check for app updates
-  useAppUpdates();
+  const { showUpdateModal, handleRestart, handleLater } = useAppUpdates();
 
   // Handle notification tap
   usePushNotifications({
@@ -161,6 +162,13 @@ function RootLayoutNav() {
           }}
         />
       </Stack>
+
+      {/* Update Modal */}
+      <UpdateModal
+        visible={showUpdateModal}
+        onRestart={handleRestart}
+        onLater={handleLater}
+      />
     </SafeAreaView>
   );
 }

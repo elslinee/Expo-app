@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import * as Updates from "expo-updates";
-import { Alert, Platform } from "react-native";
 
 interface UpdateState {
   isChecking: boolean;
   isDownloading: boolean;
   isUpdateAvailable: boolean;
+  showUpdateModal: boolean;
   error: Error | null;
 }
 
@@ -18,6 +18,7 @@ export default function useAppUpdates() {
     isChecking: false,
     isDownloading: false,
     isUpdateAvailable: false,
+    showUpdateModal: false,
     error: null,
   });
 
@@ -51,25 +52,8 @@ export default function useAppUpdates() {
         setUpdateState((prev) => ({
           ...prev,
           isDownloading: false,
+          showUpdateModal: true,
         }));
-
-        // عرض رسالة للمستخدم
-        Alert.alert(
-          "تحديث جديد متاح",
-          "تم تحميل تحديث جديد. سيتم إعادة تشغيل التطبيق لتطبيق التحديث.",
-          [
-            {
-              text: "إعادة التشغيل الآن",
-              onPress: async () => {
-                await Updates.reloadAsync();
-              },
-            },
-            {
-              text: "لاحقاً",
-              style: "cancel",
-            },
-          ]
-        );
       } else {
         console.log("✅ التطبيق محدث بالفعل");
         setUpdateState((prev) => ({ ...prev, isChecking: false }));
@@ -83,6 +67,17 @@ export default function useAppUpdates() {
         error: error as Error,
       }));
     }
+  };
+
+  const handleRestart = async () => {
+    await Updates.reloadAsync();
+  };
+
+  const handleLater = () => {
+    setUpdateState((prev) => ({
+      ...prev,
+      showUpdateModal: false,
+    }));
   };
 
   useEffect(() => {
@@ -103,5 +98,7 @@ export default function useAppUpdates() {
   return {
     ...updateState,
     checkForUpdates,
+    handleRestart,
+    handleLater,
   };
 }
