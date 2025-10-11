@@ -127,4 +127,3 @@ export default function UpdateModal({
     </Modal>
   );
 }
-

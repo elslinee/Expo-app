@@ -10,10 +10,10 @@ interface TransitionWrapperProps {
 export default function TransitionWrapper({
   children,
 }: TransitionWrapperProps) {
-  const { theme } = useTheme();
+  const { theme, colorScheme } = useTheme();
 
   // خلفية فورية تطابق الـ theme
-  const backgroundColor = getColors(theme, "warm").background;
+  const backgroundColor = getColors(theme, colorScheme)[theme].background;
 
   return (
     <View style={[styles.container, { backgroundColor }]}>{children}</View>
