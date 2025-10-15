@@ -30,6 +30,12 @@ export default function AyahItem({
   const [showCopied, setShowCopied] = useState(false);
   const copiedAnim = useRef(new Animated.Value(0)).current;
 
+  const toArabicDigits = (value: number | string) => {
+    const str = String(value);
+    const arabicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+    return str.replace(/[0-9]/g, (d) => arabicDigits[Number(d)]);
+  };
+
   const handleBookmarkPress = (e: any) => {
     e.stopPropagation();
     if (onToggleBookmark) {
@@ -91,11 +97,10 @@ export default function AyahItem({
           <View
             style={{
               display: "flex",
-              width: 32,
-              height: 32,
+
               padding: 2,
               borderRadius: 99,
-              backgroundColor: `${color.primary}`,
+
               justifyContent: "center",
               alignItems: "center",
               borderWidth: 0,
@@ -107,13 +112,13 @@ export default function AyahItem({
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                fontSize: 12,
+                fontSize: 18,
 
-                fontFamily: FontFamily.quran,
-                color: "#fff",
+                fontFamily: FontFamily.bold,
+                color: color.primary,
               }}
             >
-              {ayah.numberInSurah}
+              ﴿ {toArabicDigits(ayah.numberInSurah)} ﴾
             </Text>
           </View>
 

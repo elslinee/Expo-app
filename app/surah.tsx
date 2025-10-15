@@ -5,6 +5,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/context/ThemeContext";
@@ -37,6 +39,12 @@ export default function SurahScreen() {
   const router = useRouter();
   const { surahNumber } = useLocalSearchParams();
 
+  const toArabicDigits = (value: number | string) => {
+    const str = String(value);
+    const arabicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+    return str.replace(/[0-9]/g, (d) => arabicDigits[Number(d)]);
+  };
+
   const [surahData, setSurahData] = useState<SurahData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +54,11 @@ export default function SurahScreen() {
   const [ayahHeights, setAyahHeights] = useState<{ [key: number]: number }>({});
   const [bookmark, setBookmark] = useState<number | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const [isInlineMode, setIsInlineMode] = useState(false);
+  const [isSwitchingView, setIsSwitchingView] = useState(false);
+  const VIEW_MODE_KEY = "quran_view_mode_inline"; // true => inline, false => list
+  const VIEW_MODE_TIP_KEY = "quran_view_mode_tip_shown";
+  const [showViewModeTip, setShowViewModeTip] = useState(false);
 
   useEffect(() => {
     if (surahNumber) {
@@ -54,6 +67,34 @@ export default function SurahScreen() {
       loadBookmark();
     }
   }, [surahNumber]);
+
+  useEffect(() => {
+    const loadViewMode = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(VIEW_MODE_KEY);
+        if (stored !== null) {
+          setIsInlineMode(stored === "true");
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    loadViewMode();
+  }, []);
+
+  useEffect(() => {
+    const maybeShowTip = async () => {
+      try {
+        const shown = await AsyncStorage.getItem(VIEW_MODE_TIP_KEY);
+        if (!shown) {
+          setShowViewModeTip(true);
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    maybeShowTip();
+  }, []);
 
   const loadFavorites = async () => {
     try {
@@ -394,12 +435,17 @@ export default function SurahScreen() {
                 top: 10,
                 padding: 12,
                 borderRadius: 8,
-                backgroundColor: color.primary,
+                backgroundColor: isInlineMode
+                  ? color.focusColor
+                  : color.primary,
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 6,
               }}
-              onPress={goToBookmark}
+              onPress={() => {
+                if (isInlineMode) return;
+                goToBookmark();
+              }}
             >
               <FontAwesome5 name="bookmark" size={16} color={color.white} />
               <Text
@@ -409,10 +455,62 @@ export default function SurahScreen() {
                   color: color.white,
                 }}
               >
-                آية {bookmark}
+                آية {toArabicDigits(bookmark)}
               </Text>
             </TouchableOpacity>
           )}
+
+          {/* <TouchableOpacity
+            style={{
+              position: "absolute",
+              right: bookmark ? 88 : 4,
+              top: 10,
+              padding: 12,
+              borderRadius: 8,
+              backgroundColor: "rgba(0,0,0,0.05)",
+            }}
+            onPress={() => {
+              
+            }}
+          >
+            <FontAwesome5
+              name={isInlineMode ? "list-ul" : "align-right"}
+              size={16}
+              color={color.primary}
+            />
+          </TouchableOpacity> */}
+
+          {/* Toggle inline/list mode */}
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              right: bookmark ? 88 : 4,
+              top: 10,
+              padding: 12,
+              borderRadius: 8,
+              backgroundColor: "rgba(0,0,0,0.05)",
+            }}
+            onPress={() => {
+              setIsSwitchingView(true);
+              setTimeout(() => {
+                setIsInlineMode((prev) => {
+                  const next = !prev;
+                  // persist preference
+                  AsyncStorage.setItem(VIEW_MODE_KEY, String(next)).catch(
+                    () => {}
+                  );
+                  return next;
+                });
+                setIsSwitchingView(false);
+              }, 250);
+            }}
+          >
+            <FontAwesome5
+              name={isInlineMode ? "list-ul" : "align-right"}
+              size={24}
+              color={color.primary}
+            />
+          </TouchableOpacity>
 
           <Text
             style={{
@@ -447,7 +545,7 @@ export default function SurahScreen() {
               color: `${color.text20}`,
             }}
           >
-            {surahData.numberOfAyahs} آية •{" "}
+            {toArabicDigits(surahData.numberOfAyahs)} آية •{" "}
             {surahData.revelationType === "Meccan" ? "مكية" : "مدنية"}
           </Text>
         </View>
@@ -483,25 +581,104 @@ export default function SurahScreen() {
 
         <View
           style={{
+            backgroundColor: isInlineMode ? color.bg20 : "transparent",
             flexDirection: "column",
             paddingVertical: 8,
+            paddingHorizontal: 8,
+            borderRadius: 16,
+            overflow: "hidden",
           }}
         >
-          {surahData.ayahs.map((ayah, index) => {
-            // Remove "بسم الله الرحمن الرحيم" only from the first ayah
-            const cleanText =
-              index === 0
-                ? ayah.text
-                    .replace("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ ", "")
-                    .trim()
-                : ayah.text;
-            const updatedAyah = { ...ayah, text: cleanText };
-            return (
-              <View key={ayah.numberInSurah}>
-                {renderAyah(updatedAyah, index + 1)}
-              </View>
-            );
-          })}
+          {isSwitchingView ? (
+            <View
+              style={{
+                flex: 1,
+                paddingVertical: 40,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ActivityIndicator size="large" color={color.primary} />
+            </View>
+          ) : isInlineMode ? (
+            <Text
+              style={{
+                fontSize: 24,
+                fontFamily: FontFamily.quran,
+                color: color.darkText,
+
+                writingDirection: "rtl",
+              }}
+            >
+              {surahData.ayahs.map((ayah, index) => {
+                const cleanText =
+                  index === 0
+                    ? ayah.text
+                        .replace("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ ", "")
+                        .trim()
+                    : ayah.text;
+                const isThisBookmarked = bookmark === ayah.numberInSurah;
+                return (
+                  <Text
+                    key={ayah.numberInSurah}
+                    onPress={() =>
+                      handleAyahPress({
+                        numberInSurah: ayah.numberInSurah,
+                        text: cleanText,
+                        translation: ayah.translation,
+                      })
+                    }
+                    onLongPress={() =>
+                      handleAyahPress({
+                        numberInSurah: ayah.numberInSurah,
+                        text: cleanText,
+                        translation: ayah.translation,
+                      })
+                    }
+                    style={{
+                      backgroundColor: isThisBookmarked
+                        ? color.primary20
+                        : "transparent",
+                      borderRadius: 10,
+                      paddingHorizontal: 4,
+                      paddingVertical: 2,
+                      textAlign: "center",
+                    }}
+                  >
+                    {cleanText}
+                    <Text
+                      onPress={() => toggleBookmark(ayah.numberInSurah)}
+                      style={{
+                        position: "relative",
+                        fontFamily: FontFamily.bold,
+                        fontSize: 19,
+                        color: color.primary,
+                      }}
+                    >
+                      {"  "} ﴿ {toArabicDigits(ayah.numberInSurah)} ﴾ {"  "}
+                    </Text>
+                  </Text>
+                );
+              })}
+            </Text>
+          ) : (
+            <View>
+              {surahData.ayahs.map((ayah, index) => {
+                const cleanText =
+                  index === 0
+                    ? ayah.text
+                        .replace("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ ", "")
+                        .trim()
+                    : ayah.text;
+                const updatedAyah = { ...ayah, text: cleanText };
+                return (
+                  <View key={ayah.numberInSurah}>
+                    {renderAyah(updatedAyah, index + 1)}
+                  </View>
+                );
+              })}
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -519,6 +696,97 @@ export default function SurahScreen() {
           }
         }}
       />
+
+      {/* One-time tip modal */}
+      <Modal
+        visible={showViewModeTip}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowViewModeTip(false)}
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={() => setShowViewModeTip(false)}
+        >
+          <View
+            style={{
+              backgroundColor: color.background,
+              borderRadius: 16,
+              padding: 20,
+              margin: 20,
+              minWidth: "85%",
+              maxWidth: "100%",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: FontFamily.bold,
+                color: color.darkText,
+                textAlign: "center",
+                marginBottom: 8,
+              }}
+            >
+              نصيحة سريعة
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                fontFamily: FontFamily.regular,
+                color: color.text,
+                textAlign: "center",
+                opacity: 0.85,
+                marginBottom: 16,
+              }}
+            >
+              يمكنك تغيير وضع القراءة بين عرض متجاور أو قائمة من زر التبديل في
+              الأعلى.
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  backgroundColor: color.primary,
+                  paddingHorizontal: 18,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  width: "50%",
+                }}
+                onPress={async () => {
+                  setShowViewModeTip(false);
+                  try {
+                    await AsyncStorage.setItem(VIEW_MODE_TIP_KEY, "true");
+                  } catch (e) {
+                    // ignore
+                  }
+                }}
+              >
+                <Text
+                  style={{
+                    textAlign: "center",
+                    color: color.white,
+                    fontFamily: FontFamily.medium,
+                    fontSize: 14,
+                  }}
+                >
+                  فهمت
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }

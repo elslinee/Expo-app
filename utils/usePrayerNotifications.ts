@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
 import { toZonedTime, format } from "date-fns-tz";
@@ -18,12 +19,12 @@ const PRAYER_ORDER: PrayerKey[] = [
 ];
 
 const PRAYER_TITLES: Record<PrayerKey, string> = {
-  Fajr: "أذان  صلاة الفجر",
+  Fajr: "أذان صلاة الفجر",
   Sunrise: "أذان صلاة الشروق",
-  Dhuhr: "أذان  صلاة الظهر",
-  Asr: "أذان  صلاة العصر",
-  Maghrib: "أذان  صلاة المغرب",
-  Isha: "أذان  صلاة العشاء",
+  Dhuhr: "أذان صلاة الظهر",
+  Asr: "أذان صلاة العصر",
+  Maghrib: "أذان صلاة المغرب",
+  Isha: "أذان صلاة العشاء",
 };
 
 interface UsePrayerNotificationsOptions {
@@ -110,12 +111,15 @@ export default function usePrayerNotifications(
 
           if (!included) {
             // Do not schedule for excluded prayer
-            console.log(`❌ ${key}: الإشعار معطل`);
+            console.log(`❌ ${key}: الإشعار معطل - لن يتم جدولته`);
             continue;
           }
 
           const hhmm = prayerTimes.timings[key];
-          if (!hhmm) continue;
+          if (!hhmm) {
+            console.log(`⚠️ ${key}: لا يوجد وقت للصلاة`);
+            continue;
+          }
 
           const targetLocalString = `${yyyyMMdd}T${hhmm}:00`;
           const targetUtc = toZonedTime(targetLocalString, tz);
@@ -129,7 +133,8 @@ export default function usePrayerNotifications(
                 ? `${titlePrefix} ${PRAYER_TITLES[key]}`
                 : PRAYER_TITLES[key],
               body: `حان الآن  ${PRAYER_TITLES[key]}`,
-              sound: "default",
+              sound:
+                Platform.OS === "android" ? "adhanvoice" : "adhanVoice.mp3",
               data: {
                 type: "prayer",
                 screen: "PrayerTimes",
@@ -143,7 +148,7 @@ export default function usePrayerNotifications(
           });
           nextStored[key] = identifier;
           console.log(
-            `✅ ${key}: تم جدولة الإشعار في ${targetInstant.getHours()}:${targetInstant.getMinutes()}`
+            `✅ ${key}: تم جدولة الإشعار بنجاح - الوقت: ${targetInstant.getHours()}:${String(targetInstant.getMinutes()).padStart(2, "0")} | ID: ${identifier}`
           );
         }
 

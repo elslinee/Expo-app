@@ -74,19 +74,27 @@ export default function AladhanVoice({ color }: { color: any }) {
       notification: true,
     },
   ]);
-  const toggleNotification = (index: number) => {
+  const toggleNotification = async (index: number) => {
     setPrayers((prevPrayers) => {
       const next = prevPrayers.map((prayer, i) =>
         i === index ? { ...prayer, notification: !prayer.notification } : prayer
       );
-      try {
-        AsyncStorage.setItem(
-          "notificationSettings",
-          JSON.stringify(next.map((p) => p.notification))
-        );
-      } catch (e) {
-        console.warn("Failed to persist notificationSettings", e);
-      }
+
+      // Save settings asynchronously
+      const saveSettings = async () => {
+        try {
+          const notificationSettings = next.map((p) => p.notification);
+          await AsyncStorage.setItem(
+            "notificationSettings",
+            JSON.stringify(notificationSettings)
+          );
+          console.log("✅ تم حفظ إعدادات الإشعارات:", notificationSettings);
+        } catch (e) {
+          console.error("❌ فشل حفظ إعدادات الإشعارات:", e);
+        }
+      };
+
+      saveSettings();
       return next;
     });
   };

@@ -228,9 +228,8 @@ export default function QuranScreen() {
   const pinnedSurahsList = filteredSurahs.filter((surah) =>
     pinnedSet.has(surah.number)
   );
-  const unpinnedSurahsList = filteredSurahs.filter(
-    (surah) => !pinnedSet.has(surah.number)
-  );
+  // Show all surahs in the general list (including pinned ones)
+  const unpinnedSurahsList = filteredSurahs;
 
   // Apply reverse if needed
   const sortedPinnedSurahs = isReversed

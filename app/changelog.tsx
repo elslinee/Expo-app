@@ -33,6 +33,79 @@ export default function ChangelogScreen() {
 
       {/* Changelog Content */}
       <View style={styles.section}>
+        {/* Version 0.3 Beta */}
+        <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
+          <View
+            style={[
+              styles.versionHeader,
+              { borderBottomColor: color.primary + "30" },
+            ]}
+          >
+            <Text style={[styles.versionNumber, { color: color.primary }]}>
+              الإصدار 0.3 بيتا
+            </Text>
+            <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
+              تحسينات رئيسية في القرآن والإشعارات
+            </Text>
+          </View>
+
+          {/* القرآن الكريم */}
+          <View className="changelogCategory" style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              القرآن الكريم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • استخدام بيانات القرآن محليًا بدون الحاجة للإنترنت
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة وضع قراءة متجاور (Inline) مع إمكانية التبديل مع وضع
+              القائمة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تفعيل الأرقام العربية لرقم الآية والعدادات
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • حفظ تفضيل وضع القراءة واستعادته تلقائيًا
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تلميح أول زيارة يوضح زر التبديل للوضع
+            </Text>
+          </View>
+
+          {/* المفضلة والإشارات */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              المفضلة والإشارات
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين حفظ الإشارة المرجعية وعرضها في الوضعين
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين عرض المفضلة مع نسخة مفصلة لكل سورة
+            </Text>
+          </View>
+
+          {/* التنبيهات */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              التنبيهات
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة صوت تكبير عند إشعار الأذان
+            </Text>
+          </View>
+
+          {/* عام */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تحسينات عامة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إصلاح بقاء السورة المثبتة ظاهرة ضمن جميع السور
+            </Text>
+          </View>
+        </View>
+
         {/* Version 0.2 Beta */}
         <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
           <View

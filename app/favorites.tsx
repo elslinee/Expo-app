@@ -13,7 +13,6 @@ import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import { useRouter } from "expo-router";
-import { getSurahByNumber } from "@/utils/QuranApis";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AyahModal from "@/components/quranScreen/AyahModal";
