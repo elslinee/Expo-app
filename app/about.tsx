@@ -14,6 +14,7 @@ import { FontFamily } from "@/constants/FontFamily";
 import GoBack from "@/components/GoBack";
 import Svg, { Path } from "react-native-svg";
 import AppLogo from "@/components/AppLogo";
+import { APP_VERSION } from "@/constants/General";
 
 // أيقونة المميزات
 const FeatureIcon = ({ color }: { color: string }) => (
@@ -90,7 +91,7 @@ export default function AboutScreen() {
         </Text>
         <View style={[styles.versionBadge, { backgroundColor: color.primary }]}>
           <Text style={[styles.versionText, { color: color.background }]}>
-            الإصدار 0.2 ( beta )
+            الإصدار {APP_VERSION}
           </Text>
         </View>
       </View>

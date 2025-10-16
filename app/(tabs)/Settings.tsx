@@ -14,6 +14,7 @@ import {
   ColorSchemeType,
 } from "@/constants/ColorSchemes";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { APP_VERSION } from "@/constants/General";
 
 // أيقونة معلومات
 const InfoIcon = ({ color, size = 24 }: { color: string; size?: number }) => (
@@ -358,7 +359,7 @@ export default function Settings() {
             color: color.darkText,
           }}
         >
-          الإصدار 0.2 ( beta )
+          الإصدار {APP_VERSION}
         </Text>
         <Text
           style={{
