@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
-import { Audio } from "expo-av";
+// import { Audio } from "expo-av"; // Removed - no longer needed
 
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
@@ -11,33 +11,11 @@ Notifications.setNotificationHandler({
     const isPrayerNotification =
       notification.request.content.data?.type === "prayer";
 
-    // Play adhan sound if it's a prayer notification
-    if (isPrayerNotification) {
-      try {
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: true,
-        });
-
-        const { sound } = await Audio.Sound.createAsync(
-          require("@/assets/audios/adhanVoice.mp3"),
-          { shouldPlay: true }
-        );
-
-        // Cleanup after playing
-        sound.setOnPlaybackStatusUpdate((status) => {
-          if (status.isLoaded && status.didJustFinish) {
-            sound.unloadAsync();
-          }
-        });
-      } catch (error) {
-        console.error("خطأ في تشغيل صوت الأذان:", error);
-      }
-    }
+    // No custom sound for prayer notifications
 
     return {
       shouldShowAlert: true,
-      shouldPlaySound: true,
+      shouldPlaySound: false,
       shouldSetBadge: false,
       shouldShowBanner: true,
       shouldShowList: true,
@@ -81,7 +59,7 @@ export default function usePushNotifications(
         name: "default",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        sound: "adhanvoice",
+        sound: "default",
       });
     }
 

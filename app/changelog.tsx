@@ -33,6 +33,90 @@ export default function ChangelogScreen() {
 
       {/* Changelog Content */}
       <View style={styles.section}>
+        {/* Version 0.4 */}
+        <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
+          <View
+            style={[
+              styles.versionHeader,
+              { borderBottomColor: color.primary + "30" },
+            ]}
+          >
+            <Text style={[styles.versionNumber, { color: color.primary }]}>
+              الإصدار 0.4 بيتا
+            </Text>
+            <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
+              تحسينات الأداء والسرعة
+            </Text>
+          </View>
+
+          {/* الأذكار */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              الأذكار
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة نظام الأذكار الكامل مع 8 فئات
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • نظام المفضلة المتقدم للأذكار
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة الأذكار للتسبيح مباشرة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين واجهة المستخدم مع أيقونات معبرة
+            </Text>
+          </View>
+
+          {/* القرآن الكريم */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              القرآن الكريم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين سرعة تحميل القرآن بشكل كبير
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة نظام التحميل التدريجي للقرآن
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين أداء صفحة السور
+            </Text>
+          </View>
+
+          {/* الموقع والإشعارات */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              الموقع والإشعارات
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تعديل نظام طلب الموقع (طلب واحد فقط)
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إزالة الصوت المخصص لإشعارات الأذان
+            </Text>
+          </View>
+
+          {/* تحسينات عامة */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تحسينات عامة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين إدارة الذاكرة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إصلاح مشاكل التحميل البطيء
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين تجربة المستخدم العامة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين شاشات التحميل والأداء
+            </Text>
+          </View>
+        </View>
+
         {/* Version 0.3 Beta */}
         <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
           <View
@@ -283,5 +367,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: FontFamily.regular,
     textAlign: "center",
+  },
+  changesList: {
+    paddingTop: 16,
+  },
+  changeItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  changeBullet: {
+    fontSize: 16,
+    fontFamily: FontFamily.bold,
+    marginRight: 12,
+    marginTop: 2,
+  },
+  changeText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: FontFamily.regular,
+    lineHeight: 20,
   },
 });

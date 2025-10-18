@@ -413,7 +413,6 @@ export default function Tasbeeh() {
               >
                 {item.dailyGoal} /
               </Text>
-             
             </View>
             <View style={{ flexDirection: "row", gap: 12 }}>
               <View

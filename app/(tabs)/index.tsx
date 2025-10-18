@@ -11,7 +11,7 @@ import PrayerTimesComponent from "@/components/homeScreen/PrayerTimesComponent";
 import { getColors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import ScreenBtn from "@/components/homeScreen/ScreenBtn";
-import { QuranIcon } from "@/constants/Icons";
+import { QuranIcon, AzkarIcon } from "@/constants/Icons";
 import { navigateToPage } from "@/utils/navigationUtils";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const color = getColors(theme, colorScheme)[theme];
   const router = useRouter();
   const [showChangelog, setShowChangelog] = useState(false);
-  const CHANGELOG_KEY = "app_changelog_shown_v1"; // bump suffix on new releases
+  const CHANGELOG_KEY = "app_changelog_shown_v2"; // bump suffix on new releases
 
   useEffect(() => {
     const maybeShowChangelog = async () => {
@@ -46,14 +46,28 @@ export default function HomeScreen() {
         style={{
           paddingHorizontal: 16,
           marginTop: 24,
+          gap: 12,
         }}
       >
-        <ScreenBtn
-          color={color}
-          title="القرآن الكريم"
-          Icon={QuranIcon}
-          onPress={() => navigateToPage("/quran")}
-        />
+        <View
+          style={{
+            flexDirection: "row",
+            gap: 12,
+          }}
+        >
+          <ScreenBtn
+            color={color}
+            title="القرآن الكريم"
+            Icon={QuranIcon}
+            onPress={() => navigateToPage("/quran")}
+          />
+          <ScreenBtn
+            color={color}
+            title="الأذكار"
+            Icon={AzkarIcon}
+            onPress={() => navigateToPage("/azkar")}
+          />
+        </View>
       </View>
 
       {/* First-run changelog modal */}
@@ -96,7 +110,7 @@ export default function HomeScreen() {
                 marginBottom: 12,
               }}
             >
-              آخر التغييرات اصدار 0.3 بيتا
+              آخر التغييرات اصدار 0.4 بيتا
             </Text>
             <Text
               style={{
@@ -108,10 +122,10 @@ export default function HomeScreen() {
                 marginBottom: 16,
               }}
             >
-               • يمكنك الان قراءة القرآن من دون إنترنت.
-              {"\n"}• إمكانية التبديل بين عرض متجاور وقائمة في السور.
-              {"\n"}• أرقام عربية وتحسينات في المفضلة والإشارات.
-              {"\n"}• إضافة صوت تكبير عند اشعار الأذان.
+              • إضافة نظام الأذكار الكامل مع 8 فئات.
+              {"\n"}• تحسين سرعة تحميل القرآن بشكل كبير.
+              {"\n"}• تعديل نظام طلب الموقع (طلب واحد فقط).
+              {"\n"}• إزالة الصوت المخصص لإشعارات الأذان.
             </Text>
             <View style={{ gap: 10 }}>
               <TouchableOpacity

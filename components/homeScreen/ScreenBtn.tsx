@@ -1,6 +1,7 @@
 import { Text, Pressable, Animated } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
+import { FontFamily } from "@/constants/FontFamily";
 
 export default function ScreenBtn({
   color,
@@ -49,6 +50,7 @@ export default function ScreenBtn({
         style={{
           borderRadius: 16,
           borderWidth: 0,
+          minHeight: 120,
           backgroundColor: pressed ? color.primary : color.primary20,
           transform: [{ scale }],
         }}
@@ -60,8 +62,11 @@ export default function ScreenBtn({
           height={55}
         />
         <Text
-          style={{ color: pressed ? color.white : color.primary }}
-          className=" font-bold text-sm   "
+          style={{
+            color: pressed ? color.white : color.primary,
+            fontFamily: FontFamily.bold,
+            fontSize: 16,
+          }}
         >
           {title}
         </Text>

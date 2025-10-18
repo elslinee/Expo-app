@@ -161,6 +161,20 @@ function RootLayoutNav() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="azkar/[category]"
+          options={{
+            title: "الأذكار",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="azkar"
+          options={{
+            title: "الأذكار",
+            headerShown: false,
+          }}
+        />
       </Stack>
 
       {/* Update Modal */}

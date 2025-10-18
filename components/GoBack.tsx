@@ -6,9 +6,16 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import { router } from "expo-router";
 
-export default function GoBack({ style }: { style: any }) {
+type GoBackProps = {
+  style?: any;
+  color?: string;
+};
+
+export default function GoBack({ style, color: customColor }: GoBackProps) {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
+  const iconColor = customColor || color.primary;
+  const bgColor = customColor ? `${customColor}22` : `${color.text20}22`;
 
   return (
     <View style={style}>
@@ -17,7 +24,7 @@ export default function GoBack({ style }: { style: any }) {
           position: "absolute",
           padding: 10,
           borderRadius: 8,
-          backgroundColor: `${color.text20}22`,
+          backgroundColor: bgColor,
         }}
         onPress={() => router.back()}
       >
@@ -27,7 +34,7 @@ export default function GoBack({ style }: { style: any }) {
           }}
           name="arrow-back-ios-new"
           size={22}
-          color={color.primary}
+          color={iconColor}
         />
       </TouchableOpacity>
     </View>

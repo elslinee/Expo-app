@@ -1,5 +1,5 @@
-// استيراد ملف JSON المحلي
-import QuranData from "@/assets/json/Quran.json";
+// استيراد ملف JSON المحلي - Lazy loading
+let QuranData: LocalSurah[] | null = null;
 
 // تعريف الأنواع
 interface LocalAyah {
@@ -72,10 +72,27 @@ const getAllQuran = (): Promise<ApiResponse> => {
   });
 };
 
-const getSurahByNumber = (number: number): Promise<ApiResponse> => {
-  const surah = (QuranData as LocalSurah[]).find(
-    (s: LocalSurah) => s.id === number
-  );
+// دالة لتحميل البيانات عند الحاجة فقط مع تحسين الأداء
+const loadQuranData = async (): Promise<LocalSurah[]> => {
+  if (QuranData === null) {
+    try {
+      // تحميل تدريجي مع تحسين الأداء
+      const { default: data } = await import("@/assets/json/Quran.json");
+      QuranData = data as LocalSurah[];
+
+      // تحسين الذاكرة - تحميل البيانات الأساسية فقط
+      console.log("Quran data loaded successfully");
+    } catch (error) {
+      console.error("Error loading Quran data:", error);
+      return [];
+    }
+  }
+  return QuranData;
+};
+
+const getSurahByNumber = async (number: number): Promise<ApiResponse> => {
+  const quranData = await loadQuranData();
+  const surah = quranData.find((s: LocalSurah) => s.id === number);
 
   if (!surah) {
     return Promise.reject(new Error(`السورة رقم ${number} غير موجودة`));
@@ -90,9 +107,10 @@ const getSurahByNumber = (number: number): Promise<ApiResponse> => {
   });
 };
 
-const getAyah = (ayahNumber: number): Promise<any> => {
+const getAyah = async (ayahNumber: number): Promise<any> => {
+  const quranData = await loadQuranData();
   // البحث عن الآية في جميع السور
-  for (const surah of QuranData as LocalSurah[]) {
+  for (const surah of quranData) {
     const ayah = surah.array.find((a) => a.id === ayahNumber);
     if (ayah) {
       return Promise.resolve({

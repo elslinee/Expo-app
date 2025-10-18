@@ -133,8 +133,7 @@ export default function usePrayerNotifications(
                 ? `${titlePrefix} ${PRAYER_TITLES[key]}`
                 : PRAYER_TITLES[key],
               body: `حان الآن  ${PRAYER_TITLES[key]}`,
-              sound:
-                Platform.OS === "android" ? "adhanvoice" : "adhanVoice.mp3",
+              sound: "default",
               data: {
                 type: "prayer",
                 screen: "PrayerTimes",

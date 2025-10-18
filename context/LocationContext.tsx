@@ -118,14 +118,14 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
           await AsyncStorage.setItem(PERMISSION_ASKED_KEY, "true");
           existingStatus = status;
         } else {
+          // User was asked before and denied, don't ask again
           // التحقق من وجود بيانات محفوظة قبل إظهار الخطأ
           const savedLocationStr =
             await AsyncStorage.getItem(SAVED_LOCATION_KEY);
           const savedAddress = await AsyncStorage.getItem(SAVED_ADDRESS_KEY);
 
           if (savedLocationStr && savedAddress) {
-            // User was asked before and denied, don't ask again
-            // لكن البيانات المحفوظة موجودة، فلا داعي لعرض رسالة الخطأ
+            // البيانات المحفوظة موجودة، فلا داعي لعرض رسالة الخطأ
             setIsLoading(false);
             return;
           }
@@ -242,7 +242,17 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         }, 500);
       } else {
         // إذا لم تكن هناك بيانات محفوظة، طلب الموقع مباشرة
-        await getCurrentLocation();
+        // ولكن فقط إذا لم يتم السؤال من قبل
+        const askedBefore = await AsyncStorage.getItem(
+          "locationPermissionAsked"
+        );
+        if (!askedBefore) {
+          await getCurrentLocation();
+        } else {
+          // تم السؤال من قبل، استخدم البيانات الافتراضية
+          setAddress("الموقع غير متاح");
+          setIsLoading(false);
+        }
       }
     };
 

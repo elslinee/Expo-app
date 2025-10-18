@@ -185,7 +185,7 @@ export default function QuranScreen() {
     // Simulate loading time for better UX
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1500);
+    }, 0);
 
     return () => clearTimeout(timer);
   }, []);

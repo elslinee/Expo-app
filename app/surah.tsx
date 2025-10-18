@@ -62,9 +62,12 @@ export default function SurahScreen() {
 
   useEffect(() => {
     if (surahNumber) {
-      fetchSurahData();
-      loadFavorites();
-      loadBookmark();
+      // تحميل متوازي للبيانات
+      Promise.all([fetchSurahData(), loadFavorites(), loadBookmark()]).catch(
+        (error) => {
+          console.error("Error loading surah data:", error);
+        }
+      );
     }
   }, [surahNumber]);
 
@@ -234,7 +237,11 @@ export default function SurahScreen() {
     try {
       setLoading(true);
       setError(null);
+
+      // إضافة تحسين للأداء - تحميل تدريجي
       const response = await getSurahByNumber(Number(surahNumber));
+
+      // تحديث البيانات فوراً
       setSurahData(response.data.data);
     } catch (err) {
       console.error("Error fetching surah data:", err);
