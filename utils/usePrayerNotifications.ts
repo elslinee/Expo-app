@@ -94,6 +94,10 @@ export default function usePrayerNotifications(
         const yyyyMMdd = format(todayInTZ, "yyyy-MM-dd", { timeZone: tz });
 
         console.log("📅 جدولة الإشعارات للصلوات:", include);
+        console.log(
+          "🔍 تفاصيل إعدادات الإشعارات:",
+          JSON.stringify(include, null, 2)
+        );
 
         // Cancel ALL scheduled notifications first to prevent duplicates
         await Notifications.cancelAllScheduledNotificationsAsync();
@@ -107,7 +111,7 @@ export default function usePrayerNotifications(
         const nextStored: IdMap = {};
 
         for (const key of PRAYER_ORDER) {
-          const included = include[key] !== false; // default true
+          const included = include[key] === true; // Only schedule if explicitly true
 
           if (!included) {
             // Do not schedule for excluded prayer

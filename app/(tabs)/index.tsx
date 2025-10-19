@@ -66,6 +66,7 @@ export default function HomeScreen() {
             title="الأذكار"
             Icon={AzkarIcon}
             onPress={() => navigateToPage("/azkar")}
+            newTab={true}
           />
         </View>
       </View>

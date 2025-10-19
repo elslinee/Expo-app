@@ -52,9 +52,6 @@ export default function Tasbeeh() {
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [newName, setNewName] = useState<string>("");
   const [newGoal, setNewGoal] = useState<string>("");
-  const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
-  const [infoTitle, setInfoTitle] = useState<string>("");
-  const [infoMessage, setInfoMessage] = useState<string>("");
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
@@ -237,18 +234,6 @@ export default function Tasbeeh() {
       .replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
       .replace(/[^0-9]/g, "");
     const parsedGoal = parseInt(normalizedGoal, 10);
-    if (!trimmedName) {
-      setInfoTitle("تنبيه");
-      setInfoMessage("الرجاء إدخال اسم التسبيح");
-      setShowInfoModal(true);
-      return;
-    }
-    if (!Number.isFinite(parsedGoal) || parsedGoal <= 0) {
-      setInfoTitle("تنبيه");
-      setInfoMessage("الرجاء إدخال هدف يومي صالح");
-      setShowInfoModal(true);
-      return;
-    }
     const newItem: TasbeehItem = {
       id: `${Date.now()}`,
       name: trimmedName,

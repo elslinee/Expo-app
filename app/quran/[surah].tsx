@@ -37,7 +37,8 @@ export default function SurahScreen() {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
   const router = useRouter();
-  const { surahNumber } = useLocalSearchParams();
+  const { surah } = useLocalSearchParams();
+  const surahNumber = surah;
 
   const toArabicDigits = (value: number | string) => {
     const str = String(value);
@@ -61,6 +62,7 @@ export default function SurahScreen() {
   const [showViewModeTip, setShowViewModeTip] = useState(false);
 
   useEffect(() => {
+    console.log("useEffect triggered with surahNumber:", surahNumber);
     if (surahNumber) {
       // تحميل متوازي للبيانات
       Promise.all([fetchSurahData(), loadFavorites(), loadBookmark()]).catch(
@@ -68,6 +70,8 @@ export default function SurahScreen() {
           console.error("Error loading surah data:", error);
         }
       );
+    } else {
+      console.log("No surahNumber provided");
     }
   }, [surahNumber]);
 
@@ -238,8 +242,12 @@ export default function SurahScreen() {
       setLoading(true);
       setError(null);
 
+      console.log("Loading surah number:", surahNumber);
+
       // إضافة تحسين للأداء - تحميل تدريجي
       const response = await getSurahByNumber(Number(surahNumber));
+
+      console.log("Surah data loaded:", response.data.data);
 
       // تحديث البيانات فوراً
       setSurahData(response.data.data);
@@ -467,31 +475,11 @@ export default function SurahScreen() {
             </TouchableOpacity>
           )}
 
-          {/* <TouchableOpacity
-            style={{
-              position: "absolute",
-              right: bookmark ? 88 : 4,
-              top: 10,
-              padding: 12,
-              borderRadius: 8,
-              backgroundColor: "rgba(0,0,0,0.05)",
-            }}
-            onPress={() => {
-              
-            }}
-          >
-            <FontAwesome5
-              name={isInlineMode ? "list-ul" : "align-right"}
-              size={16}
-              color={color.primary}
-            />
-          </TouchableOpacity> */}
-
-          {/* Toggle inline/list mode */}
+     
           <TouchableOpacity
             style={{
               position: "absolute",
-              right: bookmark ? 88 : 4,
+              right: bookmark ? 72 : 4,
               top: 10,
               padding: 12,
               borderRadius: 8,

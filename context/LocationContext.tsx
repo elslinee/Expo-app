@@ -80,24 +80,45 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
     setErrorMsg(null);
 
     try {
-      // Ensure device location services are enabled (separate from permission)
-      const servicesEnabled = await Location.hasServicesEnabledAsync();
-      if (!servicesEnabled) {
-        // التحقق من وجود بيانات محفوظة
+      // إذا لم يكن forceRequest، تحقق من وجود بيانات محفوظة أولاً
+      if (!forceRequest) {
         const savedLocationStr = await AsyncStorage.getItem(SAVED_LOCATION_KEY);
         const savedAddress = await AsyncStorage.getItem(SAVED_ADDRESS_KEY);
 
-        // إذا كانت هناك بيانات محفوظة، استخدمها ولا تظهر رسالة الخطأ
         if (savedLocationStr && savedAddress) {
+          // البيانات محفوظة، لا نحتاج لفحص خدمات الموقع أو طلب الصلاحية
           setIsLoading(false);
-          return; // البيانات المحفوظة موجودة بالفعل من loadSavedLocationData
+          return;
+        }
+      }
+
+      // Ensure device location services are enabled (separate from permission)
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!servicesEnabled) {
+        // التحقق من وجود بيانات محفوظة أولاً
+        const savedLocationStr = await AsyncStorage.getItem(SAVED_LOCATION_KEY);
+        const savedAddress = await AsyncStorage.getItem(SAVED_ADDRESS_KEY);
+
+        if (savedLocationStr && savedAddress) {
+          // البيانات المحفوظة موجودة، استخدمها ولا تظهر رسالة الخطأ
+          setIsLoading(false);
+          return;
         }
 
         // فقط إذا لم تكن هناك بيانات محفوظة، اعرض رسالة الخطأ
-        setErrorMsg("الرجاء تفعيل خدمات الموقع");
-        setAddress("الرجاء تفعيل خدمات الموقع");
-        setIsLoading(false);
-        return;
+        // ولكن فقط إذا لم يتم السؤال من قبل أو كان forceRequest
+        if (forceRequest) {
+          setErrorMsg("الرجاء تفعيل خدمات الموقع في إعدادات الهاتف");
+          setAddress("خدمات الموقع معطلة");
+          setIsLoading(false);
+          return;
+        } else {
+          // إذا لم يكن forceRequest، لا تعرض رسالة خطأ مزعجة
+          // فقط اعرض عنوان افتراضي
+          setAddress("الموقع غير متاح");
+          setIsLoading(false);
+          return;
+        }
       }
 
       const PERMISSION_ASKED_KEY = "locationPermissionAsked";
@@ -112,26 +133,12 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
 
         // Only ask for permission if:
         // 1. Force request is true (user manually requested from settings)
-        // 2. Never asked before
-        if (forceRequest || !askedBefore) {
+        if (forceRequest) {
           const { status } = await Location.requestForegroundPermissionsAsync();
           await AsyncStorage.setItem(PERMISSION_ASKED_KEY, "true");
           existingStatus = status;
         } else {
-          // User was asked before and denied, don't ask again
-          // التحقق من وجود بيانات محفوظة قبل إظهار الخطأ
-          const savedLocationStr =
-            await AsyncStorage.getItem(SAVED_LOCATION_KEY);
-          const savedAddress = await AsyncStorage.getItem(SAVED_ADDRESS_KEY);
-
-          if (savedLocationStr && savedAddress) {
-            // البيانات المحفوظة موجودة، فلا داعي لعرض رسالة الخطأ
-            setIsLoading(false);
-            return;
-          }
-
-          // فقط إذا لم تكن هناك بيانات محفوظة، اعرض رسالة الخطأ
-          setErrorMsg("تم رفض صلاحية الوصول إلى الموقع");
+          // لا نطلب الصلاحية تلقائياً، فقط نعرض عنوان افتراضي
           setAddress("الموقع غير متاح");
           setIsLoading(false);
           return;
@@ -139,18 +146,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       }
 
       if (existingStatus !== "granted") {
-        // التحقق من وجود بيانات محفوظة قبل إظهار الخطأ
-        const savedLocationStr = await AsyncStorage.getItem(SAVED_LOCATION_KEY);
-        const savedAddress = await AsyncStorage.getItem(SAVED_ADDRESS_KEY);
-
-        if (savedLocationStr && savedAddress) {
-          // البيانات المحفوظة موجودة، فلا داعي لعرض رسالة الخطأ
-          setIsLoading(false);
-          return;
-        }
-
-        // فقط إذا لم تكن هناك بيانات محفوظة، اعرض رسالة الخطأ
-        setErrorMsg("تم رفض صلاحية الوصول إلى الموقع");
+        // لا نطلب الصلاحية تلقائياً، فقط نعرض عنوان افتراضي
         setAddress("الموقع غير متاح");
         setIsLoading(false);
         return;
@@ -236,23 +232,14 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       if (hasData) {
         // إذا كانت هناك بيانات محفوظة، عرضها مباشرة
         setIsLoading(false);
-        // ثم محاولة تحديث البيانات في الخلفية
-        setTimeout(() => {
-          getCurrentLocation();
-        }, 500);
+        // لا نحاول تحديث البيانات في الخلفية إذا كانت البيانات محفوظة
+        // لتجنب طلب الصلاحية مرة أخرى
+        return;
       } else {
-        // إذا لم تكن هناك بيانات محفوظة، طلب الموقع مباشرة
-        // ولكن فقط إذا لم يتم السؤال من قبل
-        const askedBefore = await AsyncStorage.getItem(
-          "locationPermissionAsked"
-        );
-        if (!askedBefore) {
-          await getCurrentLocation();
-        } else {
-          // تم السؤال من قبل، استخدم البيانات الافتراضية
-          setAddress("الموقع غير متاح");
-          setIsLoading(false);
-        }
+        // إذا لم تكن هناك بيانات محفوظة، لا تطلب الموقع تلقائياً
+        // فقط اعرض عنوان افتراضي
+        setAddress("الموقع غير متاح");
+        setIsLoading(false);
       }
     };
 

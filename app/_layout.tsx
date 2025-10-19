@@ -127,6 +127,13 @@ function RootLayoutNav() {
           }}
         />
         <Stack.Screen
+          name="quran/[surah]"
+          options={{
+            title: "السورة",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="about"
           options={{
             title: "حول التطبيق",

@@ -55,12 +55,6 @@ const azkarAllCategories: AzkarCategory[] = [
     description: "سبح الله وذكره",
   },
   {
-    title: "أذكار النوم",
-    icon: "bed",
-    iconSet: "ionicons",
-    description: "نم على ذكر الله",
-  },
-  {
     title: "أذكار الاستيقاظ",
     icon: "alarm",
     iconSet: "ionicons",
@@ -71,6 +65,12 @@ const azkarAllCategories: AzkarCategory[] = [
     icon: "book",
     iconSet: "ionicons",
     description: "أدعية من القرآن الكريم",
+  },
+  {
+    title: "أذكار بعد الصلاة المفروضة",
+    icon: "hands-pray",
+    iconSet: "materialCommunity",
+    description: "أذكار بعد الصلاة",
   },
   {
     title: "أدعية الأنبياء",
@@ -91,10 +91,10 @@ const azkarAllCategories: AzkarCategory[] = [
     description: "اختم يومك بالذكر والدعاء",
   },
   {
-    title: "أذكار بعد الصلاة المفروضة",
-    icon: "hands-pray",
-    iconSet: "materialCommunity",
-    description: "أذكار بعد الصلاة",
+    title: "أذكار النوم",
+    icon: "bed",
+    iconSet: "ionicons",
+    description: "نم على ذكر الله",
   },
 ];
 

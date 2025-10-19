@@ -6,12 +6,6 @@ import { FontFamily } from "@/constants/FontFamily";
 import { useTheme } from "@/context/ThemeContext";
 import CustomTabBar from "@/components/CustomTabBar";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome5>["name"];
-  color: string;
-}) {
-  return <FontAwesome5 size={24} style={{ marginBottom: -3 }} {...props} />;
-}
 
 export default function TabLayout() {
   const { theme, colorScheme } = useTheme();
@@ -47,41 +41,55 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{
-          title: "الرئيسية",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome5 name="mosque" size={22} color={color} />
-          ),
-          headerRight: () => "",
-        }}
+        options={
+          {
+            title: "الرئيسية",
+            tabBarIcon: ({ color }: { color: string }) => (
+              <FontAwesome5 name="mosque" size={22} color={color} />
+            ),
+
+            newFeature: false,
+          } as any
+        }
       />
       <Tabs.Screen
         name="PrayerTimes"
-        options={{
-          title: "مواقيت الصلاة",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="clock" size={25} color={color} />
-          ),
-        }}
+        options={
+          {
+            title: "مواقيت الصلاة",
+            tabBarIcon: ({ color }: { color: string }) => (
+              <MaterialCommunityIcons name="clock" size={25} color={color} />
+            ),
+
+            newFeature: false,
+          } as any
+        }
       />
       <Tabs.Screen
         name="tasbeeh"
-        options={{
-          title: "التسابيح",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome5 name="hands" size={24} color={color} />
-          ),
-        }}
+        options={
+          {
+            title: "التسابيح",
+            tabBarIcon: ({ color }: { color: string }) => (
+              <FontAwesome5 name="hands" size={24} color={color} />
+            ),
+            newTab: true,
+            newFeature: false,
+          } as any
+        }
       />
-      
+
       <Tabs.Screen
         name="Settings"
-        options={{
-          title: "الإعدادات",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="cog" size={24} color={color} />
-          ),
-        }}
+        options={
+          {
+            title: "الإعدادات",
+            tabBarIcon: ({ color }: { color: string }) => (
+              <FontAwesome name="cog" size={24} color={color} />
+            ),
+            newFeature: true,
+          } as any
+        }
       />
     </Tabs>
   );

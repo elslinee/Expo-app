@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Dimensions,
 } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
@@ -18,6 +19,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingScreen from "@/components/LoadingScreen";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import GoBack from "@/components/GoBack";
+import { Ionicons } from "@expo/vector-icons";
+
+const { width } = Dimensions.get("window");
+const isSmallScreen = width < 380;
+const CARD_SIZE = isSmallScreen ? (width - 48) / 2 : (width - 64) / 2;
 
 // بيانات السور
 const surahsData = [
@@ -259,7 +265,7 @@ export default function QuranScreen() {
         },
       ]}
       onPress={() => {
-        router.push(`/surah?surahNumber=${item.number}`);
+        router.push(`/quran/${item.number}` as any);
       }}
     >
       <View
