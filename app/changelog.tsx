@@ -45,7 +45,7 @@ export default function ChangelogScreen() {
               الإصدار 0.4 بيتا
             </Text>
             <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
-              تحسينات الأداء والسرعة
+              الأذكار + تحسينات الأداء والسرعة
             </Text>
           </View>
 
@@ -82,6 +82,12 @@ export default function ChangelogScreen() {
             <Text style={[styles.changelogItem, { color: color.darkText }]}>
               • تحسين أداء صفحة السور
             </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة نظام المسارات الديناميكية للسور
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين التنقل بين السور مع الحفاظ على جميع الميزات
+            </Text>
           </View>
 
           {/* الموقع والإشعارات */}
@@ -94,6 +100,12 @@ export default function ChangelogScreen() {
             </Text>
             <Text style={[styles.changelogItem, { color: color.darkText }]}>
               • إزالة الصوت المخصص لإشعارات الأذان
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إصلاح مشكلة الإشعارات التي تظهر رغم تعطيلها
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين منطق تعطيل الإشعارات للصلوات
             </Text>
           </View>
 
@@ -113,6 +125,12 @@ export default function ChangelogScreen() {
             </Text>
             <Text style={[styles.changelogItem, { color: color.darkText }]}>
               • تحسين شاشات التحميل والأداء
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة أنواع TypeScript للتنقل الديناميكي
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين هيكل المسارات في التطبيق
             </Text>
           </View>
         </View>

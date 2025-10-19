@@ -136,7 +136,7 @@ export default function usePrayerNotifications(
               title: titlePrefix
                 ? `${titlePrefix} ${PRAYER_TITLES[key]}`
                 : PRAYER_TITLES[key],
-              body: `حان الآن  ${PRAYER_TITLES[key]}`,
+              body: `حان الآن ${PRAYER_TITLES[key]}`,
               sound: "default",
               data: {
                 type: "prayer",

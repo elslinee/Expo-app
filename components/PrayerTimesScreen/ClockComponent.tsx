@@ -61,14 +61,6 @@ export default function ClockComponent({ color }: { color: any }) {
             {timeData?.timeRemaining || "00:00:00"}
           </Text>
         </View>
-
-        {isPrayerTime && (
-          <View className="bg-green-100 px-3 py-1 rounded-full mt-1">
-            <Text className="text-green-800 text-xs font-bold">
-              حان وقت الصلاة! 🕌
-            </Text>
-          </View>
-        )}
       </View>
     </View>
   );
