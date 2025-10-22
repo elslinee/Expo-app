@@ -1,6 +1,31 @@
 import { useState, useEffect } from "react";
 import PrayerTimesService, { PrayerTimesData } from "./prayerTimesService";
 import { useLocation } from "@/context/LocationContext";
+import * as Location from "expo-location";
+
+// Helper function to check if location permission is granted
+const hasLocationPermission = async (): Promise<boolean> => {
+  try {
+    const { status } = await Location.getForegroundPermissionsAsync();
+    return status === "granted";
+  } catch (error) {
+    console.warn("Error checking location permission:", error);
+    return false;
+  }
+};
+
+// Helper function to safely start location monitoring
+const safeStartLocationMonitoring = async (
+  service: PrayerTimesService
+): Promise<void> => {
+  try {
+    if (await hasLocationPermission()) {
+      await service.startLocationMonitoring();
+    }
+  } catch (error) {
+    console.warn("Could not start location monitoring:", error);
+  }
+};
 
 export const usePrayerTimesService = () => {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimesData | null>(null);
@@ -25,6 +50,8 @@ export const usePrayerTimesService = () => {
       if (hasCachedData) {
         // We have cached data, load it without requesting location
         await service.getPrayerTimes();
+        // Only start location monitoring if we already have location permission
+        await safeStartLocationMonitoring(service);
       } else if (location) {
         // Use shared location data
         const data = await service.getPrayerTimesWithLocation(
@@ -70,16 +97,9 @@ export const usePrayerTimesService = () => {
     const service = PrayerTimesService.getInstance();
     const result = await service.refreshPrayerTimes();
 
-    // Start location monitoring after manual refresh
+    // Start location monitoring after manual refresh only if we have permission
     if (result) {
-      try {
-        await service.startLocationMonitoring();
-      } catch (error) {
-        console.warn(
-          "Could not start location monitoring after refresh:",
-          error
-        );
-      }
+      await safeStartLocationMonitoring(service);
     }
 
     return result;

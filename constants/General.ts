@@ -1,12 +1,12 @@
-export const APP_VERSION = "0.4 ( beta )";
+export const APP_VERSION = "0.5 ( beta )";
 export const APP_NAME = "عين";
 export const APP_AUTHOR = "Elsline";
 export const APP_AUTHOR_EMAIL = "info@elsline.com";
 export const APP_AUTHOR_WEBSITE = "https://elsline.com";
 export const APP_AUTHOR_TWITTER = "https://twitter.com/elsline";
 export const APP_AUTHOR_FACEBOOK = "https://facebook.com/elsline";
-export const APP_AUTHOR_INSTAGRAM = "https://instagram.com/elsline";
-export const APP_AUTHOR_LINKEDIN = "https://linkedin.com/elsline";
-export const APP_AUTHOR_GITHUB = "https://github.com/elsline";
+export const APP_AUTHOR_INSTAGRAM = "https://instagram.com/elsline__";
+export const APP_AUTHOR_LINKEDIN = "https://linkedin.com/in/elsline";
+export const APP_AUTHOR_GITHUB = "https://github.com/elslinee";
 export const APP_AUTHOR_YOUTUBE = "https://youtube.com/elsline";
 export const APP_AUTHOR_TELEGRAM = "https://telegram.com/elsline";

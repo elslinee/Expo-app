@@ -33,6 +33,87 @@ export default function ChangelogScreen() {
 
       {/* Changelog Content */}
       <View style={styles.section}>
+        {/* Version 0.5 Beta */}
+        <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
+          <View
+            style={[
+              styles.versionHeader,
+              { borderBottomColor: color.primary + "30" },
+            ]}
+          >
+            <Text style={[styles.versionNumber, { color: color.primary }]}>
+              الإصدار 0.5 بيتا
+            </Text>
+            <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
+              نظام عداد الأذكار + تحسينات القرآن
+            </Text>
+          </View>
+          {/* القرآن الكريم */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              القرآن الكريم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • اضافة خاصية تغيير حجم الخط للقرآن
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين نظام التحميل التدريجي للقرآن
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إصلاح مشاكل الإشارات المرجعية
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحميل ذكي للآيات لزيادة سرعة التحميل
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • اضافة زر الذهاب للسورة فى صفحة المفضلة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين أداء التمرير والتنقل
+            </Text>
+          </View>
+          {/* الأذكار */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              الأذكار
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة نظام عداد الأذكار مع حفظ التقدم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إعادة تعيين تلقائي للعدادات كل يوم بعد منتصف الليل
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • شريط التقدم المرئي للأذكار
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • شفافية الكارد عند اكتمال العدد المطلوب
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • زر إعادة التعيين للعدادات
+            </Text>
+          </View>
+
+          {/* واجهة المستخدم */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              واجهة المستخدم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة نصائح تفاعلية للمستخدمين الجدد
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين واجهة الأذكار مع شريط التقدم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • مكونات منفصلة قابلة لإعادة الاستخدام
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين تجربة المستخدم العامة
+            </Text>
+          </View>
+        </View>
+
         {/* Version 0.4 */}
         <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
           <View

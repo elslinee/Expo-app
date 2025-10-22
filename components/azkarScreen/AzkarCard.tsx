@@ -47,6 +47,7 @@ type TasbeehItem = {
 
 const FAVORITES_KEY = "azkar_favorites";
 const TASBEEH_STORAGE_KEY = "TASBEEH_LIST_V2";
+const AZKAR_COUNTER_KEY = "azkar_counters";
 
 export default function AzkarCard({
   zikr,
@@ -56,8 +57,9 @@ export default function AzkarCard({
   favorites = [],
 }: AzkarCardProps) {
   const [currentCount, setCurrentCount] = useState(parseInt(zikr.count) || 1);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showActions, setShowActions] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
   const [showAddTasbeehModal, setShowAddTasbeehModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -66,10 +68,38 @@ export default function AzkarCard({
   const successAnim = useRef(new Animated.Value(0)).current;
   const router = useRouter();
 
-  // Load favorite status on mount and when favorites change
+  // Create unique key for this zikr
+  const zikrKey = `${zikr.category}|||${zikr.content}`;
+
+  // Load favorite status and counter data on mount
   useEffect(() => {
     loadFavoriteStatus();
+    loadCounterData();
   }, []);
+
+  // Check for daily reset
+  useEffect(() => {
+    const checkDailyReset = async () => {
+      try {
+        const savedData = await AsyncStorage.getItem(AZKAR_COUNTER_KEY);
+        if (savedData) {
+          const counters = JSON.parse(savedData);
+          const today = new Date().toDateString();
+
+          if (counters[zikrKey] && counters[zikrKey].date !== today) {
+            // Data is from previous day, reset
+            setCompletedCount(0);
+            setIsCompleted(false);
+            await saveCounterData(0, false);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking daily reset:", error);
+      }
+    };
+
+    checkDailyReset();
+  }, [zikrKey]);
 
   // Update favorite status when favorites prop changes
   useEffect(() => {
@@ -94,6 +124,53 @@ export default function AzkarCard({
     } catch (error) {
       console.error("Error loading favorites:", error);
       setIsFavorite(false);
+    }
+  };
+
+  const loadCounterData = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(AZKAR_COUNTER_KEY);
+      if (savedData) {
+        const counters = JSON.parse(savedData);
+        const today = new Date().toDateString();
+
+        // Check if we have data for this zikr
+        if (counters[zikrKey]) {
+          const zikrData = counters[zikrKey];
+
+          // Check if data is from today
+          if (zikrData.date === today) {
+            setCompletedCount(zikrData.completedCount || 0);
+            setIsCompleted(zikrData.isCompleted || false);
+          } else {
+            // Data is from previous day, reset
+            setCompletedCount(0);
+            setIsCompleted(false);
+            // Save reset data
+            await saveCounterData(0, false);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error loading counter data:", error);
+    }
+  };
+
+  const saveCounterData = async (count: number, completed: boolean) => {
+    try {
+      const savedData = await AsyncStorage.getItem(AZKAR_COUNTER_KEY);
+      const counters = savedData ? JSON.parse(savedData) : {};
+      const today = new Date().toDateString();
+
+      counters[zikrKey] = {
+        completedCount: count,
+        isCompleted: completed,
+        date: today,
+      };
+
+      await AsyncStorage.setItem(AZKAR_COUNTER_KEY, JSON.stringify(counters));
+    } catch (error) {
+      console.error("Error saving counter data:", error);
     }
   };
 
@@ -260,18 +337,41 @@ export default function AzkarCard({
     }
   };
 
-  const resetCount = () => {
+  const resetCount = async () => {
     setCurrentCount(parseInt(zikr.count) || 1);
+    setCompletedCount(0);
+    setIsCompleted(false);
+    // Save reset data
+    await saveCounterData(0, false);
+  };
+
+  const handleCardPress = async () => {
+    if (isCompleted) return; // Don't allow pressing if already completed
+
+    const newCompletedCount = completedCount + 1;
+    setCompletedCount(newCompletedCount);
+
+    // Check if completed
+    const isNowCompleted = newCompletedCount >= currentCount;
+    if (isNowCompleted) {
+      setIsCompleted(true);
+    }
+
+    // Save data
+    await saveCounterData(newCompletedCount, isNowCompleted);
   };
 
   return (
     <View style={{ position: "relative", marginBottom: 8 }}>
-      <View
+      <TouchableOpacity
+        onPress={handleCardPress}
+        disabled={isCompleted}
         style={[
           styles.container,
           {
             backgroundColor: color.bg20,
             borderColor: color.border,
+            opacity: isCompleted ? 0.3 : 1,
           },
         ]}
       >
@@ -357,6 +457,38 @@ export default function AzkarCard({
           </Text>
         ) : null}
 
+        {/* Progress Counter */}
+        {parseInt(zikr.count) > 1 && (
+          <View style={styles.progressContainer}>
+            <View style={styles.progressInfo}>
+              <Text style={[styles.progressText, { color: color.darkText }]}>
+                {completedCount} / {currentCount}
+              </Text>
+              {isCompleted && (
+                <Text style={[styles.completedText, { color: color.primary }]}>
+                  ✓ مكتمل
+                </Text>
+              )}
+            </View>
+            <Text style={[styles.dateText, { color: color.text20 }]}>
+              اليوم: {new Date().toLocaleDateString("ar-SA")}
+            </Text>
+            <View style={[styles.progressBar, { backgroundColor: color.bg20 }]}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    backgroundColor: isCompleted
+                      ? color.primary
+                      : color.primary20,
+                    width: `${(completedCount / currentCount) * 100}%`,
+                  },
+                ]}
+              />
+            </View>
+          </View>
+        )}
+
         {/* Action Buttons and Counter */}
         <View style={styles.actionsRow}>
           {/* Counter Badge */}
@@ -365,7 +497,9 @@ export default function AzkarCard({
               style={[
                 styles.counterBadge,
                 {
-                  backgroundColor: color.primary20,
+                  backgroundColor: isCompleted
+                    ? color.primary
+                    : color.primary20,
                 },
               ]}
             >
@@ -373,7 +507,7 @@ export default function AzkarCard({
                 style={[
                   styles.counterBadgeText,
                   {
-                    color: color.primary,
+                    color: isCompleted ? color.white : color.primary,
                   },
                 ]}
               >
@@ -384,6 +518,20 @@ export default function AzkarCard({
 
           {/* Action Buttons */}
           <View style={styles.actionsContainer}>
+            {isCompleted && (
+              <TouchableOpacity
+                onPress={resetCount}
+                style={[
+                  styles.actionBtn,
+                  {
+                    backgroundColor: color.primary20,
+                  },
+                ]}
+              >
+                <FontAwesome5 name="redo" size={16} color={color.primary} />
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
               onPress={handleCopy}
               style={[
@@ -430,7 +578,7 @@ export default function AzkarCard({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Copied Toast */}
       {showCopied && (
@@ -716,7 +864,7 @@ export default function AzkarCard({
                         fontSize: 15,
                       }}
                     >
-                    سبح الان
+                      سبح الان
                     </Text>
                   </View>
                 </Pressable>
@@ -881,5 +1029,38 @@ const styles = StyleSheet.create<any>({
   copiedText: {
     fontSize: 14,
     fontFamily: FontFamily.bold,
+  },
+  progressContainer: {
+    marginVertical: 12,
+  },
+  progressInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  progressText: {
+    fontSize: 14,
+    fontFamily: FontFamily.medium,
+  },
+  completedText: {
+    fontSize: 14,
+    fontFamily: FontFamily.bold,
+  },
+  progressBar: {
+    height: 6,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 3,
+  },
+  dateText: {
+    fontSize: 12,
+    fontFamily: FontFamily.regular,
+    textAlign: "center",
+    marginTop: 4,
+    opacity: 0.7,
   },
 });

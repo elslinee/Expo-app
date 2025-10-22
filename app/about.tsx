@@ -12,21 +12,24 @@ import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import GoBack from "@/components/GoBack";
-import Svg, { Path } from "react-native-svg";
 import AppLogo from "@/components/AppLogo";
-import { APP_VERSION } from "@/constants/General";
+import {
+  APP_VERSION,
+  APP_AUTHOR_FACEBOOK,
+  APP_AUTHOR_GITHUB,
+  APP_AUTHOR_INSTAGRAM,
+  APP_AUTHOR_LINKEDIN,
+} from "@/constants/General";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 // أيقونة المميزات
 const FeatureIcon = ({ color }: { color: string }) => (
-  <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
+  <FontAwesome6
+    name="check-circle"
+    size={24}
+    color={color}
+    style={{ marginTop: 6 }}
+  />
 );
 
 export default function AboutScreen() {
@@ -47,6 +50,22 @@ export default function AboutScreen() {
     {
       title: "التسبيح الذكي",
       description: "عداد تسبيح تفاعلي مع أهداف يومية وحفظ تلقائي للتقدم",
+    },
+    {
+      title: "نظام الأذكار الكامل",
+      description: "8 فئات من الأذكار مع عداد تفاعلي وحفظ التقدم اليومي",
+    },
+    {
+      title: "تغيير حجم الخط",
+      description: "إمكانية تخصيص حجم الخط للقرآن الكريم لراحة القراءة",
+    },
+    {
+      title: "النصائح التفاعلية",
+      description: "نصائح ذكية تظهر للمستخدمين الجدد لتحسين تجربة الاستخدام",
+    },
+    {
+      title: "التحميل التدريجي",
+      description: "نظام تحميل ذكي للقرآن يزيد السرعة ويوفر الذاكرة",
     },
     {
       title: "أنماط ألوان متعددة",
@@ -100,7 +119,8 @@ export default function AboutScreen() {
       <View style={styles.section}>
         <Text style={[styles.description, { color: color.text }]}>
           تطبيق إسلامي شامل يجمع بين مواقيت الصلاة الدقيقة، القرآن الكريم
-          الكامل، والتسبيح الذكي في واجهة عربية أنيقة ومريحة.
+          الكامل، نظام الأذكار التفاعلي، والتسبيح الذكي في واجهة عربية أنيقة
+          ومريحة.
         </Text>
       </View>
 
@@ -136,6 +156,63 @@ export default function AboutScreen() {
       </View>
 
       {/* Developer Section */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: color.text }]}>المطور</Text>
+
+        <View style={[styles.developerCard, { backgroundColor: color.bg20 }]}>
+          <Text style={[styles.developerName, { color: color.text }]}>
+            Ahmed Elsline
+          </Text>
+          <Text
+            style={[styles.developerDescription, { color: color.darkText }]}
+          >
+            Lazy Software Engineer :)
+          </Text>
+
+          {/* Social Media Icons */}
+          <View style={styles.socialContainer}>
+            <TouchableOpacity
+              style={[
+                styles.socialButton,
+                { backgroundColor: color.primary + "20" },
+              ]}
+              onPress={() => Linking.openURL(APP_AUTHOR_GITHUB)}
+            >
+              <FontAwesome6 name="github" size={24} color={color.primary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.socialButton,
+                { backgroundColor: color.primary + "20" },
+              ]}
+              onPress={() => Linking.openURL(APP_AUTHOR_FACEBOOK)}
+            >
+              <FontAwesome6 name="facebook" size={24} color={color.primary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.socialButton,
+                { backgroundColor: color.primary + "20" },
+              ]}
+              onPress={() => Linking.openURL(APP_AUTHOR_INSTAGRAM)}
+            >
+              <FontAwesome6 name="instagram" size={24} color={color.primary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.socialButton,
+                { backgroundColor: color.primary + "20" },
+              ]}
+              onPress={() => Linking.openURL(APP_AUTHOR_LINKEDIN)}
+            >
+              <FontAwesome6 name="linkedin" size={24} color={color.primary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
 
       {/* Footer */}
       <View style={styles.footer}>
@@ -221,7 +298,7 @@ const styles = StyleSheet.create({
   },
   featureContent: {
     flex: 1,
-    marginRight: 12,
+    marginLeft: 12,
   },
   featureTitle: {
     fontSize: 16,
@@ -235,10 +312,6 @@ const styles = StyleSheet.create({
   },
   developerSection: {
     paddingBottom: 16,
-  },
-  developerCard: {
-    padding: 20,
-    borderRadius: 16,
   },
   developerInfo: {
     flexDirection: "row",
@@ -260,11 +333,6 @@ const styles = StyleSheet.create({
   developerDetails: {
     alignItems: "flex-start",
   },
-  developerName: {
-    fontSize: 18,
-    fontFamily: FontFamily.bold,
-    marginBottom: 4,
-  },
   developerRole: {
     fontSize: 14,
     fontFamily: FontFamily.medium,
@@ -277,5 +345,52 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: FontFamily.regular,
     marginBottom: 4,
+  },
+  advancedCard: {
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+  },
+  advancedTitle: {
+    fontSize: 18,
+    fontFamily: FontFamily.bold,
+    marginBottom: 12,
+  },
+  advancedDescription: {
+    fontSize: 14,
+    fontFamily: FontFamily.regular,
+    lineHeight: 22,
+    marginBottom: 6,
+  },
+  developerCard: {
+    padding: 20,
+    borderRadius: 16,
+    alignItems: "center",
+  },
+  developerName: {
+    fontSize: 24,
+    fontFamily: FontFamily.bold,
+    marginBottom: 8,
+  },
+  developerDescription: {
+    fontSize: 14,
+    fontFamily: FontFamily.regular,
+    lineHeight: 22,
+    textAlign: "center",
+    marginBottom: 20,
+    opacity: 0.8,
+  },
+  socialContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 16,
+  },
+  socialButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import AyahModal from "@/components/quranScreen/AyahModal";
+import GoBack from "@/components/GoBack";
 
 interface FavoriteAyah {
   surahNumber: number;
@@ -23,7 +24,11 @@ interface FavoriteAyah {
   ayahNumber: number;
   text: string;
 }
-
+const toArabicDigits = (value: number | string) => {
+  const str = String(value);
+  const arabicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+  return str.replace(/[0-9]/g, (d) => arabicDigits[Number(d)]);
+};
 export default function FavoritesScreen() {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
@@ -189,7 +194,20 @@ export default function FavoritesScreen() {
               justifyContent: "space-between",
             }}
           >
-            <View
+            <Text
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                fontSize: 18,
+                marginRight: 12,
+                fontFamily: FontFamily.bold,
+                color: color.primary,
+              }}
+            >
+              ﴿ {toArabicDigits(item.ayahNumber)} ﴾
+            </Text>
+            {/* <View
               style={{
                 width: 32,
                 height: 32,
@@ -209,7 +227,7 @@ export default function FavoritesScreen() {
               >
                 {item.ayahNumber}
               </Text>
-            </View>
+            </View> */}
 
             <View style={{ flex: 1 }}>
               <Text
@@ -436,27 +454,21 @@ export default function FavoritesScreen() {
           backgroundColor: color.background,
         }}
       >
-        <TouchableOpacity
+        <GoBack
           style={{
             position: "absolute",
             left: 20,
-            padding: 12,
-            marginRight: 16,
-            borderRadius: 8,
-            backgroundColor: "rgba(0,0,0,0.05)",
+            top: 25,
           }}
-          onPress={() => router.back()}
-        >
-          <FontAwesome5 name="arrow-right" size={20} color={color.primary} />
-        </TouchableOpacity>
+        />
 
         <View style={{ flex: 1, alignItems: "center" }}>
           <Text
             style={{
-              fontSize: 18,
+              fontSize: 21,
               fontFamily: FontFamily.medium,
               textAlign: "center",
-              color: color.text,
+              color: color.darkText,
             }}
           >
             المفضلة
@@ -467,7 +479,7 @@ export default function FavoritesScreen() {
               fontFamily: FontFamily.medium,
               textAlign: "center",
               opacity: 0.7,
-              color: color.text,
+              color: color.darkText,
             }}
           >
             {favoriteAyahs.length} آية مفضلة
@@ -489,6 +501,7 @@ export default function FavoritesScreen() {
         visible={showAyahModal}
         onClose={() => setShowAyahModal(false)}
         ayah={selectedAyah}
+        showGoToSurah={true}
         showRemoveButton={true}
         onRemoveFromFavorites={() => {
           if (selectedAyah) {

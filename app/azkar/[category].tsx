@@ -17,6 +17,7 @@ import GoBack from "@/components/GoBack";
 import { useState, useEffect } from "react";
 import AzkarData from "@/assets/json/Azkar.json";
 import AzkarCard from "@/components/azkarScreen/AzkarCard";
+import OneTimeTip from "@/components/OneTimeTip";
 
 type Zikr = {
   category: string;
@@ -190,6 +191,12 @@ export default function AzkarCategoryScreen() {
           ))}
         </View>
       </ScrollView>
+      <OneTimeTip
+        tipKey="azkar_view_mode_tip_shown"
+        title="نصيحة مهمة"
+        description={`يمكنك الضغط على الذكر لزيادة عدد المرات`}
+        color={color}
+      />
     </View>
   );
 }

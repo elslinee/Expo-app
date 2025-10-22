@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { useTheme } from "@/context/ThemeContext";
 import { PrayerTimesProvider } from "@/context/PrayerTimesContext";
 import { LocationProvider } from "@/context/LocationContext";
+import { FontSizeProvider } from "@/context/FontSizeContext";
 import { StatusBar } from "expo-status-bar";
 import { getColors } from "@/constants/Colors";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -93,11 +94,7 @@ function RootLayoutNav() {
       style={{ flex: 1, backgroundColor: Colors[theme].background }}
       edges={["left", "right", "bottom"]}
     >
-      <StatusBar
-        style={theme === "dark" ? "light" : "dark"}
-        backgroundColor={Colors[theme].background}
-        translucent={false}
-      />
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerStyle: {
@@ -144,13 +141,6 @@ function RootLayoutNav() {
           name="changelog"
           options={{
             title: "سجل التغييرات",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="surah"
-          options={{
-            title: "السورة",
             headerShown: false,
           }}
         />

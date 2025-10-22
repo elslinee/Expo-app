@@ -13,10 +13,9 @@ import {
   Animated,
   Easing,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
-import { Audio } from "expo-av";
 import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
@@ -39,7 +38,6 @@ const STORAGE_KEY = "TASBEEH_LIST_V2";
 
 export default function TasbeehDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
   const { theme, colorScheme } = useTheme();
   const themeColors = getColors(theme, colorScheme)[theme];
   const [item, setItem] = useState<TasbeehItem | null>(null);
@@ -53,44 +51,12 @@ export default function TasbeehDetail() {
   const confettiAnim = useRef(new Animated.Value(0)).current;
   const copiedAnim = useRef(new Animated.Value(0)).current;
   const completedDailyGoalColor = themeColors.focusColor;
-  const soundRef = useRef<Audio.Sound | null>(null);
 
   // Calculate progress
   const progress = useMemo(() => {
     if (!item || item.dailyGoal <= 0) return 0;
     return Math.min(item.count / item.dailyGoal, 1);
   }, [item]);
-
-  // Load sound
-  useEffect(() => {
-    const loadSound = async () => {
-      try {
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
-        });
-
-        // استخدام صوت نقرة سريعة وخفيفة
-        const { sound } = await Audio.Sound.createAsync(
-          {
-            uri: "https://assets.mixkit.co/active_storage/sfx/2997/2997.wav",
-          },
-          { shouldPlay: false, volume: 0.4 }
-        );
-        soundRef.current = sound;
-      } catch (error) {
-        console.error("Error loading sound:", error);
-      }
-    };
-
-    loadSound();
-
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const load = async () => {

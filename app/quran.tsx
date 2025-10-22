@@ -459,59 +459,52 @@ export default function QuranScreen() {
           style={{
             borderWidth: 0,
           }}
-          data={[]}
-          renderItem={() => null}
-          keyExtractor={(item, index) => index.toString()}
+          data={sortedUnpinnedSurahs}
+          renderItem={renderSurah}
+          keyExtractor={(item) => item.number.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={10}
+          removeClippedSubviews={true}
+          updateCellsBatchingPeriod={100}
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+            autoscrollToTopThreshold: 10,
+          }}
           ListHeaderComponent={
-            <>
-              {/* Pinned Surahs Section */}
-              {sortedPinnedSurahs.length > 0 && (
-                <View>
-                  <View style={styles.sectionHeader}>
-                    <Text
-                      style={[styles.sectionTitle, { color: color.primary }]}
-                    >
-                      السور المثبتة
-                    </Text>
-                    <FontAwesome5
-                      name="thumbtack"
-                      size={16}
-                      color={color.primary}
-                      style={{ marginLeft: 8 }}
-                    />
-                  </View>
-                  {sortedPinnedSurahs.map((item) => (
-                    <View key={item.number}>{renderSurah({ item })}</View>
-                  ))}
-                  <View
-                    style={[
-                      styles.sectionDivider,
-                      { backgroundColor: color.border },
-                    ]}
+            sortedPinnedSurahs.length > 0 ? (
+              <View>
+                <View style={styles.sectionHeader}>
+                  <Text style={[styles.sectionTitle, { color: color.primary }]}>
+                    السور المثبتة
+                  </Text>
+                  <FontAwesome5
+                    name="thumbtack"
+                    size={16}
+                    color={color.primary}
+                    style={{ marginLeft: 8 }}
                   />
                 </View>
-              )}
-
-              {/* Unpinned Surahs Section */}
-              {sortedUnpinnedSurahs.length > 0 && (
-                <View>
-                  {sortedPinnedSurahs.length > 0 && (
-                    <View style={styles.sectionHeader}>
-                      <Text
-                        style={[styles.sectionTitle, { color: color.darkText }]}
-                      >
-                        جميع السور
-                      </Text>
-                    </View>
-                  )}
-                  {sortedUnpinnedSurahs.map((item) => (
-                    <View key={item.number}>{renderSurah({ item })}</View>
-                  ))}
+                {sortedPinnedSurahs.map((item) => (
+                  <View key={item.number}>{renderSurah({ item })}</View>
+                ))}
+                <View
+                  style={[
+                    styles.sectionDivider,
+                    { backgroundColor: color.border },
+                  ]}
+                />
+                <View style={styles.sectionHeader}>
+                  <Text
+                    style={[styles.sectionTitle, { color: color.darkText }]}
+                  >
+                    جميع السور
+                  </Text>
                 </View>
-              )}
-            </>
+              </View>
+            ) : null
           }
         />
       )}

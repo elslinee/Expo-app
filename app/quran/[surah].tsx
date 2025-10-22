@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
+  StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/context/ThemeContext";
@@ -17,6 +18,12 @@ import { getSurahByNumber } from "@/utils/QuranApis";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import AyahModal from "@/components/quranScreen/AyahModal";
 import AyahItem from "@/components/quranScreen/AyahItem";
+import InlineAyahView from "@/components/quranScreen/InlineAyahView";
+import ListAyahView from "@/components/quranScreen/ListAyahView";
+import GoBack from "@/components/GoBack";
+import { FontSizeProvider, useFontSize } from "@/context/FontSizeContext";
+import FontSizePopup from "@/components/FontSizePopup";
+import OneTimeTip from "@/components/OneTimeTip";
 
 interface Ayah {
   numberInSurah: number;
@@ -33,9 +40,14 @@ interface SurahData {
   ayahs: Ayah[];
 }
 
-export default function SurahScreen() {
+export function SurahScreenContent() {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
+  const { fontSize } = useFontSize();
+  const [showFontSizePopup, setShowFontSizePopup] = useState(false);
+
+  // Create styles with current theme and font size
+  const styles = createStyles(color, fontSize);
   const router = useRouter();
   const { surah } = useLocalSearchParams();
   const surahNumber = surah;
@@ -57,12 +69,11 @@ export default function SurahScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [isInlineMode, setIsInlineMode] = useState(false);
   const [isSwitchingView, setIsSwitchingView] = useState(false);
+  // Removed loading states for simpler bookmark functionality
   const VIEW_MODE_KEY = "quran_view_mode_inline"; // true => inline, false => list
-  const VIEW_MODE_TIP_KEY = "quran_view_mode_tip_shown";
-  const [showViewModeTip, setShowViewModeTip] = useState(false);
+  const [listPage, setListPage] = useState(10);
 
   useEffect(() => {
-    console.log("useEffect triggered with surahNumber:", surahNumber);
     if (surahNumber) {
       // تحميل متوازي للبيانات
       Promise.all([fetchSurahData(), loadFavorites(), loadBookmark()]).catch(
@@ -70,10 +81,22 @@ export default function SurahScreen() {
           console.error("Error loading surah data:", error);
         }
       );
-    } else {
-      console.log("No surahNumber provided");
     }
   }, [surahNumber]);
+
+  // Set initial listPage based on bookmark when both surah data and bookmark are loaded
+  useEffect(() => {
+    if (surahData && bookmark && !isInlineMode) {
+      // Load enough ayahs to reach the bookmarked ayah + some buffer
+      const requiredAyahs = Math.min(bookmark + 10, surahData.ayahs.length);
+      setListPage(requiredAyahs);
+      console.log(
+        `Loading ${requiredAyahs} ayahs to reach bookmark at ayah ${bookmark}`
+      );
+    }
+  }, [surahData, bookmark, isInlineMode]);
+
+  // Remove automatic preloading to keep page lightweight
 
   useEffect(() => {
     const loadViewMode = async () => {
@@ -87,20 +110,6 @@ export default function SurahScreen() {
       }
     };
     loadViewMode();
-  }, []);
-
-  useEffect(() => {
-    const maybeShowTip = async () => {
-      try {
-        const shown = await AsyncStorage.getItem(VIEW_MODE_TIP_KEY);
-        if (!shown) {
-          setShowViewModeTip(true);
-        }
-      } catch (e) {
-        // ignore
-      }
-    };
-    maybeShowTip();
   }, []);
 
   const loadFavorites = async () => {
@@ -181,6 +190,8 @@ export default function SurahScreen() {
     }
   };
 
+  // Removed loadTargetAyah function since all items are now loaded at once
+
   const goToBookmark = () => {
     if (bookmark) {
       scrollToAyah(bookmark);
@@ -242,12 +253,8 @@ export default function SurahScreen() {
       setLoading(true);
       setError(null);
 
-      console.log("Loading surah number:", surahNumber);
-
       // إضافة تحسين للأداء - تحميل تدريجي
       const response = await getSurahByNumber(Number(surahNumber));
-
-      console.log("Surah data loaded:", response.data.data);
 
       // تحديث البيانات فوراً
       setSurahData(response.data.data);
@@ -310,7 +317,7 @@ export default function SurahScreen() {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollTo({
         y: calculatedPosition,
-        animated: true,
+        animated: true, // Restore smooth animation
       });
     }
   };
@@ -337,346 +344,182 @@ export default function SurahScreen() {
 
   if (loading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 20,
-          backgroundColor: color.background,
-        }}
-      >
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={color.primary} />
-        <Text
-          style={{
-            fontSize: 16,
-            fontFamily: FontFamily.medium,
-            textAlign: "center",
-            marginTop: 16,
-            color: color.text,
-          }}
-        >
-          جاري تحميل السورة...
-        </Text>
+        <Text style={styles.loadingText}>جاري تحميل السورة...</Text>
       </View>
     );
   }
 
   if (error || !surahData) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 40,
-          backgroundColor: color.background,
-        }}
-      >
+      <View style={styles.errorContainer}>
         <FontAwesome5
           name="exclamation-triangle"
           size={48}
           color={color.text}
         />
-        <Text
-          style={{
-            fontSize: 18,
-            fontFamily: FontFamily.medium,
-            textAlign: "center",
-            marginTop: 16,
-            marginBottom: 24,
-            color: color.text,
-          }}
-        >
+        <Text style={styles.errorText}>
           {error || "لم يتم العثور على السورة"}
         </Text>
-        <TouchableOpacity
-          style={{
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderRadius: 8,
-            backgroundColor: color.primary,
-          }}
-          onPress={fetchSurahData}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: FontFamily.regular,
-              color: color.white,
-            }}
-          >
-            إعادة المحاولة
-          </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchSurahData}>
+          <Text style={styles.retryButtonText}>إعادة المحاولة</Text>
         </TouchableOpacity>
       </View>
     );
   }
+  const btnsBackgroundColors = color.bg20;
+  const btnsIconsColors = color.darkText;
 
-  return (
-    <View
-      style={{ flex: 1, backgroundColor: color.background, paddingTop: 32 }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 20,
-          borderBottomWidth: 0,
-          backgroundColor: color.background,
-        }}
-      >
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <TouchableOpacity
-            style={{
-              position: "absolute",
-              left: 4,
-              top: 10,
-              padding: 12,
-              marginRight: 16,
-              borderRadius: 8,
-              backgroundColor: "rgba(0,0,0,0.05)",
-            }}
-            onPress={() => router.back()}
-          >
-            <FontAwesome5 name="arrow-right" size={20} color={color.primary} />
-          </TouchableOpacity>
+  const handleMainScroll = (event: any) => {
+    if (isInlineMode) return; // Only handle scroll for list mode
 
-          {bookmark && (
-            <TouchableOpacity
-              style={{
-                position: "absolute",
-                right: 4,
-                top: 10,
-                padding: 12,
-                borderRadius: 8,
-                backgroundColor: isInlineMode
-                  ? color.focusColor
-                  : color.primary,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 6,
-              }}
-              onPress={() => {
-                if (isInlineMode) return;
-                goToBookmark();
-              }}
-            >
-              <FontAwesome5 name="bookmark" size={16} color={color.white} />
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontFamily: FontFamily.medium,
-                  color: color.white,
-                }}
-              >
-                آية {toArabicDigits(bookmark)}
-              </Text>
-            </TouchableOpacity>
-          )}
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const isCloseToBottom =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
 
-     
-          <TouchableOpacity
-            style={{
-              position: "absolute",
-              right: bookmark ? 72 : 4,
-              top: 10,
-              padding: 12,
-              borderRadius: 8,
-              backgroundColor: "rgba(0,0,0,0.05)",
-            }}
-            onPress={() => {
-              setIsSwitchingView(true);
-              setTimeout(() => {
-                setIsInlineMode((prev) => {
-                  const next = !prev;
-                  // persist preference
-                  AsyncStorage.setItem(VIEW_MODE_KEY, String(next)).catch(
-                    () => {}
-                  );
-                  return next;
-                });
-                setIsSwitchingView(false);
-              }, 250);
-            }}
-          >
-            <FontAwesome5
-              name={isInlineMode ? "list-ul" : "align-right"}
-              size={24}
-              color={color.primary}
-            />
-          </TouchableOpacity>
-
-          <Text
-            style={{
-              fontSize: 22,
-              fontFamily: FontFamily.quranBold,
-              textAlign: "center",
-              marginBottom: 6,
-              color: color.darkText,
-            }}
-          >
-            {surahData.name}
-          </Text>
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: FontFamily.regular,
-              textAlign: "center",
-              opacity: 0.9,
-              marginBottom: 4,
-
-              color: `${color.text20}`,
-            }}
-          >
-            {surahData.englishName}
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              fontFamily: FontFamily.regular,
-              textAlign: "center",
-              opacity: 0.9,
-              color: `${color.text20}`,
-            }}
-          >
-            {toArabicDigits(surahData.numberOfAyahs)} آية •{" "}
-            {surahData.revelationType === "Meccan" ? "مكية" : "مدنية"}
-          </Text>
+    if (isCloseToBottom && surahData && listPage < surahData.ayahs.length) {
+      console.log("Loading more ayahs from main scroll...");
+      setListPage((prevPage) =>
+        Math.min(prevPage + 10, surahData.ayahs.length)
+      );
+    }
+  };
+  const renderContent = () => {
+    if (isSwitchingView) {
+      return (
+        <View style={styles.switchingViewContainer}>
+          <ActivityIndicator size="large" color={color.primary} />
         </View>
+      );
+    }
+
+    if (isInlineMode) {
+      return (
+        <InlineAyahView
+          ayahs={surahData.ayahs}
+          bookmark={bookmark}
+          onAyahPress={handleAyahPress}
+          onToggleBookmark={toggleBookmark}
+          toArabicDigits={toArabicDigits}
+          color={color}
+        />
+      );
+    }
+
+    return (
+      <ListAyahView
+        ayahs={surahData.ayahs.slice(0, listPage)}
+        bookmark={bookmark}
+        onAyahPress={handleAyahPress}
+        onToggleBookmark={toggleBookmark}
+        renderAyah={renderAyah}
+      />
+    );
+  };
+
+  const renderBismillah = () => {
+    if (surahData.number === 9 || surahData.number === 1) return null;
+    return (
+      <View style={styles.bismillahContainer}>
+        <Text style={styles.bismillahText}>
+          بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ
+        </Text>
       </View>
-
-      <ScrollView
-        ref={scrollViewRef}
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-      >
-        {/* Bismillah section - skip for Surah At-Tawbah (number 9) */}
-        {surahData.number !== 9 && surahData.number !== 1 && (
-          <View
-            style={{
-              alignItems: "center",
-
-              marginBottom: 20,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 24,
-                fontFamily: FontFamily.quranBold,
-                color: color.primary,
-                textAlign: "center",
-              }}
-            >
-              بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ
+    );
+  };
+  return (
+    <View style={styles.container}>
+      <FontSizePopup
+        visible={showFontSizePopup}
+        onClose={() => setShowFontSizePopup(false)}
+      />
+      <GoBack style={styles.goBackButton} />
+      <View style={styles.headerContainer}>
+        <View style={styles.headerContent}>
+          <View style={styles.surahInfoContainer}>
+            <Text style={styles.surahName}>{surahData.name}</Text>
+            <Text style={styles.surahEnglishName}>{surahData.englishName}</Text>
+            <Text style={styles.surahDetails}>
+              {toArabicDigits(surahData.numberOfAyahs)} آية •{" "}
+              {surahData.revelationType === "Meccan" ? "مكية" : "مدنية"}
             </Text>
           </View>
-        )}
+          <View style={styles.actionButtonsContainer}>
+            {bookmark && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  if (isInlineMode) return;
+                  goToBookmark();
+                }}
+              >
+                <FontAwesome5
+                  name="bookmark"
+                  size={16}
+                  color={btnsIconsColors}
+                />
+              </TouchableOpacity>
+            )}
 
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => {
+                setIsSwitchingView(true);
+                setTimeout(() => {
+                  setIsInlineMode((prev) => {
+                    const next = !prev;
+                    // persist preference
+                    AsyncStorage.setItem(VIEW_MODE_KEY, String(next)).catch(
+                      () => {}
+                    );
+                    return next;
+                  });
+                  setIsSwitchingView(false);
+                }, 0);
+              }}
+            >
+              <FontAwesome5
+                name={isInlineMode ? "list-ul" : "align-right"}
+                size={16}
+                color={btnsIconsColors}
+              />
+            </TouchableOpacity>
+
+            {/* Font Size Button */}
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => setShowFontSizePopup(true)}
+            >
+              <FontAwesome5
+                name="text-height"
+                size={16}
+                color={btnsIconsColors}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollViewContent}
+        scrollEventThrottle={16}
+        onScroll={handleMainScroll}
+        onMomentumScrollEnd={handleMainScroll}
+      >
+        {renderBismillah()}
         <View
-          style={{
-            backgroundColor: isInlineMode ? color.bg20 : "transparent",
-            flexDirection: "column",
-            paddingVertical: 8,
-            paddingHorizontal: 8,
-            borderRadius: 16,
-            overflow: "hidden",
-          }}
+          style={
+            isInlineMode && !isSwitchingView
+              ? styles.contentContainer
+              : styles.contentContainerTransparent
+          }
         >
-          {isSwitchingView ? (
-            <View
-              style={{
-                flex: 1,
-                paddingVertical: 40,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ActivityIndicator size="large" color={color.primary} />
-            </View>
-          ) : isInlineMode ? (
-            <Text
-              style={{
-                fontSize: 24,
-                fontFamily: FontFamily.quran,
-                color: color.darkText,
-
-                writingDirection: "rtl",
-              }}
-            >
-              {surahData.ayahs.map((ayah, index) => {
-                const cleanText =
-                  index === 0
-                    ? ayah.text
-                        .replace("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ ", "")
-                        .trim()
-                    : ayah.text;
-                const isThisBookmarked = bookmark === ayah.numberInSurah;
-                return (
-                  <Text
-                    key={ayah.numberInSurah}
-                    onPress={() =>
-                      handleAyahPress({
-                        numberInSurah: ayah.numberInSurah,
-                        text: cleanText,
-                        translation: ayah.translation,
-                      })
-                    }
-                    onLongPress={() =>
-                      handleAyahPress({
-                        numberInSurah: ayah.numberInSurah,
-                        text: cleanText,
-                        translation: ayah.translation,
-                      })
-                    }
-                    style={{
-                      backgroundColor: isThisBookmarked
-                        ? color.primary20
-                        : "transparent",
-                      borderRadius: 10,
-                      paddingHorizontal: 4,
-                      paddingVertical: 2,
-                      textAlign: "center",
-                    }}
-                  >
-                    {cleanText}
-                    <Text
-                      onPress={() => toggleBookmark(ayah.numberInSurah)}
-                      style={{
-                        position: "relative",
-                        fontFamily: FontFamily.bold,
-                        fontSize: 19,
-                        color: color.primary,
-                      }}
-                    >
-                      {"  "} ﴿ {toArabicDigits(ayah.numberInSurah)} ﴾ {"  "}
-                    </Text>
-                  </Text>
-                );
-              })}
-            </Text>
-          ) : (
-            <View>
-              {surahData.ayahs.map((ayah, index) => {
-                const cleanText =
-                  index === 0
-                    ? ayah.text
-                        .replace("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَـٰنِ ٱلرَّحِیمِ ", "")
-                        .trim()
-                    : ayah.text;
-                const updatedAyah = { ...ayah, text: cleanText };
-                return (
-                  <View key={ayah.numberInSurah}>
-                    {renderAyah(updatedAyah, index + 1)}
-                  </View>
-                );
-              })}
-            </View>
-          )}
+          {renderContent()}
         </View>
       </ScrollView>
-
       <AyahModal
         visible={showAyahModal}
         onClose={() => setShowAyahModal(false)}
@@ -691,97 +534,215 @@ export default function SurahScreen() {
           }
         }}
       />
-
       {/* One-time tip modal */}
-      <Modal
-        visible={showViewModeTip}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowViewModeTip(false)}
-      >
-        <Pressable
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          onPress={() => setShowViewModeTip(false)}
-        >
-          <View
-            style={{
-              backgroundColor: color.background,
-              borderRadius: 16,
-              padding: 20,
-              margin: 20,
-              minWidth: "85%",
-              maxWidth: "100%",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 18,
-                fontFamily: FontFamily.bold,
-                color: color.darkText,
-                textAlign: "center",
-                marginBottom: 8,
-              }}
-            >
-              نصيحة سريعة
-            </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: FontFamily.regular,
-                color: color.text,
-                textAlign: "center",
-                opacity: 0.85,
-                marginBottom: 16,
-              }}
-            >
-              يمكنك تغيير وضع القراءة بين عرض متجاور أو قائمة من زر التبديل في
-              الأعلى.
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  backgroundColor: color.primary,
-                  paddingHorizontal: 18,
-                  paddingVertical: 10,
-                  borderRadius: 12,
-                  width: "50%",
-                }}
-                onPress={async () => {
-                  setShowViewModeTip(false);
-                  try {
-                    await AsyncStorage.setItem(VIEW_MODE_TIP_KEY, "true");
-                  } catch (e) {
-                    // ignore
-                  }
-                }}
-              >
-                <Text
-                  style={{
-                    textAlign: "center",
-                    color: color.white,
-                    fontFamily: FontFamily.medium,
-                    fontSize: 14,
-                  }}
-                >
-                  فهمت
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Pressable>
-      </Modal>
+      <OneTimeTip
+        tipKey="quran_view_mode_tip_shown"
+        title="نصائح مهمة"
+        description={`1. يمكنك تغيير وضع القراءة بين عرض متجاور أو قائمة من زر التبديل في الأعلى
+2.  الان يمكنك تغيير حجم الخط من زر النص العلوي `}
+        color={color}
+      />
     </View>
+  );
+}
+
+const createStyles = (color: any, fontSize: number) =>
+  StyleSheet.create({
+    // Main container styles
+    container: {
+      flex: 1,
+      backgroundColor: color.background,
+      paddingTop: 32,
+    },
+
+    // Loading screen styles
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+      backgroundColor: color.background,
+    },
+    loadingText: {
+      fontSize: 16,
+      fontFamily: FontFamily.medium,
+      textAlign: "center",
+      marginTop: 16,
+      color: color.text,
+    },
+
+    // Error screen styles
+    errorContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 40,
+      backgroundColor: color.background,
+    },
+    errorText: {
+      fontSize: 18,
+      fontFamily: FontFamily.medium,
+      textAlign: "center",
+      marginTop: 16,
+      marginBottom: 24,
+      color: color.text,
+    },
+    retryButton: {
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 8,
+      backgroundColor: color.primary,
+    },
+    retryButtonText: {
+      fontSize: 16,
+      fontFamily: FontFamily.regular,
+      color: color.white,
+    },
+
+    // GoBack button styles
+    goBackButton: {
+      position: "absolute",
+      top: 65,
+      left: 20,
+      zIndex: 1000,
+    },
+
+    // Header styles
+    headerContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 20,
+      borderBottomWidth: 0,
+      backgroundColor: color.background,
+    },
+    headerContent: {
+      flex: 1,
+      gap: 16,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    surahInfoContainer: {
+      alignItems: "center",
+    },
+    surahName: {
+      fontSize: 22,
+      fontFamily: FontFamily.quranBold,
+      textAlign: "center",
+      marginBottom: 6,
+      color: color.darkText,
+    },
+    surahEnglishName: {
+      fontSize: 16,
+      fontFamily: FontFamily.regular,
+      textAlign: "center",
+      opacity: 0.9,
+      marginBottom: 4,
+      color: color.text20,
+    },
+    surahDetails: {
+      fontSize: 14,
+      fontFamily: FontFamily.regular,
+      textAlign: "center",
+      opacity: 0.9,
+      color: color.text20,
+    },
+
+    // Action buttons container
+    actionButtonsContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 16,
+      backgroundColor: color.background,
+    },
+    actionButton: {
+      width: 40,
+      height: 40,
+      justifyContent: "center",
+      alignItems: "center",
+      borderRadius: 8,
+      backgroundColor: color.bg20,
+    },
+
+    // ScrollView styles
+    scrollView: {
+      flex: 1,
+    },
+    scrollViewContent: {
+      padding: 16,
+      paddingBottom: 40,
+    },
+
+    // Bismillah styles
+    bismillahContainer: {
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    bismillahText: {
+      fontSize: fontSize + 4,
+      fontFamily: FontFamily.quranBold,
+      color: color.primary,
+      textAlign: "center",
+    },
+
+    // Content container styles
+    contentContainer: {
+      backgroundColor: color.bg20,
+      flexDirection: "column",
+      paddingVertical: 8,
+      paddingHorizontal: 8,
+      borderRadius: 16,
+      overflow: "hidden",
+    },
+    contentContainerTransparent: {
+      backgroundColor: "transparent",
+      flexDirection: "column",
+      paddingVertical: 8,
+      paddingHorizontal: 8,
+      borderRadius: 16,
+      overflow: "hidden",
+    },
+
+    // Switching view styles
+    switchingViewContainer: {
+      flex: 1,
+      paddingVertical: 40,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    // Inline mode styles
+    inlineText: {
+      fontSize: fontSize,
+      fontFamily: FontFamily.quran,
+      color: color.darkText,
+      writingDirection: "rtl",
+    },
+    inlineAyahText: {
+      backgroundColor: "transparent",
+      borderRadius: 10,
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+      textAlign: "center",
+    },
+    inlineAyahTextBookmarked: {
+      backgroundColor: color.primary20,
+      borderRadius: 10,
+      paddingHorizontal: 4,
+      paddingVertical: 2,
+      textAlign: "center",
+    },
+    inlineAyahNumber: {
+      position: "relative",
+      fontFamily: FontFamily.bold,
+      fontSize: fontSize - 1,
+      color: color.primary,
+    },
+  });
+
+export default function SurahScreen() {
+  return (
+    <FontSizeProvider>
+      <SurahScreenContent />
+    </FontSizeProvider>
   );
 }

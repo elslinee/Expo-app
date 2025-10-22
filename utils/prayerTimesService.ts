@@ -368,9 +368,13 @@ class PrayerTimesService {
         );
         return;
       }
+
+      // Check if we already have location permission without requesting it
       const { status } = await Location.getForegroundPermissionsAsync();
       if (status !== "granted") {
-        console.warn("Location permission denied for monitoring");
+        console.warn(
+          "Location permission not granted, skipping location monitoring"
+        );
         return;
       }
 

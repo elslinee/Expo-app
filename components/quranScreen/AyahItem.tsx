@@ -1,10 +1,11 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, memo, useEffect } from "react";
 import { View, Text, TouchableOpacity, Animated, Easing } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { FontFamily } from "@/constants/FontFamily";
+import { useFontSize } from "@/context/FontSizeContext";
 
 interface Ayah {
   numberInSurah: number;
@@ -19,7 +20,7 @@ interface AyahItemProps {
   onToggleBookmark?: (ayahNumber: number) => void;
 }
 
-export default function AyahItem({
+const AyahItem = memo(function AyahItem({
   ayah,
   onPress,
   isBookmarked = false,
@@ -27,8 +28,16 @@ export default function AyahItem({
 }: AyahItemProps) {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
+  const { fontSize } = useFontSize();
   const [showCopied, setShowCopied] = useState(false);
   const copiedAnim = useRef(new Animated.Value(0)).current;
+
+  // Cleanup animation on unmount
+  useEffect(() => {
+    return () => {
+      copiedAnim.stopAnimation();
+    };
+  }, [copiedAnim]);
 
   const toArabicDigits = (value: number | string) => {
     const str = String(value);
@@ -112,7 +121,7 @@ export default function AyahItem({
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                fontSize: 18,
+                fontSize: fontSize - 2,
 
                 fontFamily: FontFamily.bold,
                 color: color.primary,
@@ -124,7 +133,7 @@ export default function AyahItem({
 
           <Text
             style={{
-              fontSize: 19,
+              fontSize: fontSize,
               fontFamily: FontFamily.quran,
               flex: 1,
               color: color.darkText,
@@ -209,4 +218,6 @@ export default function AyahItem({
       )}
     </View>
   );
-}
+});
+
+export default AyahItem;

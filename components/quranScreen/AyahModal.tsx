@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { router } from "expo-router";
 
 interface Ayah {
   numberInSurah: number;
@@ -31,21 +32,25 @@ interface AyahModalProps {
   onClose: () => void;
   ayah: Ayah | FavoriteAyah | null;
   surahName?: string;
+  surahNumber?: number;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onRemoveFromFavorites?: () => void;
   showRemoveButton?: boolean;
+  showGoToSurah?: boolean;
 }
 
-export default function AyahModal({
+function AyahModal({
   visible,
   onClose,
   ayah,
   surahName,
+  surahNumber,
   isFavorite = false,
   onToggleFavorite,
   onRemoveFromFavorites,
   showRemoveButton = false,
+  showGoToSurah = false,
 }: AyahModalProps) {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
@@ -85,7 +90,24 @@ export default function AyahModal({
   };
 
   const ayahInfo = getAyahInfo();
+  const goToSurah = () => {
+    if (!ayah) return;
 
+    let targetSurahNumber: number;
+    if ("surahNumber" in ayah) {
+      // FavoriteAyah type - has surahNumber property
+      targetSurahNumber = ayah.surahNumber;
+    } else {
+      // Ayah type - use surahNumber prop
+      if (!surahNumber) {
+        console.warn("Surah number not provided for regular Ayah type");
+        return;
+      }
+      targetSurahNumber = surahNumber;
+    }
+
+    router.push(`/quran/${targetSurahNumber}`);
+  };
   return (
     <Modal
       visible={visible}
@@ -147,52 +169,29 @@ export default function AyahModal({
           </Text>
 
           {/* Action Buttons */}
+
           <View
             style={{
-              flexDirection: "row",
+              flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
               gap: 10,
             }}
           >
-            {/* Share Button */}
-            <TouchableOpacity
+            <View
               style={{
                 flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: color.primary,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-                borderRadius: 20,
-                width: "50%",
-
                 justifyContent: "center",
-              }}
-              onPress={() => {
-                handleShare();
-                onClose();
+                alignItems: "center",
+                gap: 10,
               }}
             >
-              <FontAwesome5 name="share" size={13} color={color.white} />
-              <Text
-                style={{
-                  color: color.white,
-                  fontFamily: FontFamily.medium,
-                  marginLeft: 8,
-                  fontSize: 11,
-                }}
-              >
-                مشاركة
-              </Text>
-            </TouchableOpacity>
-
-            {/* Favorite/Remove Button */}
-            {showRemoveButton ? (
+              {/* Share Button */}
               <TouchableOpacity
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "#ff4444",
+                  backgroundColor: color.primary,
                   paddingHorizontal: 16,
                   paddingVertical: 10,
                   borderRadius: 20,
@@ -201,17 +200,11 @@ export default function AyahModal({
                   justifyContent: "center",
                 }}
                 onPress={() => {
-                  if (onRemoveFromFavorites) {
-                    onRemoveFromFavorites();
-                  }
+                  handleShare();
                   onClose();
                 }}
               >
-                <FontAwesome5
-                  name="heart-broken"
-                  size={13}
-                  color={color.white}
-                />
+                <FontAwesome5 name="share" size={13} color={color.white} />
                 <Text
                   style={{
                     color: color.white,
@@ -220,46 +213,117 @@ export default function AyahModal({
                     fontSize: 11,
                   }}
                 >
-                  إزالة
+                  مشاركة
                 </Text>
               </TouchableOpacity>
-            ) : (
+
+              {/* Favorite/Remove Button */}
+              {showRemoveButton ? (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: "#ff4444",
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 20,
+                    width: "50%",
+
+                    justifyContent: "center",
+                  }}
+                  onPress={() => {
+                    if (onRemoveFromFavorites) {
+                      onRemoveFromFavorites();
+                    }
+                    onClose();
+                  }}
+                >
+                  <FontAwesome5
+                    name="heart-broken"
+                    size={13}
+                    color={color.white}
+                  />
+                  <Text
+                    style={{
+                      color: color.white,
+                      fontFamily: FontFamily.medium,
+                      marginLeft: 8,
+                      fontSize: 11,
+                    }}
+                  >
+                    إزالة
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: isFavorite
+                      ? color.primary
+                      : color.primary20,
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 20,
+                    width: "50%",
+                    marginHorizontal: 4,
+                    justifyContent: "center",
+                  }}
+                  onPress={() => {
+                    if (onToggleFavorite) {
+                      onToggleFavorite();
+                    }
+                  }}
+                >
+                  <FontAwesome6
+                    name={isFavorite ? "heart-circle-check" : "heart"}
+                    size={13}
+                    color={isFavorite ? color.white : color.text}
+                  />
+                  <Text
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+
+                      color: isFavorite ? color.white : color.text,
+                      fontFamily: FontFamily.medium,
+                      marginLeft: 8,
+                      fontSize: 11,
+                    }}
+                  >
+                    {isFavorite ? "مفضلة" : "إضافة للمفضلة"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            {showGoToSurah && (
               <TouchableOpacity
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: isFavorite ? color.primary : color.primary20,
+                  backgroundColor: color.bg20,
                   paddingHorizontal: 16,
                   paddingVertical: 10,
                   borderRadius: 20,
-                  width: "50%",
+                  width: "100%",
                   marginHorizontal: 4,
                   justifyContent: "center",
                 }}
                 onPress={() => {
-                  if (onToggleFavorite) {
-                    onToggleFavorite();
-                  }
+                  goToSurah();
                 }}
               >
-                <FontAwesome6
-                  name={isFavorite ? "heart-circle-check" : "heart"}
-                  size={13}
-                  color={isFavorite ? color.white : color.text}
-                />
                 <Text
                   style={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-
-                    color: isFavorite ? color.white : color.text,
+                    color: color.text,
                     fontFamily: FontFamily.medium,
-                    marginLeft: 8,
+                    marginRight: 8,
                     fontSize: 11,
                   }}
                 >
-                  {isFavorite ? "مفضلة" : "إضافة للمفضلة"}
+                  الذهاب للسورة
                 </Text>
+                <FontAwesome5 name="arrow-right" size={14} color={color.text} />
               </TouchableOpacity>
             )}
           </View>
@@ -268,3 +332,5 @@ export default function AyahModal({
     </Modal>
   );
 }
+
+export default memo(AyahModal);

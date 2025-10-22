@@ -2,7 +2,7 @@
   "expo": {
     "name": "عين",
     "slug": "3een",
-    "version": "1.0.0",
+    "version": "0.0.5",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "scheme": "een",
