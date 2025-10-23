@@ -492,7 +492,19 @@ export default function AzkarCard({
         {/* Action Buttons and Counter */}
         <View style={styles.actionsRow}>
           {/* Counter Badge */}
-          {parseInt(zikr.count) > 1 && (
+          {isCompleted ? (
+            <TouchableOpacity
+              onPress={resetCount}
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: color.primary20,
+                },
+              ]}
+            >
+              <FontAwesome5 name="redo" size={16} color={color.primary} />
+            </TouchableOpacity>
+          ) : parseInt(zikr.count) > 1 ? (
             <View
               style={[
                 styles.counterBadge,
@@ -514,24 +526,10 @@ export default function AzkarCard({
                 {zikr.count}×
               </Text>
             </View>
-          )}
+          ) : null}
 
           {/* Action Buttons */}
           <View style={styles.actionsContainer}>
-            {isCompleted && (
-              <TouchableOpacity
-                onPress={resetCount}
-                style={[
-                  styles.actionBtn,
-                  {
-                    backgroundColor: color.primary20,
-                  },
-                ]}
-              >
-                <FontAwesome5 name="redo" size={16} color={color.primary} />
-              </TouchableOpacity>
-            )}
-
             <TouchableOpacity
               onPress={handleCopy}
               style={[
