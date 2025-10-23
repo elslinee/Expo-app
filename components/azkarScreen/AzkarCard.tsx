@@ -491,50 +491,54 @@ export default function AzkarCard({
 
         {/* Action Buttons and Counter */}
         <View style={styles.actionsRow}>
-          {/* Counter Badge */}
-          {isCompleted ? (
-            <TouchableOpacity
-              onPress={resetCount}
-              style={[
-                styles.actionBtn,
-                {
-                  backgroundColor: color.primary20,
-                },
-              ]}
-            >
-              <FontAwesome5 name="redo" size={16} color={color.primary} />
-            </TouchableOpacity>
-          ) : parseInt(zikr.count) > 1 ? (
-            <View
-              style={[
-                styles.counterBadge,
-                {
-                  backgroundColor: isCompleted
-                    ? color.primary
-                    : color.primary20,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.counterBadgeText,
-                  {
-                    color: isCompleted ? color.white : color.primary,
-                  },
-                ]}
-              >
-                {zikr.count}×
-              </Text>
-            </View>
-          ) : null}
+          {/* Left side - Counter/Reset */}
 
-          {/* Action Buttons */}
+          {/* Right side - Action buttons */}
           <View style={styles.actionsContainer}>
+            <View style={styles.leftActions}>
+              {isCompleted ? (
+                <TouchableOpacity
+                  onPress={resetCount}
+                  style={[
+                    styles.actionBtn,
+                    {
+                      backgroundColor: color.primary20,
+                    },
+                  ]}
+                >
+                  <FontAwesome5 name="redo" size={16} color={color.primary} />
+                </TouchableOpacity>
+              ) : parseInt(zikr.count) > 1 ? (
+                <View
+                  style={[
+                    styles.actionBtn,
+                    styles.counterBadge,
+                    {
+                      backgroundColor: isCompleted
+                        ? color.primary
+                        : color.primary20,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.counterBadgeText,
+                      {
+                        color: isCompleted ? color.white : color.primary,
+                      },
+                    ]}
+                  >
+                    {zikr.count}×
+                  </Text>
+                </View>
+              ) : null}
+            </View>
             <TouchableOpacity
               onPress={handleCopy}
               style={[
                 styles.actionBtn,
                 {
+                  height: 46,
                   backgroundColor: `${color.text20}22`,
                 },
               ]}
@@ -547,6 +551,7 @@ export default function AzkarCard({
               style={[
                 styles.actionBtn,
                 {
+                  height: 46,
                   backgroundColor: `${color.text20}22`,
                 },
               ]}
@@ -560,18 +565,19 @@ export default function AzkarCard({
                 styles.actionBtn,
                 styles.actionBtnPrimary,
                 {
+                  height: 46,
                   backgroundColor: color.primary,
                 },
               ]}
             >
               <Text
                 style={{
-                  fontSize: 14,
+                  fontSize: 13,
                   fontFamily: FontFamily.bold,
                   color: color.white,
                 }}
               >
-                اضافة للتسبيح
+                اضف للتسبيح
               </Text>
             </TouchableOpacity>
           </View>
@@ -981,12 +987,14 @@ const styles = StyleSheet.create<any>({
     alignItems: "center",
     justifyContent: "space-between",
     marginTop: 12,
+    flexWrap: "wrap",
+    gap: 8,
   },
   counterBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 8,
-    minWidth: 50,
+
     alignItems: "center",
     justifyContent: "center",
   },
@@ -994,11 +1002,18 @@ const styles = StyleSheet.create<any>({
     fontSize: 16,
     fontFamily: FontFamily.bold,
   },
+  leftActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   actionsContainer: {
     flexDirection: "row",
     gap: 8,
+    flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
     flex: 1,
-    justifyContent: "flex-end",
   },
   actionBtn: {
     borderRadius: 8,
@@ -1006,8 +1021,15 @@ const styles = StyleSheet.create<any>({
     paddingHorizontal: 14,
     justifyContent: "center",
     alignItems: "center",
+    minWidth: 40,
+    flex: 1,
   },
-  actionBtnPrimary: {},
+  actionBtnPrimary: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    minWidth: 100,
+    width: "100%",
+  },
   copiedToast: {
     position: "absolute",
     bottom: 16,

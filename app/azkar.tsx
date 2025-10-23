@@ -230,6 +230,7 @@ export default function AzkarScreen() {
                   styles.card,
                   {
                     width: CARD_SIZE,
+
                     backgroundColor: color.bg20,
                     borderColor: color.border,
                   },
@@ -256,8 +257,11 @@ export default function AzkarScreen() {
                   )}
                 </View>
                 <Text
-                  style={[styles.cardTitle, { color: color.text }]}
-                  numberOfLines={2}
+                  style={[
+                    styles.cardTitle,
+                    { minHeight: 40, color: color.text },
+                  ]}
+                  numberOfLines={1}
                 >
                   {category.title}
                 </Text>

@@ -140,6 +140,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         } else {
           // لا نطلب الصلاحية تلقائياً، فقط نعرض عنوان افتراضي
           setAddress("الموقع غير متاح");
+          setErrorMsg("اضغط لتفعيل الموقع");
           setIsLoading(false);
           return;
         }
@@ -148,6 +149,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
       if (existingStatus !== "granted") {
         // لا نطلب الصلاحية تلقائياً، فقط نعرض عنوان افتراضي
         setAddress("الموقع غير متاح");
+        setErrorMsg("اضغط لتفعيل الموقع");
         setIsLoading(false);
         return;
       }
@@ -239,6 +241,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         // إذا لم تكن هناك بيانات محفوظة، لا تطلب الموقع تلقائياً
         // فقط اعرض عنوان افتراضي
         setAddress("الموقع غير متاح");
+        setErrorMsg("اضغط لتفعيل الموقع");
         setIsLoading(false);
       }
     };
