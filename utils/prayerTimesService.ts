@@ -360,6 +360,15 @@ class PrayerTimesService {
     if (this.isMonitoringLocation) return;
 
     try {
+      // Check if we have recent cached data first
+      const hasRecentData = await this.hasValidCachedData();
+      if (hasRecentData) {
+        console.log(
+          "Recent prayer times data available, skipping location monitoring"
+        );
+        return;
+      }
+
       // Check if location services are enabled
       const isLocationEnabled = await Location.hasServicesEnabledAsync();
       if (!isLocationEnabled) {
@@ -382,9 +391,9 @@ class PrayerTimesService {
 
       this.locationSubscription = await Location.watchPositionAsync(
         {
-          accuracy: Location.Accuracy.Balanced,
-          timeInterval: 30000, // Check every 30 seconds
-          distanceInterval: 1000, // Check if moved more than 1km
+          accuracy: Location.Accuracy.Lowest,
+          timeInterval: 300000, // Check every 5 minutes instead of 30 seconds
+          distanceInterval: 5000, // Check if moved more than 5km instead of 1km
         },
         (location) => {
           const newLocation = {

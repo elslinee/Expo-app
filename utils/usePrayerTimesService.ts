@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import PrayerTimesService, { PrayerTimesData } from "./prayerTimesService";
 import { useLocation } from "@/context/LocationContext";
 import * as Location from "expo-location";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Helper function to check if location permission is granted
 const hasLocationPermission = async (): Promise<boolean> => {
@@ -14,13 +15,38 @@ const hasLocationPermission = async (): Promise<boolean> => {
   }
 };
 
+// Helper function to check if we should request location
+const shouldRequestLocation = async (): Promise<boolean> => {
+  try {
+    const lastRequest = await AsyncStorage.getItem("lastPrayerLocationRequest");
+    if (!lastRequest) return true;
+
+    const lastRequestTime = parseInt(lastRequest);
+    const now = Date.now();
+    const timeDiff = now - lastRequestTime;
+
+    // Only request location if more than 1 hour has passed
+    return timeDiff > 60 * 60 * 1000;
+  } catch (error) {
+    console.warn("Error checking last location request:", error);
+    return true;
+  }
+};
+
 // Helper function to safely start location monitoring
 const safeStartLocationMonitoring = async (
   service: PrayerTimesService
 ): Promise<void> => {
   try {
     if (await hasLocationPermission()) {
-      await service.startLocationMonitoring();
+      const shouldRequest = await shouldRequestLocation();
+      if (shouldRequest) {
+        await service.startLocationMonitoring();
+        await AsyncStorage.setItem(
+          "lastPrayerLocationRequest",
+          Date.now().toString()
+        );
+      }
     }
   } catch (error) {
     console.warn("Could not start location monitoring:", error);

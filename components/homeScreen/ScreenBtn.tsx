@@ -1,4 +1,4 @@
-import { Text, Pressable, Animated, View } from "react-native";
+import { Text, Pressable, Animated, View, StyleProp } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { FontFamily } from "@/constants/FontFamily";
@@ -9,12 +9,20 @@ export default function ScreenBtn({
   title,
   onPress,
   newTab,
+  soon,
+  style,
+  iconWidth,
+  iconHeight,
 }: {
   color: any;
   Icon: any;
   title: string;
   onPress?: () => void;
   newTab?: boolean;
+  soon?: boolean;
+  style?: StyleProp<any>;
+  iconWidth?: number;
+  iconHeight?: number;
 }) {
   const [pressed, setPressed] = useState(false);
   const scale = React.useRef(new Animated.Value(1)).current;
@@ -42,18 +50,44 @@ export default function ScreenBtn({
   return (
     <Pressable
       style={{
-        flex: 1,
+        ...style,
       }}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={onPress}
     >
+      {soon && (
+        <View
+          style={{
+            position: "absolute",
+            top: -5,
+            left: -5,
+            zIndex: 10,
+            opacity: 0.8,
+            backgroundColor: color.primary,
+            paddingHorizontal: 8,
+            paddingVertical: 1,
+            borderRadius: 8,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontFamily: FontFamily.bold,
+              color: "white",
+            }}
+          >
+            قريبا
+          </Text>
+        </View>
+      )}
       <Animated.View
         style={{
           position: "relative",
           borderRadius: 16,
           borderWidth: 0,
-          minHeight: 120,
+          height: 130,
+          opacity: soon ? 0.5 : 1,
           backgroundColor: pressed ? color.primary : color.primary20,
           transform: [{ scale }],
         }}
@@ -83,10 +117,11 @@ export default function ScreenBtn({
             </Text>
           </View>
         )}
+
         <Icon
           color={pressed ? color.white : color.primary}
-          width={55}
-          height={55}
+          width={iconWidth || 55}
+          height={iconHeight || 55}
         />
         <Text
           style={{

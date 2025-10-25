@@ -7,6 +7,8 @@ import {
   FlatList,
   TextInput,
   Modal,
+  ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/context/ThemeContext";
@@ -16,6 +18,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { TasbeehIcon } from "@/constants/Icons";
 import Svg, { Path } from "react-native-svg";
 import { useRouter, useFocusEffect } from "expo-router";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 const STORAGE_KEY = "TASBEEH_LIST_V2";
 const STATS_KEY = "TASBEEH_STATS_V1";
@@ -54,6 +57,8 @@ export default function Tasbeeh() {
   const [newGoal, setNewGoal] = useState<string>("");
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [showCompletedSection, setShowCompletedSection] =
+    useState<boolean>(true);
 
   const isAddDisabled = useMemo(() => {
     const trimmedName = newName.trim();
@@ -227,6 +232,60 @@ export default function Tasbeeh() {
     }, [calculateConsecutiveDays])
   );
 
+  // Auto-reset all tasbeeh at midnight
+  useEffect(() => {
+    const checkAndResetDaily = async () => {
+      try {
+        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed: TasbeehItem[] = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            const today = new Date().toISOString().split("T")[0];
+            const needsReset = parsed.some(
+              (item) => item.lastUsedDate && item.lastUsedDate !== today
+            );
+
+            if (needsReset) {
+              const resetItems = parsed.map((item) => ({
+                ...item,
+                count: 0,
+                lastUsedDate: today,
+              }));
+
+              setItems(resetItems);
+              await AsyncStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(resetItems)
+              );
+
+              // Recalculate stats after reset
+              const totalTasbeeh = resetItems.reduce(
+                (sum, item) => sum + (item.totalCount || 0),
+                0
+              );
+              const consecutiveDays = calculateConsecutiveDays(resetItems);
+              const lastActiveDate = today;
+
+              setStats({ totalTasbeeh, consecutiveDays, lastActiveDate });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error in daily reset:", error);
+      }
+    };
+
+    // Check immediately when component mounts
+    if (hasHydrated) {
+      checkAndResetDaily();
+    }
+
+    // Set up interval to check every minute
+    const interval = setInterval(checkAndResetDaily, 60000);
+
+    return () => clearInterval(interval);
+  }, [calculateConsecutiveDays, hasHydrated]);
+
   const addTasbeeh = useCallback(() => {
     const trimmedName = newName.trim();
     const normalizedGoal = newGoal
@@ -287,6 +346,21 @@ export default function Tasbeeh() {
 
   const circleSize = 220;
 
+  // Separate completed and incomplete items
+  const { completedItems, incompleteItems } = useMemo(() => {
+    const completed = items.filter((item) => {
+      const progress =
+        item.dailyGoal > 0 ? Math.min(item.count / item.dailyGoal, 1) : 0;
+      return progress >= 1;
+    });
+    const incomplete = items.filter((item) => {
+      const progress =
+        item.dailyGoal > 0 ? Math.min(item.count / item.dailyGoal, 1) : 0;
+      return progress < 1;
+    });
+    return { completedItems: completed, incompleteItems: incomplete };
+  }, [items]);
+
   const ringStyle = useMemo<ViewStyle>(
     () => ({
       width: circleSize,
@@ -313,10 +387,13 @@ export default function Tasbeeh() {
           }
           android_ripple={{ color: themeColors.primary20 }}
           style={{
-            backgroundColor: themeColors.bg20,
+            backgroundColor: isCompleted
+              ? themeColors.focusColor + "20"
+              : themeColors.bg20,
             borderRadius: 20,
             padding: 20,
             overflow: "hidden",
+            opacity: isCompleted ? 0.7 : 1,
           }}
         >
           {/* Header */}
@@ -590,15 +667,11 @@ export default function Tasbeeh() {
                   >
                     إضافة تسبيح جديد
                   </Text>
-                  <Text
-                    style={{
-                      color: themeColors.white,
-                      fontFamily: FontFamily.black,
-                      fontSize: 20,
-                    }}
-                  >
-                    +
-                  </Text>
+                  <FontAwesome5
+                    name="plus"
+                    size={18}
+                    color={themeColors.white}
+                  />
                 </View>
               </Pressable>
             </View>
@@ -635,20 +708,86 @@ export default function Tasbeeh() {
                 </Text>
               </View>
             ) : (
-              <FlatList
-                style={{
-                  flex: 1,
-                  paddingHorizontal: 20,
-                }}
-                data={items}
-                keyExtractor={(it) => it.id}
-                renderItem={renderItem}
-                contentContainerStyle={{
-                  paddingBottom: 24,
-                  gap: 12,
-                }}
-                numColumns={1}
-              />
+              <ScrollView>
+                {incompleteItems.length > 0 && (
+                  <View
+                    style={{ flex: 1, paddingHorizontal: 20, marginTop: 10 }}
+                  >
+                    {/* Completed Items Section - Always show if exists */}
+                    {completedItems.length > 0 && (
+                      <View style={{ marginBottom: 20 }}>
+                        <TouchableOpacity
+                          onPress={() =>
+                            setShowCompletedSection(!showCompletedSection)
+                          }
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            marginBottom: 12,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: themeColors.primary,
+                              fontFamily: FontFamily.bold,
+                              fontSize: 16,
+                              flex: 1,
+                            }}
+                          >
+                            التسابيح المكتملة اليوم
+                          </Text>
+
+                          <FontAwesome5
+                            name={
+                              showCompletedSection
+                                ? "chevron-down"
+                                : "chevron-left"
+                            }
+                            size={19}
+                            color={themeColors.focusColor}
+                          />
+                        </TouchableOpacity>
+
+                        {showCompletedSection && (
+                          <FlatList
+                            data={completedItems}
+                            keyExtractor={(it) => it.id}
+                            renderItem={renderItem}
+                            contentContainerStyle={{
+                              gap: 16,
+                            }}
+                            numColumns={1}
+                            scrollEnabled={false}
+                          />
+                        )}
+                      </View>
+                    )}
+                    {completedItems.length > 0 && (
+                      <Text
+                        style={{
+                          color: themeColors.text,
+                          fontFamily: FontFamily.bold,
+                          fontSize: 16,
+                          marginBottom: 12,
+                        }}
+                      >
+                        التسابيح المتبقية
+                      </Text>
+                    )}
+                    <FlatList
+                      data={incompleteItems}
+                      keyExtractor={(it) => it.id}
+                      renderItem={renderItem}
+                      contentContainerStyle={{
+                        paddingBottom: 24,
+                        gap: 20,
+                      }}
+                      numColumns={1}
+                    />
+                  </View>
+                )}
+              </ScrollView>
             )}
 
             <Modal

@@ -502,11 +502,12 @@ export default function AzkarCard({
                   style={[
                     styles.actionBtn,
                     {
+                      height: 50,
                       backgroundColor: color.primary20,
                     },
                   ]}
                 >
-                  <FontAwesome5 name="redo" size={16} color={color.primary} />
+                  <FontAwesome5 name="redo" size={18} color={color.primary} />
                 </TouchableOpacity>
               ) : parseInt(zikr.count) > 1 ? (
                 <View
@@ -538,7 +539,7 @@ export default function AzkarCard({
               style={[
                 styles.actionBtn,
                 {
-                  height: 46,
+                  height: 50,
                   backgroundColor: `${color.text20}22`,
                 },
               ]}
@@ -551,7 +552,7 @@ export default function AzkarCard({
               style={[
                 styles.actionBtn,
                 {
-                  height: 46,
+                  height: 50,
                   backgroundColor: `${color.text20}22`,
                 },
               ]}
@@ -565,7 +566,7 @@ export default function AzkarCard({
                 styles.actionBtn,
                 styles.actionBtnPrimary,
                 {
-                  height: 46,
+                  height: 50,
                   backgroundColor: color.primary,
                 },
               ]}
@@ -1027,12 +1028,12 @@ const styles = StyleSheet.create<any>({
   actionBtnPrimary: {
     paddingVertical: 10,
     paddingHorizontal: 16,
-    minWidth: 100,
+    minWidth: 140,
     width: "100%",
   },
   copiedToast: {
     position: "absolute",
-    bottom: 16,
+    bottom: 80,
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",

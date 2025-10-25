@@ -12,6 +12,7 @@ import {
   ViewStyle,
   Animated,
   Easing,
+  Dimensions,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -51,6 +52,10 @@ export default function TasbeehDetail() {
   const confettiAnim = useRef(new Animated.Value(0)).current;
   const copiedAnim = useRef(new Animated.Value(0)).current;
   const completedDailyGoalColor = themeColors.focusColor;
+  // Get screen dimensions for responsive design
+  const screenWidth = Dimensions.get("window").width;
+  const screenHeight = Dimensions.get("window").height;
+  const isSmallScreen = screenWidth < 400 || screenHeight < 700;
 
   // Calculate progress
   const progress = useMemo(() => {
@@ -369,36 +374,43 @@ export default function TasbeehDetail() {
       style={{
         flex: 1,
         backgroundColor: themeColors.background,
-        paddingTop: 45,
+        paddingTop: 65,
       }}
     >
       <GoBack
         style={{
           position: "absolute",
           left: 20,
-          top: 55,
+          top: 70,
           zIndex: 10,
         }}
       />
       <View
         style={{
+          justifyContent: "space-between",
           flex: 1,
           padding: 20,
           backgroundColor: themeColors.background,
         }}
       >
-        <View style={{ alignItems: "center", gap: 16, paddingTop: 40 }}>
+        <View
+          style={{
+            alignItems: "center",
+            gap: 16,
+            paddingTop: 40,
+          }}
+        >
           <View style={counterCardStyle}>
             {(() => {
-              const size = 200;
-              const strokeWidth = 16;
+              const size = isSmallScreen ? 150 : 200;
+              const strokeWidth = isSmallScreen ? 10 : 16;
               const radius = (size - strokeWidth) / 2;
               const circumference = 2 * Math.PI * radius;
 
               return (
                 <View
                   style={{
-                    gap: 32,
+                    gap: isSmallScreen ? 16 : 32,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
@@ -415,10 +427,10 @@ export default function TasbeehDetail() {
                       style={{
                         color: themeColors.text,
                         fontFamily: FontFamily.black,
-                        fontSize: 20,
+                        fontSize: isSmallScreen ? 16 : 20,
                         textAlign: "center",
                       }}
-                      numberOfLines={5}
+                      numberOfLines={isSmallScreen ? 3 : 5}
                       adjustsFontSizeToFit={true}
                       minimumFontScale={0.3}
                     >
@@ -482,8 +494,8 @@ export default function TasbeehDetail() {
                               ? completedDailyGoalColor
                               : themeColors.primary,
                           fontFamily: FontFamily.black,
-                          fontSize: 64,
-                          lineHeight: 64,
+                          fontSize: isSmallScreen ? 48 : 64,
+                          lineHeight: isSmallScreen ? 48 : 64,
                         }}
                       >
                         {item.count}
@@ -494,7 +506,7 @@ export default function TasbeehDetail() {
                           opacity: 0.9,
                           color: themeColors.darkText,
                           fontFamily: FontFamily.medium,
-                          fontSize: 14,
+                          fontSize: isSmallScreen ? 12 : 14,
                         }}
                       >
                         {item.dailyGoal}
@@ -506,7 +518,7 @@ export default function TasbeehDetail() {
                       flexDirection: "row-reverse",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      gap: 12,
+                      gap: isSmallScreen ? 8 : 12,
                     }}
                   >
                     <Pressable
@@ -516,7 +528,7 @@ export default function TasbeehDetail() {
                     >
                       <View
                         style={{
-                          height: 48,
+                          height: isSmallScreen ? 36 : 48,
                           borderRadius: 99,
                           backgroundColor:
                             progress >= 1
@@ -530,7 +542,7 @@ export default function TasbeehDetail() {
                           style={{
                             color: themeColors.background,
                             fontFamily: FontFamily.bold,
-                            fontSize: 15,
+                            fontSize: isSmallScreen ? 12 : 15,
                           }}
                         >
                           تصفير
@@ -544,11 +556,9 @@ export default function TasbeehDetail() {
           </View>
         </View>
 
-        <View style={{ flex: 1 }} />
-
-        <View style={{ gap: 12, paddingBottom: 16 }}>
+        <View style={{ gap: 12, paddingBottom: 16, paddingTop: 16 }}>
           {(() => {
-            const bottomButtonSize = 180;
+            const bottomButtonSize = isSmallScreen ? 150 : 180;
             const pulseScale = pulseAnim.interpolate({
               inputRange: [0, 1],
               outputRange: [1, 1.6],

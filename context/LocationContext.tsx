@@ -39,6 +39,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
 
   const SAVED_LOCATION_KEY = "savedLocation";
   const SAVED_ADDRESS_KEY = "savedAddress";
+  const LAST_LOCATION_REQUEST_KEY = "lastLocationRequest";
 
   // Load saved location data from AsyncStorage
   const loadSavedLocationData = async () => {
@@ -70,8 +71,30 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         JSON.stringify(locationData)
       );
       await AsyncStorage.setItem(SAVED_ADDRESS_KEY, addressData);
+      await AsyncStorage.setItem(
+        LAST_LOCATION_REQUEST_KEY,
+        Date.now().toString()
+      );
     } catch (error) {
       console.error("خطأ في حفظ البيانات:", error);
+    }
+  };
+
+  // Check if we should request location (avoid too frequent requests)
+  const shouldRequestLocation = async (): Promise<boolean> => {
+    try {
+      const lastRequest = await AsyncStorage.getItem(LAST_LOCATION_REQUEST_KEY);
+      if (!lastRequest) return true;
+
+      const lastRequestTime = parseInt(lastRequest);
+      const now = Date.now();
+      const timeDiff = now - lastRequestTime;
+
+      // Only request location if more than 30 minutes have passed
+      return timeDiff > 30 * 60 * 1000;
+    } catch (error) {
+      console.error("خطأ في التحقق من آخر طلب موقع:", error);
+      return true;
     }
   };
 
@@ -86,9 +109,12 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         const savedAddress = await AsyncStorage.getItem(SAVED_ADDRESS_KEY);
 
         if (savedLocationStr && savedAddress) {
-          // البيانات محفوظة، لا نحتاج لفحص خدمات الموقع أو طلب الصلاحية
-          setIsLoading(false);
-          return;
+          // البيانات محفوظة، تحقق من آخر طلب موقع
+          const shouldRequest = await shouldRequestLocation();
+          if (!shouldRequest) {
+            setIsLoading(false);
+            return;
+          }
         }
       }
 
@@ -154,9 +180,9 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         return;
       }
 
-      // Try to get current position with a reasonable configuration
+      // Try to get current position with low accuracy to avoid high precision requests
       let location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.Lowest,
       });
       setLocation(location);
 

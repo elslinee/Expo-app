@@ -151,7 +151,7 @@ const AyahItem = memo(function AyahItem({
                 alignItems: "center",
                 borderRadius: 99,
                 backgroundColor: isBookmarked ? color.primary : "transparent",
-                borderWidth: 1,
+             
                 borderColor: isBookmarked ? color.primary : color.border,
                 marginLeft: 8,
               }}

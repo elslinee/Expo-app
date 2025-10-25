@@ -17,7 +17,9 @@
       "supportsTablet": true,
       "backgroundColor": "#FBF5EA",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": ["remote-notification"],
+        "NSLocationWhenInUseUsageDescription": "يستخدم التطبيق الموقع لتحديد أوقات الصلاة بدقة",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "يستخدم التطبيق الموقع لتحديد أوقات الصلاة بدقة"
       }
     },
     "android": {
@@ -30,7 +32,8 @@
       "supportsRtl": true,
       "notification": {
         "sound": "./assets/audios/adhanVoice.mp3"
-      }
+      },
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
     },
     "web": {
       "bundler": "metro",

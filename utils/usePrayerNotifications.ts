@@ -108,6 +108,15 @@ export default function usePrayerNotifications(
           await AsyncStorage.removeItem(IDS_KEY);
         } catch {}
 
+        // If no prayers are enabled, don't schedule any notifications
+        const hasEnabledPrayers = Object.values(include).some(
+          (enabled) => enabled === true
+        );
+        if (!hasEnabledPrayers) {
+          console.log("❌ لا توجد صلوات مفعلة - لن يتم جدولة أي إشعارات");
+          return;
+        }
+
         const nextStored: IdMap = {};
 
         for (const key of PRAYER_ORDER) {

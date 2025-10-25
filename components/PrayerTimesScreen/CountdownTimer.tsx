@@ -4,6 +4,7 @@ import { usePrayerTimes } from "@/context/PrayerTimesContext";
 import { useRealTimeCountdown } from "@/utils/useRealTimeCountdown";
 import { FontFamily } from "@/constants/FontFamily";
 import { useLocation } from "@/context/LocationContext";
+import { getHijriDateString } from "@/utils/hijriDateUtils";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 
 export default function CountdownTimer({ color }: { color: any }) {
@@ -33,8 +34,8 @@ export default function CountdownTimer({ color }: { color: any }) {
         day: "numeric",
       });
 
-      // Get Hijri date (simplified - you might want to use a proper Hijri library)
-      const hijriDate = getHijriDate(now);
+      // Get accurate Hijri date
+      const hijriDate = getHijriDateString(now);
 
       setCurrentDate({
         hijri: hijriDate,
@@ -47,50 +48,6 @@ export default function CountdownTimer({ color }: { color: any }) {
     return () => clearInterval(interval);
   }, []);
 
-  const getHijriDate = (date: Date) => {
-    // Simplified Hijri calculation - for production, use a proper library like moment-hijri
-    const hijriMonths = [
-      "محرم",
-      "صفر",
-      "ربيع الأول",
-      "ربيع الثاني",
-      "جمادى الأولى",
-      "جمادى الثانية",
-      "رجب",
-      "شعبان",
-      "رمضان",
-      "شوال",
-      "ذو القعدة",
-      "ذو الحجة",
-    ];
-
-    const hijriDays = [
-      "الأحد",
-      "الاثنين",
-      "الثلاثاء",
-      "الأربعاء",
-      "الخميس",
-      "الجمعة",
-      "السبت",
-    ];
-
-    // This is a simplified calculation - use a proper Hijri library for accuracy
-    const dayNames = [
-      "الأحد",
-      "الاثنين",
-      "الثلاثاء",
-      "الأربعاء",
-      "الخميس",
-      "الجمعة",
-      "السبت",
-    ];
-    const dayName = dayNames[date.getDay()];
-    const hijriMonth = hijriMonths[Math.floor(Math.random() * 12)]; // Simplified
-    const hijriDay = Math.floor(Math.random() * 30) + 1; // Simplified
-    const hijriYear = 1445; // Simplified
-
-    return `${dayName}، ${hijriDay} ${hijriMonth} ${hijriYear} هـ`;
-  };
   return (
     <View style={{ paddingBottom: 32 }} className="px-4 ">
       <View

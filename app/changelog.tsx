@@ -33,6 +33,90 @@ export default function ChangelogScreen() {
 
       {/* Changelog Content */}
       <View style={styles.section}>
+        {/* Version 0.6 */}
+        <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
+          <View
+            style={[
+              styles.versionHeader,
+              { borderBottomColor: color.primary + "30" },
+            ]}
+          >
+            <Text style={[styles.versionNumber, { color: color.primary }]}>
+              الإصدار 0.6
+            </Text>
+            <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
+              تحديث نظام التسابيح + تصميم متجاوب
+            </Text>
+          </View>
+
+          {/* التسابيح */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              التسابيح
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة ميزة التسابيح المكتملة مع شفافية البطاقة عند اكتمال الهدف
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إعادة تعيين تلقائي للعدادات كل يوم بعد منتصف الليل
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • شريط التقدم المرئي للأذكار مع دائرة متحركة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • زر إعادة التعيين للعدادات مع تأكيد العملية
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إصلاح موضع شريط التقدم ومشاكل العرض
+            </Text>
+          </View>
+
+          {/* واجهة المستخدم */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              واجهة المستخدم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة نظام تصميم متجاوب لجميع أحجام الشاشات
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين حجم الدائرة التقدمية حسب حجم الشاشة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين حجم النصوص والأزرار للشاشات المختلفة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين أهداف اللمس للوصولية على جميع الأجهزة
+            </Text>
+          </View>
+
+          {/* الرسوم المتحركة */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              الرسوم المتحركة والتأثيرات
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين تأثير النبض للزر الرئيسي
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسين الرسوم المتحركة لشريط التقدم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إضافة تأثيرات بصرية عند اكتمال الهدف
+            </Text>
+          </View>
+
+          {/* تحسينات عامة */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تحسينات عامة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إصلاح مشاكل تجاوز التخطيط على الشاشات الصغيرة
+            </Text>
+          </View>
+        </View>
+
         {/* Version 0.5 Beta */}
         <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
           <View

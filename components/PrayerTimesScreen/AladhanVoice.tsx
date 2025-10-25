@@ -89,6 +89,13 @@ export default function AladhanVoice({ color }: { color: any }) {
             JSON.stringify(notificationSettings)
           );
           console.log("✅ تم حفظ إعدادات الإشعارات:", notificationSettings);
+
+          // If notification is being disabled, immediately cancel all scheduled notifications
+          // to prevent old notifications from firing
+          if (!next[index].notification) {
+            await Notifications.cancelAllScheduledNotificationsAsync();
+            console.log("🗑️ تم إلغاء جميع الإشعارات المجدولة فوراً");
+          }
         } catch (e) {
           console.error("❌ فشل حفظ إعدادات الإشعارات:", e);
         }
@@ -131,6 +138,22 @@ export default function AladhanVoice({ color }: { color: any }) {
             return updatedPrayer;
           })
         );
+
+        // Check if any notifications are disabled and cancel them immediately
+        if (savedNotificationSettings) {
+          const parsedNotificationSettings = JSON.parse(
+            savedNotificationSettings
+          );
+          const hasDisabledNotifications = parsedNotificationSettings.some(
+            (enabled: boolean) => enabled === false
+          );
+
+          if (hasDisabledNotifications) {
+            // Cancel all notifications to ensure disabled ones don't fire
+            await Notifications.cancelAllScheduledNotificationsAsync();
+            console.log("🗑️ تم إلغاء الإشعارات المعطلة عند بدء التطبيق");
+          }
+        }
       } catch (error) {
         console.error("Error loading settings:", error);
       }
