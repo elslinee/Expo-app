@@ -750,16 +750,11 @@ export default function Tasbeeh() {
                         </TouchableOpacity>
 
                         {showCompletedSection && (
-                          <FlatList
-                            data={completedItems}
-                            keyExtractor={(it) => it.id}
-                            renderItem={renderItem}
-                            contentContainerStyle={{
-                              gap: 16,
-                            }}
-                            numColumns={1}
-                            scrollEnabled={false}
-                          />
+                          <View style={{ gap: 16 }}>
+                            {completedItems.map((item) => (
+                              <View key={item.id}>{renderItem({ item })}</View>
+                            ))}
+                          </View>
                         )}
                       </View>
                     )}
@@ -775,16 +770,11 @@ export default function Tasbeeh() {
                         التسابيح المتبقية
                       </Text>
                     )}
-                    <FlatList
-                      data={incompleteItems}
-                      keyExtractor={(it) => it.id}
-                      renderItem={renderItem}
-                      contentContainerStyle={{
-                        paddingBottom: 24,
-                        gap: 20,
-                      }}
-                      numColumns={1}
-                    />
+                    <View style={{ paddingBottom: 24, gap: 20 }}>
+                      {incompleteItems.map((item) => (
+                        <View key={item.id}>{renderItem({ item })}</View>
+                      ))}
+                    </View>
                   </View>
                 )}
               </ScrollView>

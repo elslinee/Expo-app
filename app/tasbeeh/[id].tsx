@@ -55,7 +55,7 @@ export default function TasbeehDetail() {
   // Get screen dimensions for responsive design
   const screenWidth = Dimensions.get("window").width;
   const screenHeight = Dimensions.get("window").height;
-  const isSmallScreen = screenWidth < 400 || screenHeight < 700;
+  const isSmallScreen = screenWidth < 300 || screenHeight < 700;
 
   // Calculate progress
   const progress = useMemo(() => {
