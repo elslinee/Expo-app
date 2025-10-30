@@ -23,53 +23,62 @@ import usePrayerNotifications from "@/utils/usePrayerNotifications";
 
 export default function AladhanVoice({ color }: { color: any }) {
   const { prayerTimes } = usePrayerTimes();
+  // Stable keys to map times and toggles
+  const PRAYER_KEYS = [
+    "Fajr",
+    "Sunrise",
+    "Dhuhr",
+    "Asr",
+    "Maghrib",
+    "Isha",
+  ] as const;
 
   const [prayers, setPrayers] = useState([
     {
       name: "الفجر",
       icon: ElfajrIcon,
-      time: formatTo12Hour(prayerTimes?.timings?.Fajr || "") || "00:00",
-      time24: prayerTimes?.timings?.Fajr || "00:00",
+      time: "00:00",
+      time24: "00:00",
       aldhan: true,
       notification: true,
     },
     {
       name: "الشروق",
       icon: ElshrokIcon,
-      time: formatTo12Hour(prayerTimes?.timings?.Sunrise || "") || "00:00",
-      time24: prayerTimes?.timings?.Sunrise || "00:00",
+      time: "00:00",
+      time24: "00:00",
       aldhan: true,
       notification: true,
     },
     {
       name: "الظهر",
       icon: EldohrIcon,
-      time: formatTo12Hour(prayerTimes?.timings?.Dhuhr || "") || "00:00",
-      time24: prayerTimes?.timings?.Dhuhr || "00:00",
+      time: "00:00",
+      time24: "00:00",
       aldhan: true,
       notification: true,
     },
     {
       name: "العصر",
       icon: El3srIcon,
-      time: formatTo12Hour(prayerTimes?.timings?.Asr || "") || "00:00",
-      time24: prayerTimes?.timings?.Asr || "00:00",
+      time: "00:00",
+      time24: "00:00",
       aldhan: true,
       notification: true,
     },
     {
       name: "المغرب",
       icon: ElmgrbIcon,
-      time: formatTo12Hour(prayerTimes?.timings?.Maghrib || "") || "00:00",
-      time24: prayerTimes?.timings?.Maghrib || "00:00",
+      time: "00:00",
+      time24: "00:00",
       aldhan: true,
       notification: true,
     },
     {
       name: "العشاء",
       icon: El3shaIcon,
-      time: formatTo12Hour(prayerTimes?.timings?.Isha || "") || "00:00",
-      time24: prayerTimes?.timings?.Isha || "00:00",
+      time: "00:00",
+      time24: "00:00",
       aldhan: true,
       notification: true,
     },
@@ -80,7 +89,7 @@ export default function AladhanVoice({ color }: { color: any }) {
         i === index ? { ...prayer, notification: !prayer.notification } : prayer
       );
 
-      // Save settings asynchronously
+      // Save settings asynchronously (scheduling handled centrally)
       const saveSettings = async () => {
         try {
           const notificationSettings = next.map((p) => p.notification);
@@ -89,13 +98,6 @@ export default function AladhanVoice({ color }: { color: any }) {
             JSON.stringify(notificationSettings)
           );
           console.log("✅ تم حفظ إعدادات الإشعارات:", notificationSettings);
-
-          // If notification is being disabled, immediately cancel all scheduled notifications
-          // to prevent old notifications from firing
-          if (!next[index].notification) {
-            await Notifications.cancelAllScheduledNotificationsAsync();
-            console.log("🗑️ تم إلغاء جميع الإشعارات المجدولة فوراً");
-          }
         } catch (e) {
           console.error("❌ فشل حفظ إعدادات الإشعارات:", e);
         }
@@ -166,18 +168,8 @@ export default function AladhanVoice({ color }: { color: any }) {
     if (prayerTimes?.timings) {
       setPrayers((prevPrayers) =>
         prevPrayers.map((prayer, index) => {
-          const prayerKeys = [
-            "Fajr",
-            "Sunrise",
-            "Dhuhr",
-            "Asr",
-            "Maghrib",
-            "Isha",
-          ];
-          const time24 =
-            prayerTimes.timings[
-              prayerKeys[index] as keyof typeof prayerTimes.timings
-            ] || "00:00";
+          const key = PRAYER_KEYS[index] as keyof typeof prayerTimes.timings;
+          const time24 = prayerTimes.timings[key] || "00:00";
           return {
             ...prayer,
             time: formatTo12Hour(time24) || "00:00",
@@ -189,17 +181,13 @@ export default function AladhanVoice({ color }: { color: any }) {
   }, [prayerTimes?.timings]);
 
   // Map UI toggles to hook include map per prayer
-  const includeMap = useMemo(
-    () => ({
-      Fajr: prayers[0]?.notification ?? true,
-      Sunrise: prayers[1]?.notification ?? true,
-      Dhuhr: prayers[2]?.notification ?? true,
-      Asr: prayers[3]?.notification ?? true,
-      Maghrib: prayers[4]?.notification ?? true,
-      Isha: prayers[5]?.notification ?? true,
-    }),
-    [prayers]
-  );
+  const includeMap = useMemo(() => {
+    const map: any = {};
+    PRAYER_KEYS.forEach((k, i) => {
+      map[k] = prayers[i]?.notification ?? true;
+    });
+    return map;
+  }, [prayers]);
 
   // Schedule notifications according to toggles
   usePrayerNotifications(prayerTimes, { enabled: true, include: includeMap });
@@ -288,33 +276,18 @@ export default function AladhanVoice({ color }: { color: any }) {
                     />
                   </TouchableOpacity>
                 )} */}
-                {prayer.notification ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      toggleNotification(index);
-                    }}
-                  >
-                    <Ionicons
-                      name="notifications"
-                      size={24}
-                      color={
-                        isNextPrayer ? color.background : `${color.primary}`
-                      }
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity onPress={() => toggleNotification(index)}>
-                    <Ionicons
-                      name="notifications-off"
-                      size={24}
-                      color={
-                        isNextPrayer
-                          ? `${color.background}88`
-                          : `${color.primary}88`
-                      }
-                    />
-                  </TouchableOpacity>
-                )}
+                <TouchableOpacity onPress={() => toggleNotification(index)}>
+                  <Ionicons
+                    name={
+                      prayer.notification
+                        ? "notifications"
+                        : "notifications-off"
+                    }
+                    size={24}
+                    color={isNextPrayer ? color.background : `${color.primary}`}
+                    style={{ opacity: prayer.notification ? 1 : 0.5 }}
+                  />
+                </TouchableOpacity>
                 <Text
                   style={{
                     width: 50,

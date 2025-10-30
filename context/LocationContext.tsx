@@ -40,6 +40,7 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
   const SAVED_LOCATION_KEY = "savedLocation";
   const SAVED_ADDRESS_KEY = "savedAddress";
   const LAST_LOCATION_REQUEST_KEY = "lastLocationRequest";
+  const FIRST_LAUNCH_DONE_KEY = "firstLaunchLocationDone";
 
   // Load saved location data from AsyncStorage
   const loadSavedLocationData = async () => {
@@ -264,8 +265,26 @@ export const LocationProvider: React.FC<LocationProviderProps> = ({
         // لتجنب طلب الصلاحية مرة أخرى
         return;
       } else {
-        // إذا لم تكن هناك بيانات محفوظة، لا تطلب الموقع تلقائياً
-        // فقط اعرض عنوان افتراضي
+        // طلب الموقع مرة واحدة فقط عند أول فتح للتطبيق
+        try {
+          const firstLaunchDone = await AsyncStorage.getItem(
+            FIRST_LAUNCH_DONE_KEY
+          );
+
+          if (!firstLaunchDone) {
+            const { status } =
+              await Location.requestForegroundPermissionsAsync();
+            if (status === "granted") {
+              await getCurrentLocation(true);
+              await AsyncStorage.setItem(FIRST_LAUNCH_DONE_KEY, "true");
+              return;
+            }
+            // لم يتم منح الصلاحية في أول تشغيل
+            await AsyncStorage.setItem(FIRST_LAUNCH_DONE_KEY, "true");
+          }
+        } catch {}
+
+        // إذا لم تكن هناك بيانات محفوظة، ولم نتمكن من الحصول على الصلاحية، اعرض قيمة افتراضية
         setAddress("الموقع غير متاح");
         setErrorMsg("اضغط لتفعيل الموقع");
         setIsLoading(false);

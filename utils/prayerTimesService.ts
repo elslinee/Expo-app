@@ -175,6 +175,19 @@ class PrayerTimesService {
     return null;
   }
 
+  // Load any cached data even if it's stale (yesterday), to avoid blank UI
+  private async loadAnyCachedData(): Promise<CachedPrayerTimes | null> {
+    try {
+      const cached = await AsyncStorage.getItem("prayerTimesCache");
+      if (cached) {
+        return JSON.parse(cached) as CachedPrayerTimes;
+      }
+    } catch (error) {
+      console.error("Error loading any cached prayer times:", error);
+    }
+    return null;
+  }
+
   // Save data to AsyncStorage
   private async saveCachedData(
     data: PrayerTimesData,
@@ -208,24 +221,60 @@ class PrayerTimesService {
     return data.data;
   }
 
+  // Try to read last saved location from LocationContext storage without prompting
+  private async getSavedLocationFromStorage(): Promise<{
+    latitude: number;
+    longitude: number;
+  } | null> {
+    try {
+      const savedLocationStr = await AsyncStorage.getItem("savedLocation");
+      if (savedLocationStr) {
+        const savedLocation = JSON.parse(savedLocationStr) as any;
+        if (
+          savedLocation?.coords?.latitude != null &&
+          savedLocation?.coords?.longitude != null
+        ) {
+          return {
+            latitude: savedLocation.coords.latitude,
+            longitude: savedLocation.coords.longitude,
+          };
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  }
+
   // Get current location (fallback method)
   private async getCurrentLocation(): Promise<{
     latitude: number;
     longitude: number;
   }> {
-    // Mirror the single-prompt behavior: check first, request only if never asked
+    // Respect single-prompt behavior: never request here; only proceed if already granted
     const { status: existingStatus } =
       await Location.getForegroundPermissionsAsync();
     if (existingStatus !== "granted") {
-      // Do not prompt here; LocationContext owns prompting logic.
-      // If permission not granted, propagate error to let UI handle gracefully.
       throw new Error("Location permission denied");
     }
 
-    const location = await Location.getCurrentPositionAsync({});
+    // Prefer last known position to avoid triggering accuracy dialogs
+    const lastKnown = await Location.getLastKnownPositionAsync();
+    if (lastKnown) {
+      return {
+        latitude: lastKnown.coords.latitude,
+        longitude: lastKnown.coords.longitude,
+      };
+    }
+
+    // Fallback to a low-accuracy current fix without hinting for high accuracy
+    const current = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Lowest,
+      // Keep options minimal to avoid platform-specific prompts
+    });
     return {
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
+      latitude: current.coords.latitude,
+      longitude: current.coords.longitude,
     };
   }
 
@@ -255,7 +304,7 @@ class PrayerTimesService {
           data,
           timestamp: Date.now(),
           location: { latitude, longitude },
-          date: new Date().toDateString(),
+          date: this.getCurrentDateString(),
         };
         this.notifyListeners(data, false, null);
         return data;
@@ -318,6 +367,46 @@ class PrayerTimesService {
         error instanceof Error ? error.message : "Failed to fetch prayer times";
       this.notifyListeners(null, false, errorMessage);
       return null;
+    }
+  }
+
+  // Show cached immediately (even if stale), then refresh in background when possible
+  async getPrayerTimesPreferCachedThenRefresh(): Promise<PrayerTimesData | null> {
+    try {
+      const anyCached = await this.loadAnyCachedData();
+      if (anyCached) {
+        this.cache = anyCached;
+        this.notifyListeners(anyCached.data, false, null);
+      } else {
+        // Emit loading state only if nothing cached at all
+        this.notifyListeners(null, true, null);
+      }
+
+      // Attempt background refresh using saved location without prompting
+      const savedLoc = await this.getSavedLocationFromStorage();
+      if (savedLoc) {
+        const fresh = await this.fetchPrayerTimes(savedLoc);
+        await this.saveCachedData(fresh, savedLoc);
+        this.notifyListeners(fresh, false, null);
+        return fresh;
+      }
+
+      // If no saved location, try last known/current low-accuracy only if permission already granted
+      try {
+        const { status } = await Location.getForegroundPermissionsAsync();
+        if (status === "granted") {
+          const loc = await this.getCurrentLocation();
+          const fresh = await this.fetchPrayerTimes(loc);
+          await this.saveCachedData(fresh, loc);
+          this.notifyListeners(fresh, false, null);
+          return fresh;
+        }
+      } catch {}
+
+      return anyCached?.data || null;
+    } catch (error) {
+      console.error("Error prefer-cached-then-refresh:", error);
+      return this.cache?.data || null;
     }
   }
 

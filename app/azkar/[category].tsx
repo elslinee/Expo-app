@@ -16,7 +16,7 @@ import { FontFamily } from "@/constants/FontFamily";
 import GoBack from "@/components/GoBack";
 import { useState, useEffect } from "react";
 import AzkarData from "@/assets/json/Azkar.json";
-import AzkarCard from "@/components/azkarScreen/AzkarCard";
+import AzkarSwiper from "@/components/azkarScreen/AzkarSwiper";
 import OneTimeTip from "@/components/OneTimeTip";
 
 type Zikr = {
@@ -106,125 +106,45 @@ export default function AzkarCategoryScreen() {
     );
   }
 
-  // Separate favorite and regular azkar
-  const favoriteAzkar = azkar.filter((zikr) => {
-    const favoriteKey = `${zikr.category}|||${zikr.content}`;
-    return favorites.includes(favoriteKey);
-  });
-  const regularAzkar = azkar.filter((zikr) => {
-    const favoriteKey = `${zikr.category}|||${zikr.content}`;
-    return !favorites.includes(favoriteKey);
-  });
-
   return (
     <View style={[styles.container, { backgroundColor: color.background }]}>
+      <GoBack
+        style={{
+          position: "absolute",
+          left: 20,
+          top: 70,
+          zIndex: 1000,
+        }}
+      />
       <View style={styles.header}>
-        <GoBack
-          style={{
-            position: "absolute",
-            left: 20,
-            top: 20,
-          }}
-        />
         <Text style={[styles.headerTitle, { color: color.darkText }]}>
           {category}
         </Text>
-        <Text style={[styles.headerSubtitle, { color: color.darkText }]}>
-          {azkar.length} ذكر
-        </Text>
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Favorite Azkar Section */}
-        {favoriteAzkar.length > 0 && (
-          <View>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: color.primary }]}>
-                المفضلة
-              </Text>
-              <FontAwesome5
-                name="heart"
-                size={16}
-                color={color.primary}
-                solid
-                style={{ marginLeft: 8 }}
-              />
-            </View>
-            {favoriteAzkar.map((zikr, index) => (
-              <AzkarCard
-                key={`fav-${index}`}
-                zikr={zikr}
-                index={index}
-                color={color}
-                onFavoriteChange={loadFavorites}
-                favorites={favorites}
-              />
-            ))}
-            <View
-              style={[styles.sectionDivider, { backgroundColor: color.border }]}
-            />
-          </View>
-        )}
-
-        {/* Regular Azkar Section */}
-        <View>
-          {favoriteAzkar.length > 0 && (
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: color.darkText }]}>
-                جميع الأذكار
-              </Text>
-            </View>
-          )}
-          {regularAzkar.map((zikr, index) => (
-            <AzkarCard
-              key={`reg-${index}`}
-              zikr={zikr}
-              index={favoriteAzkar.length + index}
-              color={color}
-              onFavoriteChange={loadFavorites}
-              favorites={favorites}
-            />
-          ))}
-        </View>
-      </ScrollView>
-      <OneTimeTip
-        tipKey="azkar_view_mode_tip_shown"
-        title="نصيحة مهمة"
-        description={`يمكنك الضغط على الذكر لزيادة عدد المرات`}
-        color={color}
-      />
+      <AzkarSwiper azkar={azkar} color={color} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    position: "relative",
     flex: 1,
-    paddingTop: 50,
   },
   header: {
-    padding: 20,
     paddingTop: 70,
-    paddingBottom: 20,
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
   },
   headerTitle: {
+    maxWidth: 140,
     fontSize: 20,
     fontFamily: FontFamily.bold,
     textAlign: "center",
     marginBottom: 5,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    fontFamily: FontFamily.regular,
-    textAlign: "center",
-    opacity: 0.8,
+    lineHeight: 32,
   },
   scrollView: {
     flex: 1,

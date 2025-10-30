@@ -1,57 +1,9 @@
 import { useState, useEffect } from "react";
+import { AppState } from "react-native";
 import PrayerTimesService, { PrayerTimesData } from "./prayerTimesService";
 import { useLocation } from "@/context/LocationContext";
-import * as Location from "expo-location";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Helper function to check if location permission is granted
-const hasLocationPermission = async (): Promise<boolean> => {
-  try {
-    const { status } = await Location.getForegroundPermissionsAsync();
-    return status === "granted";
-  } catch (error) {
-    console.warn("Error checking location permission:", error);
-    return false;
-  }
-};
-
-// Helper function to check if we should request location
-const shouldRequestLocation = async (): Promise<boolean> => {
-  try {
-    const lastRequest = await AsyncStorage.getItem("lastPrayerLocationRequest");
-    if (!lastRequest) return true;
-
-    const lastRequestTime = parseInt(lastRequest);
-    const now = Date.now();
-    const timeDiff = now - lastRequestTime;
-
-    // Only request location if more than 1 hour has passed
-    return timeDiff > 60 * 60 * 1000;
-  } catch (error) {
-    console.warn("Error checking last location request:", error);
-    return true;
-  }
-};
-
-// Helper function to safely start location monitoring
-const safeStartLocationMonitoring = async (
-  service: PrayerTimesService
-): Promise<void> => {
-  try {
-    if (await hasLocationPermission()) {
-      const shouldRequest = await shouldRequestLocation();
-      if (shouldRequest) {
-        await service.startLocationMonitoring();
-        await AsyncStorage.setItem(
-          "lastPrayerLocationRequest",
-          Date.now().toString()
-        );
-      }
-    }
-  } catch (error) {
-    console.warn("Could not start location monitoring:", error);
-  }
-};
+// لا نستخدم أي مراقبة مستمرة للموقع لضمان عدم تكرار طلبات الصلاحية
 
 export const usePrayerTimesService = () => {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimesData | null>(null);
@@ -69,45 +21,9 @@ export const usePrayerTimesService = () => {
       setError(errorMessage);
     });
 
-    // Check if we have cached data first
+    // Always show cached immediately, then try background refresh without prompting
     const initializeService = async () => {
-      const hasCachedData = await service.hasValidCachedData();
-
-      if (hasCachedData) {
-        // We have cached data, load it without requesting location
-        await service.getPrayerTimes();
-        // Only start location monitoring if we already have location permission
-        await safeStartLocationMonitoring(service);
-      } else if (location) {
-        // Use shared location data
-        const data = await service.getPrayerTimesWithLocation(
-          location.coords.latitude,
-          location.coords.longitude
-        );
-        if (data) {
-          try {
-            await service.startLocationMonitoring();
-          } catch (error) {
-            console.warn(
-              "Could not start location monitoring, continuing without it:",
-              error
-            );
-          }
-        }
-      } else {
-        // Fallback to service's own location fetching
-        const data = await service.getPrayerTimes();
-        if (data) {
-          try {
-            await service.startLocationMonitoring();
-          } catch (error) {
-            console.warn(
-              "Could not start location monitoring, continuing without it:",
-              error
-            );
-          }
-        }
-      }
+      await service.getPrayerTimesPreferCachedThenRefresh();
     };
 
     initializeService();
@@ -119,15 +35,22 @@ export const usePrayerTimesService = () => {
     };
   }, [location]);
 
+  // Refresh when app comes to foreground to keep times fresh without prompts
+  useEffect(() => {
+    const service = PrayerTimesService.getInstance();
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        service.getPrayerTimesPreferCachedThenRefresh();
+      }
+    });
+    return () => {
+      sub.remove();
+    };
+  }, []);
+
   const refreshPrayerTimes = async () => {
     const service = PrayerTimesService.getInstance();
     const result = await service.refreshPrayerTimes();
-
-    // Start location monitoring after manual refresh only if we have permission
-    if (result) {
-      await safeStartLocationMonitoring(service);
-    }
-
     return result;
   };
 
