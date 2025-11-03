@@ -257,6 +257,7 @@ export default function QuranScreen() {
 
   const renderSurah = ({ item }: { item: any }) => (
     <TouchableOpacity
+      activeOpacity={1}
       style={[
         styles.surahItem,
         {
@@ -294,6 +295,7 @@ export default function QuranScreen() {
 
       <View style={styles.surahIcon}>
         <TouchableOpacity
+          activeOpacity={1}
           onPress={() => togglePin(item.number)}
           accessibilityRole="button"
           accessibilityLabel={
@@ -361,6 +363,7 @@ export default function QuranScreen() {
 
         {/* Favorites Button */}
         <TouchableOpacity
+          activeOpacity={1}
           style={{
             position: "absolute",
             right: 20,
@@ -410,6 +413,7 @@ export default function QuranScreen() {
             />
             {searchText.length > 0 && (
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => setSearchText("")}
                 style={styles.clearButton}
               >
@@ -418,6 +422,7 @@ export default function QuranScreen() {
             )}
           </View>
           <TouchableOpacity
+            activeOpacity={1}
             style={[
               styles.sortButton,
               {

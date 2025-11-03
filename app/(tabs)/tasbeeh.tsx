@@ -717,6 +717,7 @@ export default function Tasbeeh() {
                     {completedItems.length > 0 && (
                       <View style={{ marginBottom: 20 }}>
                         <TouchableOpacity
+                          activeOpacity={1}
                           onPress={() =>
                             setShowCompletedSection(!showCompletedSection)
                           }

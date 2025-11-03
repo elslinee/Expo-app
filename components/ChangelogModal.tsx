@@ -94,6 +94,7 @@ export default function ChangelogModal({
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
+              activeOpacity={1}
               style={[styles.primaryButton, { backgroundColor: color.primary }]}
               onPress={handleClose}
             >
@@ -104,6 +105,7 @@ export default function ChangelogModal({
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
+              activeOpacity={1}
               style={[styles.secondaryButton, { backgroundColor: color.bg20 }]}
               onPress={handleViewDetails}
             >

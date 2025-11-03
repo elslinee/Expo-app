@@ -143,12 +143,12 @@ export default function AzkarSwiper({ azkar, color }: Props) {
                 styles.card,
                 {
                   backgroundColor: color.bg20,
-                 
                 },
               ]}
             >
               <View style={styles.actionBtns}>
                 <TouchableOpacity
+                  activeOpacity={1}
                   onPress={handleCopy}
                   style={[
                     styles.actionBtn,
@@ -165,6 +165,7 @@ export default function AzkarSwiper({ azkar, color }: Props) {
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  activeOpacity={1}
                   onPress={handleShare}
                   style={[
                     styles.actionBtn,
@@ -266,6 +267,7 @@ export default function AzkarSwiper({ azkar, color }: Props) {
             </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
                   setShowCompleted(false);
                 }}
@@ -273,7 +275,6 @@ export default function AzkarSwiper({ azkar, color }: Props) {
                   styles.modalBtn,
                   { borderColor: color.border, backgroundColor: color.bg20 },
                 ]}
-                activeOpacity={0.8}
               >
                 <Text
                   style={[
@@ -285,6 +286,7 @@ export default function AzkarSwiper({ azkar, color }: Props) {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
                   setIndex(0);
                   setCount(0);
@@ -292,7 +294,6 @@ export default function AzkarSwiper({ azkar, color }: Props) {
                   setShowCompleted(false);
                 }}
                 style={[styles.modalBtn, { backgroundColor: color.primary }]}
-                activeOpacity={0.8}
               >
                 <Text style={[styles.modalBtnText, { color: color.white }]}>
                   إعادة البدء

@@ -60,7 +60,7 @@ export default function CountdownTimer({ color }: { color: any }) {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <EvilIcons name="location" size={24} color={color.grey} />
           {errorMsg ? (
-            <TouchableOpacity onPress={openLocationSettingsAndRefresh}>
+            <TouchableOpacity activeOpacity={1} onPress={openLocationSettingsAndRefresh}>
               <Text
                 style={{
                   fontSize: 16,

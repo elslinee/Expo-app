@@ -188,6 +188,7 @@ function AyahModal({
             >
               {/* Share Button */}
               <TouchableOpacity
+                activeOpacity={1}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -220,6 +221,7 @@ function AyahModal({
               {/* Favorite/Remove Button */}
               {showRemoveButton ? (
                 <TouchableOpacity
+                  activeOpacity={1}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -256,6 +258,7 @@ function AyahModal({
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
+                  activeOpacity={1}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -298,6 +301,7 @@ function AyahModal({
             </View>
             {showGoToSurah && (
               <TouchableOpacity
+                activeOpacity={1}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",

@@ -1,13 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { format, toZonedTime } from "date-fns-tz";
-import { addHours } from "date-fns";
 
 import React, { useState, useEffect, useMemo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { usePrayerTimes } from "@/context/PrayerTimesContext";
 import {
-  AladhanVoiceOnIcon,
-  AladhanVoiceOffIcon,
   ElfajrIcon,
   ElshrokIcon,
   EldohrIcon,
@@ -17,8 +13,6 @@ import {
 } from "@/constants/Icons";
 import { formatTo12Hour } from "@/utils/formatTo12Hour";
 import getNextPrayerTime from "@/utils/getNextPrayerTime";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import * as Notifications from "expo-notifications";
 import usePrayerNotifications from "@/utils/usePrayerNotifications";
 
 export default function AladhanVoice({ color }: { color: any }) {
@@ -83,37 +77,11 @@ export default function AladhanVoice({ color }: { color: any }) {
       notification: true,
     },
   ]);
-  const toggleNotification = async (index: number) => {
-    setPrayers((prevPrayers) => {
-      const next = prevPrayers.map((prayer, i) =>
-        i === index ? { ...prayer, notification: !prayer.notification } : prayer
-      );
-
-      // Save settings asynchronously (scheduling handled centrally)
-      const saveSettings = async () => {
-        try {
-          const notificationSettings = next.map((p) => p.notification);
-          await AsyncStorage.setItem(
-            "notificationSettings",
-            JSON.stringify(notificationSettings)
-          );
-          console.log("✅ تم حفظ إعدادات الإشعارات:", notificationSettings);
-        } catch (e) {
-          console.error("❌ فشل حفظ إعدادات الإشعارات:", e);
-        }
-      };
-
-      saveSettings();
-      return next;
-    });
-  };
+  // Notifications are always enabled for all prayers
   useEffect(() => {
     const loadSettings = async () => {
       try {
         const savedAdhanSettings = await AsyncStorage.getItem("adhanSettings");
-        const savedNotificationSettings = await AsyncStorage.getItem(
-          "notificationSettings"
-        );
 
         setPrayers((prevPrayers) =>
           prevPrayers.map((prayer, index) => {
@@ -127,35 +95,13 @@ export default function AladhanVoice({ color }: { color: any }) {
                   : prayer.aldhan;
             }
 
-            if (savedNotificationSettings) {
-              const parsedNotificationSettings = JSON.parse(
-                savedNotificationSettings
-              );
-              updatedPrayer.notification =
-                parsedNotificationSettings[index] !== undefined
-                  ? parsedNotificationSettings[index]
-                  : prayer.notification;
-            }
+            // Force notifications to always be enabled
+            updatedPrayer.notification = true;
 
             return updatedPrayer;
           })
         );
-
-        // Check if any notifications are disabled and cancel them immediately
-        if (savedNotificationSettings) {
-          const parsedNotificationSettings = JSON.parse(
-            savedNotificationSettings
-          );
-          const hasDisabledNotifications = parsedNotificationSettings.some(
-            (enabled: boolean) => enabled === false
-          );
-
-          if (hasDisabledNotifications) {
-            // Cancel all notifications to ensure disabled ones don't fire
-            await Notifications.cancelAllScheduledNotificationsAsync();
-            console.log("🗑️ تم إلغاء الإشعارات المعطلة عند بدء التطبيق");
-          }
-        }
+        // Notifications are always on; no cancellation logic needed
       } catch (error) {
         console.error("Error loading settings:", error);
       }
@@ -183,11 +129,11 @@ export default function AladhanVoice({ color }: { color: any }) {
   // Map UI toggles to hook include map per prayer
   const includeMap = useMemo(() => {
     const map: any = {};
-    PRAYER_KEYS.forEach((k, i) => {
-      map[k] = prayers[i]?.notification ?? true;
+    PRAYER_KEYS.forEach((k) => {
+      map[k] = true;
     });
     return map;
-  }, [prayers]);
+  }, []);
 
   // Schedule notifications according to toggles
   usePrayerNotifications(prayerTimes, { enabled: true, include: includeMap });
@@ -276,18 +222,7 @@ export default function AladhanVoice({ color }: { color: any }) {
                     />
                   </TouchableOpacity>
                 )} */}
-                <TouchableOpacity onPress={() => toggleNotification(index)}>
-                  <Ionicons
-                    name={
-                      prayer.notification
-                        ? "notifications"
-                        : "notifications-off"
-                    }
-                    size={24}
-                    color={isNextPrayer ? color.background : `${color.primary}`}
-                    style={{ opacity: prayer.notification ? 1 : 0.5 }}
-                  />
-                </TouchableOpacity>
+                {/* Notification toggle removed - notifications are always on */}
                 <Text
                   style={{
                     width: 50,

@@ -114,7 +114,10 @@ export default function HeroSection({ color }: HeroSectionProps) {
             >
               <EvilIcons name="location" size={24} color={color.darkText} />
               {errorMsg ? (
-                <TouchableOpacity onPress={openLocationSettingsAndRefresh}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={openLocationSettingsAndRefresh}
+                >
                   <Text
                     style={{
                       fontSize: 14,

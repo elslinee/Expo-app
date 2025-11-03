@@ -68,7 +68,7 @@ export default function DateAndLocation({
           المكان
         </Text>
         {errorMsg ? (
-          <TouchableOpacity onPress={openLocationSettingsAndRefresh}>
+          <TouchableOpacity activeOpacity={1} onPress={openLocationSettingsAndRefresh}>
             <Text
               style={{
                 color: inHomeScreen ? color.text : color.primary,

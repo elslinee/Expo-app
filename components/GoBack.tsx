@@ -20,6 +20,7 @@ export default function GoBack({ style, color: customColor }: GoBackProps) {
   return (
     <View style={style}>
       <TouchableOpacity
+        activeOpacity={1}
         style={{
           position: "absolute",
           padding: 10,

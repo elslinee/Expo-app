@@ -37,7 +37,9 @@
       },
       "permissions": [
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
+        "ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -68,6 +70,7 @@
       "eas": {
         "projectId": "959de6c5-f3e3-40b1-814e-fcb498b2e579"
       }
-    }
+    },
+    "owner": "elsline"
   }
 }

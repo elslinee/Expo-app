@@ -362,7 +362,11 @@ export function SurahScreenContent() {
         <Text style={styles.errorText}>
           {error || "لم يتم العثور على السورة"}
         </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchSurahData}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.retryButton}
+          onPress={fetchSurahData}
+        >
           <Text style={styles.retryButtonText}>إعادة المحاولة</Text>
         </TouchableOpacity>
       </View>
@@ -448,6 +452,7 @@ export function SurahScreenContent() {
           <View style={styles.actionButtonsContainer}>
             {bookmark && (
               <TouchableOpacity
+                activeOpacity={1}
                 style={styles.actionButton}
                 onPress={() => {
                   if (isInlineMode) return;
@@ -463,6 +468,7 @@ export function SurahScreenContent() {
             )}
 
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.actionButton}
               onPress={() => {
                 setIsSwitchingView(true);
@@ -488,6 +494,7 @@ export function SurahScreenContent() {
 
             {/* Font Size Button */}
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.actionButton}
               onPress={() => setShowFontSizePopup(true)}
             >

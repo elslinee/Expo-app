@@ -364,6 +364,7 @@ export default function AzkarCard({
   return (
     <View style={{ position: "relative", marginBottom: 8 }}>
       <TouchableOpacity
+        activeOpacity={1}
         onPress={handleCardPress}
         disabled={isCompleted}
         style={[
@@ -398,7 +399,11 @@ export default function AzkarCard({
             </Text>
           </View>
 
-          <TouchableOpacity onPress={toggleFavorite} style={styles.favoriteBtn}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={toggleFavorite}
+            style={styles.favoriteBtn}
+          >
             <FontAwesome5
               name={isFavorite ? "heart" : "heart"}
               size={18}
@@ -498,6 +503,7 @@ export default function AzkarCard({
             <View style={styles.leftActions}>
               {isCompleted ? (
                 <TouchableOpacity
+                  activeOpacity={1}
                   onPress={resetCount}
                   style={[
                     styles.actionBtn,
@@ -535,6 +541,7 @@ export default function AzkarCard({
               ) : null}
             </View>
             <TouchableOpacity
+              activeOpacity={1}
               onPress={handleCopy}
               style={[
                 styles.actionBtn,
@@ -548,6 +555,7 @@ export default function AzkarCard({
             </TouchableOpacity>
 
             <TouchableOpacity
+              activeOpacity={1}
               onPress={handleShare}
               style={[
                 styles.actionBtn,
@@ -561,6 +569,7 @@ export default function AzkarCard({
             </TouchableOpacity>
 
             <TouchableOpacity
+              activeOpacity={1}
               onPress={handleTasbeeh}
               style={[
                 styles.actionBtn,

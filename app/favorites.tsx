@@ -175,6 +175,7 @@ export default function FavoritesScreen() {
     return (
       <View style={{ position: "relative", marginBottom: 8 }}>
         <TouchableOpacity
+          activeOpacity={1}
           style={{
             borderRadius: 16,
             backgroundColor: color.bg20,
@@ -185,7 +186,6 @@ export default function FavoritesScreen() {
           }}
           onPress={() => handleAyahPress(item)}
           onLongPress={() => copyToClipboard(item)}
-          activeOpacity={0.7}
         >
           <View
             style={{
@@ -351,6 +351,7 @@ export default function FavoritesScreen() {
           }}
         >
           <TouchableOpacity
+            activeOpacity={1}
             style={{
               position: "absolute",
               left: 20,
@@ -417,6 +418,7 @@ export default function FavoritesScreen() {
             اضغط على أي آية في القرآن الكريم لإضافتها للمفضلة
           </Text>
           <TouchableOpacity
+            activeOpacity={1}
             style={{
               paddingHorizontal: 24,
               paddingVertical: 12,

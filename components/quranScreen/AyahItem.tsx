@@ -83,6 +83,7 @@ const AyahItem = memo(function AyahItem({
   return (
     <View style={{ position: "relative", marginBottom: 8 }}>
       <TouchableOpacity
+        activeOpacity={1}
         key={ayah.numberInSurah}
         style={{
           backgroundColor: color.bg20,
@@ -94,7 +95,6 @@ const AyahItem = memo(function AyahItem({
         }}
         onPress={() => onPress(ayah)}
         onLongPress={copyToClipboard}
-        activeOpacity={0.7}
       >
         <View
           style={{
@@ -144,6 +144,7 @@ const AyahItem = memo(function AyahItem({
 
           {onToggleBookmark && (
             <TouchableOpacity
+              activeOpacity={1}
               style={{
                 width: 32,
                 height: 32,
@@ -151,12 +152,11 @@ const AyahItem = memo(function AyahItem({
                 alignItems: "center",
                 borderRadius: 99,
                 backgroundColor: isBookmarked ? color.primary : "transparent",
-             
+
                 borderColor: isBookmarked ? color.primary : color.border,
                 marginLeft: 8,
               }}
               onPress={handleBookmarkPress}
-              activeOpacity={0.7}
             >
               <FontAwesome5
                 name="bookmark"

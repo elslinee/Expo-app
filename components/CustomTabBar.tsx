@@ -39,7 +39,7 @@ function TabItem({
   onPress: () => void;
   onLongPress: () => void;
   reportLayout: (idx: number, x: number, width: number) => void;
-  selectedIndex: Animated.SharedValue<number>;
+  selectedIndex: any;
   colorTheme: any;
   newTab?: boolean;
   newFeature?: boolean;
@@ -81,6 +81,7 @@ function TabItem({
 
   return (
     <TouchableOpacity
+      activeOpacity={1}
       accessibilityRole="button"
       accessibilityState={isFocused ? { selected: true } : {}}
       accessibilityLabel={options.tabBarAccessibilityLabel}
@@ -92,7 +93,6 @@ function TabItem({
         alignItems: "center",
         justifyContent: "center",
       }}
-      activeOpacity={0.8}
       onLayout={(e) =>
         reportLayout(index, e.nativeEvent.layout.x, e.nativeEvent.layout.width)
       }

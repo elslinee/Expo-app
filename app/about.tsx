@@ -172,6 +172,7 @@ export default function AboutScreen() {
           {/* Social Media Icons */}
           <View style={styles.socialContainer}>
             <TouchableOpacity
+              activeOpacity={1}
               style={[
                 styles.socialButton,
                 { backgroundColor: color.primary + "20" },
@@ -182,6 +183,7 @@ export default function AboutScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              activeOpacity={1}
               style={[
                 styles.socialButton,
                 { backgroundColor: color.primary + "20" },
@@ -192,6 +194,7 @@ export default function AboutScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              activeOpacity={1}
               style={[
                 styles.socialButton,
                 { backgroundColor: color.primary + "20" },
@@ -202,6 +205,7 @@ export default function AboutScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
+              activeOpacity={1}
               style={[
                 styles.socialButton,
                 { backgroundColor: color.primary + "20" },

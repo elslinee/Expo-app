@@ -67,6 +67,7 @@ export default function FontSizePopup({
                 حجم الخط
               </Text>
               <TouchableOpacity
+                activeOpacity={1}
                 style={[styles.closeButton]}
                 onPress={handleClose}
               >
@@ -81,6 +82,7 @@ export default function FontSizePopup({
             {/* Simple Controls */}
             <View style={styles.controlsContainer}>
               <TouchableOpacity
+                activeOpacity={1}
                 style={[
                   styles.controlButton,
                   {
@@ -111,6 +113,7 @@ export default function FontSizePopup({
               </Text>
 
               <TouchableOpacity
+                activeOpacity={1}
                 style={[
                   styles.controlButton,
                   {
@@ -132,6 +135,7 @@ export default function FontSizePopup({
             {/* Reset Button Only */}
             <View style={styles.actionsContainer}>
               <TouchableOpacity
+                activeOpacity={1}
                 style={[styles.actionButton, { backgroundColor: color.bg20 }]}
                 onPress={handleReset}
               >
