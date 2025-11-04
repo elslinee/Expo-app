@@ -80,7 +80,6 @@ export default function UpdateModal({
           <View style={{ gap: 12 }}>
             {/* زر إعادة التشغيل */}
             <TouchableOpacity
-              activeOpacity={1}
               onPress={onRestart}
               style={{
                 backgroundColor: color.primary,
@@ -103,7 +102,6 @@ export default function UpdateModal({
 
             {/* زر لاحقاً */}
             <TouchableOpacity
-              activeOpacity={1}
               onPress={onLater}
               style={{
                 backgroundColor: color.bg20,

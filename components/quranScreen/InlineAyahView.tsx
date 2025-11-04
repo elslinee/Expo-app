@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Text } from "react-native";
 import { FontFamily } from "@/constants/FontFamily";
 import { useFontSize } from "@/context/FontSizeContext";
@@ -9,7 +9,7 @@ interface Ayah {
   translation?: string;
 }
 
-interface InlineAyahViewProps {
+export interface InlineAyahViewProps {
   ayahs: Ayah[];
   bookmark: number | null;
   onAyahPress: (ayah: Ayah) => void;
@@ -17,53 +17,69 @@ interface InlineAyahViewProps {
   toArabicDigits: (value: number | string) => string;
   color: any;
 }
+export interface InlineAyahViewHandle {
+  loadMore: () => void;
+}
 
-const InlineAyahView: React.FC<InlineAyahViewProps> = ({
-  ayahs,
-  bookmark,
-  onAyahPress,
-  toArabicDigits,
-  color,
-}) => {
-  const { fontSize } = useFontSize();
+const InlineAyahView = forwardRef<InlineAyahViewHandle, InlineAyahViewProps>(
+  ({ ayahs, bookmark, onAyahPress, toArabicDigits, color }, ref) => {
+    const { fontSize } = useFontSize();
 
-  return (
-    <Text style={styles.inlineText(fontSize, color.darkText)}>
-      {ayahs.map((ayah) => {
-        const isThisBookmarked = bookmark === ayah.numberInSurah;
-        return (
-          <Text
-            key={ayah.numberInSurah}
-            onPress={() =>
-              onAyahPress({
-                numberInSurah: ayah.numberInSurah,
-                text: ayah.text,
-                translation: ayah.translation,
-              })
-            }
-            onLongPress={() =>
-              onAyahPress({
-                numberInSurah: ayah.numberInSurah,
-                text: ayah.text,
-                translation: ayah.translation,
-              })
-            }
-            style={
-              isThisBookmarked
-                ? styles.inlineAyahTextBookmarked(color.primary20)
-                : styles.inlineAyahText
-            }
-          >
-            {ayah.text}
-            <Text style={styles.inlineAyahNumber(fontSize, color.primary)}>
-              {"  "} ﴿ {toArabicDigits(ayah.numberInSurah)} ﴾ {"  "}
+    const [visibleCount, setVisibleCount] = useState(20);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        loadMore: () => {
+          setVisibleCount((prev) => Math.min(prev + 20, ayahs.length));
+        },
+      }),
+      [ayahs.length]
+    );
+
+    return (
+      <Text
+        style={[
+          styles.inlineText(fontSize, color.darkText),
+          { paddingVertical: 20 },
+        ]}
+      >
+        {ayahs.slice(0, visibleCount).map((ayah) => {
+          const isThisBookmarked = bookmark === ayah.numberInSurah;
+          return (
+            <Text
+              key={ayah.numberInSurah}
+              onPress={() =>
+                onAyahPress({
+                  numberInSurah: ayah.numberInSurah,
+                  text: ayah.text,
+                  translation: ayah.translation,
+                })
+              }
+              onLongPress={() =>
+                onAyahPress({
+                  numberInSurah: ayah.numberInSurah,
+                  text: ayah.text,
+                  translation: ayah.translation,
+                })
+              }
+              style={
+                isThisBookmarked
+                  ? styles.inlineAyahTextBookmarked(color.primary20)
+                  : styles.inlineAyahText
+              }
+            >
+              {ayah.text}
+              <Text style={styles.inlineAyahNumber(fontSize, color.primary)}>
+                {"  "} ﴿ {toArabicDigits(ayah.numberInSurah)} ﴾ {"  "}
+              </Text>
             </Text>
-          </Text>
-        );
-      })}
-    </Text>
-  );
-};
+          );
+        })}
+      </Text>
+    );
+  }
+);
 
 const styles = {
   inlineText: (fontSize: number, color: string) => ({
@@ -71,6 +87,7 @@ const styles = {
     fontFamily: FontFamily.quran,
     color: color,
     writingDirection: "rtl" as const,
+    lineHeight: fontSize * 1.7,
   }),
   inlineAyahText: {
     backgroundColor: "transparent",

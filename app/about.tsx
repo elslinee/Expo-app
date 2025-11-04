@@ -80,6 +80,10 @@ export default function AboutScreen() {
       title: "أداء سريع",
       description: "تخزين محلي ذكي لتجربة سلسة بدون انتظار",
     },
+    {
+      title: "مشاركة كصورة منسّقة",
+      description: "شارك الآيات والأذكار والتسابيح كصورة جميلة",
+    },
   ];
 
   return (
@@ -172,7 +176,6 @@ export default function AboutScreen() {
           {/* Social Media Icons */}
           <View style={styles.socialContainer}>
             <TouchableOpacity
-              activeOpacity={1}
               style={[
                 styles.socialButton,
                 { backgroundColor: color.primary + "20" },
@@ -183,7 +186,6 @@ export default function AboutScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              activeOpacity={1}
               style={[
                 styles.socialButton,
                 { backgroundColor: color.primary + "20" },
@@ -194,7 +196,6 @@ export default function AboutScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              activeOpacity={1}
               style={[
                 styles.socialButton,
                 { backgroundColor: color.primary + "20" },
@@ -205,7 +206,6 @@ export default function AboutScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              activeOpacity={1}
               style={[
                 styles.socialButton,
                 { backgroundColor: color.primary + "20" },

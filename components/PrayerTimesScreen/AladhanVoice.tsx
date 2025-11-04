@@ -14,6 +14,7 @@ import {
 import { formatTo12Hour } from "@/utils/formatTo12Hour";
 import getNextPrayerTime from "@/utils/getNextPrayerTime";
 import usePrayerNotifications from "@/utils/usePrayerNotifications";
+import { FontFamily } from "@/constants/FontFamily";
 
 export default function AladhanVoice({ color }: { color: any }) {
   const { prayerTimes } = usePrayerTimes();
@@ -205,27 +206,10 @@ export default function AladhanVoice({ color }: { color: any }) {
                 </Text>
               </View>
               <View style={{ gap: 20 }} className="flex flex-row items-center">
-                {/* {prayer.aldhan ? (
-                  <TouchableOpacity onPress={() => changeAldhan(index)}>
-                    <AladhanVoiceOnIcon
-                      width={21}
-                      height={21}
-                      color={isNextPrayer ? color.primary : `${color.grey}`}
-                    />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity onPress={() => changeAldhan(index)}>
-                    <AladhanVoiceOffIcon
-                      width={21}
-                      height={21}
-                      color={isNextPrayer ? color.primary : `${color.grey}`}
-                    />
-                  </TouchableOpacity>
-                )} */}
-                {/* Notification toggle removed - notifications are always on */}
                 <Text
                   style={{
-                    width: 50,
+                    fontSize: 13,
+                    fontFamily: FontFamily.bold,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     color: isNextPrayer ? color.background : `${color.black}`,

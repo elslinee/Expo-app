@@ -33,6 +33,109 @@ export default function ChangelogScreen() {
 
       {/* Changelog Content */}
       <View style={styles.section}>
+        {/* Version 0.7 */}
+        <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
+          <View
+            style={[
+              styles.versionHeader,
+              { borderBottomColor: color.primary + "30" },
+            ]}
+          >
+            <Text style={[styles.versionNumber, { color: color.primary }]}>
+              الإصدار 0.7
+            </Text>
+            <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
+              تحسين التسابيح ومشاركة الصور + سلاسة القراءة والأذكار
+            </Text>
+          </View>
+          {/* القرآن الكريم */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              القرآن الكريم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحميل تدريجي للنص عند التمرير لقراءة أكثر سلاسة دون التأثير على
+              التصميم
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • مشاركة الآية كصورة منسّقة تشمل النص والمعلومات والشعار، مع
+              مشاركة النص عند التعذّر
+            </Text>
+          </View>
+          {/* الأذكار */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              الأذكار
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إعادة بناء صفحة الأذكار بالكامل: صفحة واحدة والتنقّل تلقائياً
+              عند الإكمال
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • استجابة أسرع عند العدّ والتنقل، مع صوت نقرة وخيار تشغيل/إيقاف
+              محفوظ
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • يمكن مشاركة الذكر كصورة منسّقة مع شعار التطبيق والرجوع للنص عند
+              التعذّر
+            </Text>
+          </View>
+          {/* التسابيح */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              التسابيح
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • صوت لطيف عند الضغط مع خيار تشغيل/إيقاف يُحفظ تلقائياً
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • زر "سبِّح" يتحول تلقائياً إلى "إعادة البدء" بعد الإكمال
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • مشاركة النتيجة كصورة منسّقة تضم العداد وشعار التطبيق فقط
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • سلاسة أعلى: إيقاف الأنميشن قبل البدء، إعادة ضبط القيم، وتزامن
+              أدق
+            </Text>
+          </View>
+
+          {/* أوقات الصلاة */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              أوقات الصلاة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إزالة زر تعطيل الإشعارات وجعل التنبيهات فعّالة دائماً بشكل أوضح
+            </Text>
+          </View>
+
+          {/* تحسينات المشاركة */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تحسينات المشاركة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إنشاء الصور من عناصر خفية بخلفية مناسبة وحواف ناعمة وشعار
+              التطبيق فقط
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • حفظ الصورة مؤقتاً بصيغة PNG ومشاركتها، مع دعم UTI على iOS
+              والرجوع للنص عند الحاجة
+            </Text>
+          </View>
+
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تحسينات عامة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تنظيف وتحسينات تمنع التكرار أو انتقالات غير متوقعة في بعض
+              الشاشات
+            </Text>
+          </View>
+        </View>
+
         {/* Version 0.6 */}
         <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
           <View

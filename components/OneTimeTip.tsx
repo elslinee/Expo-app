@@ -104,7 +104,6 @@ export default function OneTimeTip({
           </View>
           <View style={styles.modalButtonContainer}>
             <TouchableOpacity
-              activeOpacity={1}
               style={[styles.modalButton, { backgroundColor: color.primary }]}
               onPress={handleClose}
             >

@@ -257,7 +257,6 @@ export default function QuranScreen() {
 
   const renderSurah = ({ item }: { item: any }) => (
     <TouchableOpacity
-      activeOpacity={1}
       style={[
         styles.surahItem,
         {
@@ -284,7 +283,7 @@ export default function QuranScreen() {
       </View>
 
       <View style={styles.surahInfo}>
-        <Text style={[styles.surahName, { color: color.text }]}>
+        <Text style={[styles.surahName, { color: color.darkText }]}>
           {item.name}
         </Text>
         <Text style={[styles.surahDetails, { color: color.darkText }]}>
@@ -295,7 +294,6 @@ export default function QuranScreen() {
 
       <View style={styles.surahIcon}>
         <TouchableOpacity
-          activeOpacity={1}
           onPress={() => togglePin(item.number)}
           accessibilityRole="button"
           accessibilityLabel={
@@ -363,7 +361,6 @@ export default function QuranScreen() {
 
         {/* Favorites Button */}
         <TouchableOpacity
-          activeOpacity={1}
           style={{
             position: "absolute",
             right: 20,
@@ -374,7 +371,7 @@ export default function QuranScreen() {
           }}
           onPress={() => router.push("/favorites")}
         >
-          <FontAwesome5 name="heart" size={20} color={color.text20} />
+          <FontAwesome5 name="heart" size={20} color={color.primary} />
         </TouchableOpacity>
         <View
           style={{
@@ -397,7 +394,7 @@ export default function QuranScreen() {
               },
             ]}
           >
-            <EvilIcons name="search" size={28} color={color.text20} />
+            <EvilIcons name="search" size={28} color={ searchText.length > 0 ? color.primary : color.text20} />
             <TextInput
               style={[
                 styles.searchInput,
@@ -413,7 +410,6 @@ export default function QuranScreen() {
             />
             {searchText.length > 0 && (
               <TouchableOpacity
-                activeOpacity={1}
                 onPress={() => setSearchText("")}
                 style={styles.clearButton}
               >
@@ -422,7 +418,6 @@ export default function QuranScreen() {
             )}
           </View>
           <TouchableOpacity
-            activeOpacity={1}
             style={[
               styles.sortButton,
               {
@@ -438,7 +433,7 @@ export default function QuranScreen() {
             <FontAwesome5
               name={isReversed ? "sort-amount-up" : "sort-amount-down"}
               size={25}
-              color={color.text20}
+              color={color.primary}
             />
           </TouchableOpacity>
         </View>
@@ -446,16 +441,16 @@ export default function QuranScreen() {
 
       {filteredSurahs.length === 0 && searchText ? (
         <View style={styles.noResultsContainer}>
-          <FontAwesome5
+          <EvilIcons
             name="search"
-            size={48}
-            color={color.text}
-            style={{ opacity: 0.3 }}
+            size={78}
+            color={color.text20}
+            style={{ opacity: 0.5 }}
           />
-          <Text style={[styles.noResultsText, { color: color.text }]}>
+          <Text style={[styles.noResultsText, { color: color.darkText }]}>
             لم يتم العثور على نتائج
           </Text>
-          <Text style={[styles.noResultsSubtext, { color: color.text }]}>
+          <Text style={[styles.noResultsSubtext, { color: color.darkText }]}>
             جرب البحث بكلمات مختلفة
           </Text>
         </View>

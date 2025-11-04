@@ -83,7 +83,6 @@ const AyahItem = memo(function AyahItem({
   return (
     <View style={{ position: "relative", marginBottom: 8 }}>
       <TouchableOpacity
-        activeOpacity={1}
         key={ayah.numberInSurah}
         style={{
           backgroundColor: color.bg20,
@@ -144,7 +143,6 @@ const AyahItem = memo(function AyahItem({
 
           {onToggleBookmark && (
             <TouchableOpacity
-              activeOpacity={1}
               style={{
                 width: 32,
                 height: 32,

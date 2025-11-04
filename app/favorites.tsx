@@ -175,7 +175,6 @@ export default function FavoritesScreen() {
     return (
       <View style={{ position: "relative", marginBottom: 8 }}>
         <TouchableOpacity
-          activeOpacity={1}
           style={{
             borderRadius: 16,
             backgroundColor: color.bg20,
@@ -350,28 +349,22 @@ export default function FavoritesScreen() {
             backgroundColor: color.background,
           }}
         >
-          <TouchableOpacity
-            activeOpacity={1}
+          <GoBack
             style={{
               position: "absolute",
               left: 20,
-              padding: 12,
-              marginRight: 16,
-              borderRadius: 8,
-              backgroundColor: "rgba(0,0,0,0.05)",
+              top: 25,
             }}
-            onPress={() => router.back()}
-          >
-            <FontAwesome5 name="arrow-right" size={20} color={color.primary} />
-          </TouchableOpacity>
+          />
 
           <View style={{ flex: 1, alignItems: "center" }}>
             <Text
               style={{
                 fontSize: 18,
-                fontFamily: FontFamily.medium,
+                marginTop: 10,
+                fontFamily: FontFamily.bold,
                 textAlign: "center",
-                color: color.text,
+                color: color.darkText,
               }}
             >
               المفضلة
@@ -391,16 +384,16 @@ export default function FavoritesScreen() {
           <FontAwesome5
             name="heart"
             size={64}
-            color={color.text}
-            style={{ opacity: 0.3, marginBottom: 20 }}
+            color={color.darkText}
+            style={{ opacity: 0.4, marginBottom: 20 }}
           />
           <Text
             style={{
-              fontSize: 18,
-              fontFamily: FontFamily.medium,
+              fontSize: 19,
+              fontFamily: FontFamily.bold,
               textAlign: "center",
               marginBottom: 12,
-              color: color.text,
+              color: color.darkText,
             }}
           >
             لا توجد آيات مفضلة
@@ -411,14 +404,13 @@ export default function FavoritesScreen() {
               fontFamily: FontFamily.medium,
               textAlign: "center",
               opacity: 0.7,
-              color: color.text,
+              color: color.darkText,
               marginBottom: 24,
             }}
           >
             اضغط على أي آية في القرآن الكريم لإضافتها للمفضلة
           </Text>
           <TouchableOpacity
-            activeOpacity={1}
             style={{
               paddingHorizontal: 24,
               paddingVertical: 12,
@@ -467,8 +459,8 @@ export default function FavoritesScreen() {
         <View style={{ flex: 1, alignItems: "center" }}>
           <Text
             style={{
-              fontSize: 21,
-              fontFamily: FontFamily.medium,
+              fontSize: 20,
+              fontFamily: FontFamily.bold,
               textAlign: "center",
               color: color.darkText,
             }}

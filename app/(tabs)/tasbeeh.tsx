@@ -709,75 +709,74 @@ export default function Tasbeeh() {
               </View>
             ) : (
               <ScrollView>
-                {incompleteItems.length > 0 && (
-                  <View
-                    style={{ flex: 1, paddingHorizontal: 20, marginTop: 10 }}
-                  >
-                    {/* Completed Items Section - Always show if exists */}
-                    {completedItems.length > 0 && (
-                      <View style={{ marginBottom: 20 }}>
-                        <TouchableOpacity
-                          activeOpacity={1}
-                          onPress={() =>
-                            setShowCompletedSection(!showCompletedSection)
-                          }
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            marginBottom: 12,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: themeColors.primary,
-                              fontFamily: FontFamily.bold,
-                              fontSize: 16,
-                              flex: 1,
-                            }}
-                          >
-                            التسابيح المكتملة اليوم
-                          </Text>
-
-                          <FontAwesome5
-                            name={
-                              showCompletedSection
-                                ? "chevron-down"
-                                : "chevron-left"
-                            }
-                            size={19}
-                            color={themeColors.focusColor}
-                          />
-                        </TouchableOpacity>
-
-                        {showCompletedSection && (
-                          <View style={{ gap: 16 }}>
-                            {completedItems.map((item) => (
-                              <View key={item.id}>{renderItem({ item })}</View>
-                            ))}
-                          </View>
-                        )}
-                      </View>
-                    )}
-                    {completedItems.length > 0 && (
-                      <Text
+                <View style={{ flex: 1, paddingHorizontal: 20, marginTop: 10 }}>
+                  {/* Completed Items Section - Always show if exists */}
+                  {completedItems.length > 0 && (
+                    <View style={{ marginBottom: 20 }}>
+                      <TouchableOpacity
+                        onPress={() =>
+                          setShowCompletedSection(!showCompletedSection)
+                        }
                         style={{
-                          color: themeColors.text,
-                          fontFamily: FontFamily.bold,
-                          fontSize: 16,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
                           marginBottom: 12,
                         }}
                       >
-                        التسابيح المتبقية
-                      </Text>
-                    )}
-                    <View style={{ paddingBottom: 24, gap: 20 }}>
-                      {incompleteItems.map((item) => (
-                        <View key={item.id}>{renderItem({ item })}</View>
-                      ))}
+                        <Text
+                          style={{
+                            color: themeColors.primary,
+                            fontFamily: FontFamily.bold,
+                            fontSize: 16,
+                            flex: 1,
+                          }}
+                        >
+                          التسابيح المكتملة اليوم
+                        </Text>
+
+                        <FontAwesome5
+                          name={
+                            showCompletedSection
+                              ? "chevron-down"
+                              : "chevron-left"
+                          }
+                          size={19}
+                          color={themeColors.focusColor}
+                        />
+                      </TouchableOpacity>
+
+                      {showCompletedSection && (
+                        <View style={{ gap: 16 }}>
+                          {completedItems.map((item) => (
+                            <View key={item.id}>{renderItem({ item })}</View>
+                          ))}
+                        </View>
+                      )}
                     </View>
-                  </View>
-                )}
+                  )}
+                  {incompleteItems.length > 0 && (
+                    <>
+                      {completedItems.length > 0 && (
+                        <Text
+                          style={{
+                            color: themeColors.text,
+                            fontFamily: FontFamily.bold,
+                            fontSize: 16,
+                            marginBottom: 12,
+                          }}
+                        >
+                          التسابيح المتبقية
+                        </Text>
+                      )}
+                      <View style={{ paddingBottom: 24, gap: 20 }}>
+                        {incompleteItems.map((item) => (
+                          <View key={item.id}>{renderItem({ item })}</View>
+                        ))}
+                      </View>
+                    </>
+                  )}
+                </View>
               </ScrollView>
             )}
 

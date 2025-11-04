@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getColors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
@@ -17,7 +16,6 @@ import GoBack from "@/components/GoBack";
 import { useState, useEffect } from "react";
 import AzkarData from "@/assets/json/Azkar.json";
 import AzkarSwiper from "@/components/azkarScreen/AzkarSwiper";
-import OneTimeTip from "@/components/OneTimeTip";
 
 type Zikr = {
   category: string;

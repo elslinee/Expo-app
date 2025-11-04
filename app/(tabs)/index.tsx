@@ -7,12 +7,11 @@ import ScreenBtn from "@/components/homeScreen/ScreenBtn";
 import { QuranIcon, AzkarIcon, BookIcon } from "@/constants/Icons";
 import { navigateToPage } from "@/utils/navigationUtils";
 import ChangelogModal from "@/components/ChangelogModal";
-import { opacity } from "react-native-reanimated/lib/typescript/Colors";
 
 export default function HomeScreen() {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
-  const CHANGELOG_KEY = "app_changelog_shown_v4"; // bump suffix on new releases
+  const CHANGELOG_KEY = "app_changelog_shown_v5"; // bump suffix on new releases
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: color.background }}>
@@ -95,13 +94,13 @@ export default function HomeScreen() {
       {/* First-run changelog modal */}
       <ChangelogModal
         changelogKey={CHANGELOG_KEY}
-        version="الإصدار 0.6 بيتا"
+        version="الإصدار 0.7 بيتا"
         title="آخر التغييرات"
         changes={[
-          "إضافة ميزة التسابيح المكتملة",
-          "إعادة تعيين تلقائي للعدادات كل يوم",
-          "تحسين حجم النصوص والأزرار للشاشات المختلفة",
-          "إصلاح موضع شريط التقدم ومشاكل العرض",
+          "التسابيح: صوت عند الضغط  + تحسين في الأداء",
+          "الأذكار: إعادة بناء كاملة بصفحة واحدة والتنقّل تلقائياً عند الإكمال",
+          "القرآن الكريم: تحميل تدريجي للقراءة ومشاركة الآية كصورة",
+          "تحسينات المشاركة: صور منسّقة مع شعار التطبيق ومشاركة PNG",
         ]}
         color={color}
       />

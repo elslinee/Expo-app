@@ -81,7 +81,6 @@ function TabItem({
 
   return (
     <TouchableOpacity
-      activeOpacity={1}
       accessibilityRole="button"
       accessibilityState={isFocused ? { selected: true } : {}}
       accessibilityLabel={options.tabBarAccessibilityLabel}

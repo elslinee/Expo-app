@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  memo,
 } from "react";
 import {
   View,
@@ -14,12 +15,21 @@ import {
   Modal,
   Alert,
   Share,
+  Platform,
 } from "react-native";
 
 import PagerView from "react-native-pager-view";
 import { FontFamily } from "@/constants/FontFamily";
 import { FontAwesome5 } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import { useAudioPlayer } from "expo-audio";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
+import { captureRef } from "react-native-view-shot";
+import AppLogo from "@/components/AppLogo";
+
+const SOUND_ENABLED_KEY = "azkar_sound_enabled";
 
 type Zikr = {
   category: string;
@@ -51,6 +61,72 @@ export default function AzkarSwiper({ azkar, color }: Props) {
   const current = azkar && azkar.length > 0 ? azkar[index] : undefined;
 
   const [copied, setCopied] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const soundEnabledRef = useRef(true);
+  const [isLoadingSound, setIsLoadingSound] = useState(true);
+  const zikrShareViewRef = useRef<View>(null);
+
+  // Audio player for tap sound
+  const tapSoundPlayer = useAudioPlayer(require("@/assets/audios/click.mp3"));
+
+  // Load saved sound preference on mount
+  useEffect(() => {
+    const loadSoundPreference = async () => {
+      try {
+        const saved = await AsyncStorage.getItem(SOUND_ENABLED_KEY);
+        if (saved !== null) {
+          const enabled = saved === "true";
+          setSoundEnabled(enabled);
+          soundEnabledRef.current = enabled;
+        }
+      } catch (error) {
+        // Use default value if loading fails
+      } finally {
+        setIsLoadingSound(false);
+      }
+    };
+    loadSoundPreference();
+  }, []);
+
+  // Toggle sound on/off - instant update
+  const toggleSound = useCallback(() => {
+    // Update ref first for instant response
+    soundEnabledRef.current = !soundEnabledRef.current;
+    const newValue = soundEnabledRef.current;
+
+    // Update state for UI (non-blocking)
+    setSoundEnabled(newValue);
+
+    // Save to AsyncStorage (non-blocking)
+    AsyncStorage.setItem(SOUND_ENABLED_KEY, String(newValue)).catch(() => {
+      // Silently fail if save fails
+    });
+
+    // Test sound immediately if turning on
+    if (newValue && tapSoundPlayer) {
+      try {
+        tapSoundPlayer.seekTo(0);
+        tapSoundPlayer.play();
+      } catch (error) {
+        // Silently fail
+      }
+    }
+  }, [tapSoundPlayer]);
+
+  // Play tap sound function - optimized for fast clicks
+  // Uses ref to get the latest value instantly
+  const playTapSound = useCallback(() => {
+    if (!tapSoundPlayer || !soundEnabledRef.current) return;
+
+    try {
+      // Reset to beginning immediately for instant response
+      tapSoundPlayer.seekTo(0);
+      // Play immediately without blocking
+      tapSoundPlayer.play();
+    } catch (error) {
+      // Silently fail if audio is not available
+    }
+  }, [tapSoundPlayer]);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -71,18 +147,66 @@ export default function AzkarSwiper({ azkar, color }: Props) {
   }, [current]);
 
   const handleShare = useCallback(async () => {
+    if (!current || !zikrShareViewRef.current) return;
+
     try {
-      if (!current) return;
-      let message = current.content;
-      if (current.description) {
-        message += `\n\n${current.description}`;
+      // Wait a bit to ensure the view is fully rendered
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // Capture the zikr view as base64 data URI
+      const dataUri = await captureRef(zikrShareViewRef.current, {
+        format: "png",
+        quality: 1,
+        result: "data-uri",
+      });
+
+      // Extract base64 data
+      const base64Data = dataUri.split(",")[1];
+
+      // Create a file path in cache directory
+      const fileName = `zikr_${Date.now()}.png`;
+      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+      // Write the base64 data to file
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        // Share the file with proper MIME type
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "image/png",
+          dialogTitle: "مشاركة ذكر",
+          UTI: "public.png", // iOS only
+        });
+      } else {
+        // Fallback: share text
+        let text = current.content;
+        if (current.description) {
+          text += `\n\n${current.description}`;
+        }
+        if (current.reference) {
+          text += `\n\n${current.reference}`;
+        }
+        await Share.share({ message: text });
       }
-      if (current.reference) {
-        message += `\n\n${current.reference}`;
-      }
-      await Share.share({ message });
     } catch (error) {
-      Alert.alert("خطأ", "حدث خطأ في المشاركة");
+      console.error("Error sharing zikr:", error);
+      // Fallback: share text
+      try {
+        let text = current.content;
+        if (current.description) {
+          text += `\n\n${current.description}`;
+        }
+        if (current.reference) {
+          text += `\n\n${current.reference}`;
+        }
+        await Share.share({ message: text });
+      } catch (e) {
+        Alert.alert("خطأ", "حدث خطأ في المشاركة");
+      }
     }
   }, [current]);
 
@@ -101,21 +225,28 @@ export default function AzkarSwiper({ azkar, color }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [azkar?.length]);
 
-  const onTick = () => {
-    const newCount = count + 1;
-    if (newCount >= target) {
-      const next = index + 1;
-      if (next < azkar.length) {
-        pagerRef.current?.setPage(next);
-      } else {
-        // finished all; keep last as completed
-        setCount(target);
-        setShowCompleted(true);
+  const onTick = useCallback(() => {
+    // Play sound immediately (non-blocking, fire and forget)
+    playTapSound();
+
+    // Update count immediately using functional update for instant response
+    setCount((prevCount) => {
+      const newCount = prevCount + 1;
+      if (newCount >= target) {
+        // Schedule page change after UI update
+        requestAnimationFrame(() => {
+          const next = index + 1;
+          if (next < azkar.length) {
+            pagerRef.current?.setPage(next);
+          } else {
+            setShowCompleted(true);
+          }
+        });
+        return target;
       }
-    } else {
-      setCount(newCount);
-    }
-  };
+      return newCount;
+    });
+  }, [target, index, azkar.length, playTapSound]);
 
   return (
     <View style={[styles.container, { backgroundColor: color.background }]}>
@@ -131,84 +262,24 @@ export default function AzkarSwiper({ azkar, color }: Props) {
         scrollEnabled={false}
         initialPage={0}
         onPageSelected={(e: any) => {
-          setIndex(e.nativeEvent.position);
+          const newIndex = e.nativeEvent.position;
+          setIndex(newIndex);
           setCount(0);
         }}
       >
         {azkar && azkar.length > 0 ? (
           azkar.map((z, i) => (
-            <View
-              key={i}
-              style={[
-                styles.card,
-                {
-                  backgroundColor: color.bg20,
-                },
-              ]}
-            >
-              <View style={styles.actionBtns}>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={handleCopy}
-                  style={[
-                    styles.actionBtn,
-                    {
-                      backgroundColor: `${color.text20}22`,
-                    },
-                  ]}
-                >
-                  <FontAwesome5
-                    name={copied ? "check" : "copy"}
-                    size={16}
-                    color={copied ? color.primary : color.darkText}
-                  />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={handleShare}
-                  style={[
-                    styles.actionBtn,
-                    {
-                      backgroundColor: `${color.text20}22`,
-                    },
-                  ]}
-                >
-                  <FontAwesome5
-                    name="share-alt"
-                    size={16}
-                    color={color.darkText}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{
-                  paddingBottom: 28,
-                  flexGrow: 1,
-                  justifyContent: "center",
-                }}
-                showsVerticalScrollIndicator={false}
-              >
-                <Text
-                  ellipsizeMode="tail"
-                  style={[styles.content, { color: color.darkText }]}
-                >
-                  {z.content}
-                </Text>
-                {z.reference ? (
-                  <Text style={[styles.reference, { color: color.text20 }]}>
-                    {z.reference}
-                  </Text>
-                ) : null}
-                {z.description ? (
-                  <Text style={[styles.description, { color: color.text20 }]}>
-                    {z.description}
-                  </Text>
-                ) : null}
-              </ScrollView>
-            </View>
+            <AzkarCardMemo
+              key={`azkar-${i}`}
+              zikr={z}
+              index={i}
+              color={color}
+              copied={copied && i === index}
+              soundEnabled={soundEnabled}
+              onCopy={handleCopy}
+              onShare={handleShare}
+              onToggleSound={toggleSound}
+            />
           ))
         ) : (
           <View
@@ -269,6 +340,7 @@ export default function AzkarSwiper({ azkar, color }: Props) {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  playTapSound();
                   setShowCompleted(false);
                 }}
                 style={[
@@ -288,6 +360,7 @@ export default function AzkarSwiper({ azkar, color }: Props) {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  playTapSound();
                   setIndex(0);
                   setCount(0);
                   pagerRef.current?.setPage(0);
@@ -305,6 +378,66 @@ export default function AzkarSwiper({ azkar, color }: Props) {
       </Modal>
 
       {/* Copied Toast */}
+
+      {/* Hidden View for screenshot with logo - only visible when capturing */}
+      {current && (
+        <View
+          ref={zikrShareViewRef}
+          collapsable={false}
+          style={{
+            position: "absolute",
+            left: -9999,
+            top: -9999,
+            opacity: 0,
+            pointerEvents: "none",
+            backgroundColor: color.bg20,
+            borderRadius: 20,
+            paddingVertical: 24,
+            paddingHorizontal: 24,
+            minWidth: 300,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text
+            style={[
+              styles.content,
+              {
+                color: color.darkText,
+                textAlign: "center",
+                marginBottom: current.reference ? 16 : 0,
+              },
+            ]}
+          >
+            {current.content}
+          </Text>
+          {current.reference ? (
+            <Text style={[styles.reference, { color: color.text20 }]}>
+              {current.reference}
+            </Text>
+          ) : null}
+          {current.description ? (
+            <Text style={[styles.description, { color: color.text20 }]}>
+              {current.description}
+            </Text>
+          ) : null}
+          {/* App Logo for shared image */}
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 12,
+            }}
+          >
+            <AppLogo
+              size={60}
+              primaryColor={color.primary}
+              secondaryColor={color.primary}
+              backgroundColor="transparent"
+            />
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -452,3 +585,124 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+
+// Memoized card component for better performance
+const AzkarCardMemo = memo(
+  ({
+    zikr,
+    index,
+    color,
+    copied,
+    soundEnabled,
+    onCopy,
+    onShare,
+    onToggleSound,
+  }: {
+    zikr: Zikr;
+    index: number;
+    color: any;
+    copied: boolean;
+    soundEnabled: boolean;
+    onCopy: () => void;
+    onShare: () => void;
+    onToggleSound: () => void;
+  }) => {
+    return (
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: color.bg20,
+          },
+        ]}
+      >
+        <View style={styles.actionBtns}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={onToggleSound}
+            style={[
+              styles.actionBtn,
+              {
+                backgroundColor: `${color.text20}22`,
+              },
+            ]}
+          >
+            <FontAwesome5
+              name={soundEnabled ? "volume-up" : "volume-mute"}
+              size={16}
+              color={soundEnabled ? color.primary : color.darkText}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={onCopy}
+            style={[
+              styles.actionBtn,
+              {
+                backgroundColor: `${color.text20}22`,
+              },
+            ]}
+          >
+            <FontAwesome5
+              name={copied ? "check" : "copy"}
+              size={16}
+              color={copied ? color.primary : color.darkText}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={onShare}
+            style={[
+              styles.actionBtn,
+              {
+                backgroundColor: `${color.text20}22`,
+              },
+            ]}
+          >
+            <FontAwesome5 name="share-alt" size={16} color={color.darkText} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingBottom: 28,
+            flexGrow: 1,
+            justifyContent: "center",
+          }}
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+        >
+          <Text
+            ellipsizeMode="tail"
+            style={[styles.content, { color: color.darkText }]}
+          >
+            {zikr.content}
+          </Text>
+          {zikr.reference ? (
+            <Text style={[styles.reference, { color: color.text20 }]}>
+              {zikr.reference}
+            </Text>
+          ) : null}
+          {zikr.description ? (
+            <Text style={[styles.description, { color: color.text20 }]}>
+              {zikr.description}
+            </Text>
+          ) : null}
+        </ScrollView>
+      </View>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Only re-render if relevant props change
+    return (
+      prevProps.index === nextProps.index &&
+      prevProps.copied === nextProps.copied &&
+      prevProps.soundEnabled === nextProps.soundEnabled &&
+      prevProps.zikr.content === nextProps.zikr.content &&
+      prevProps.zikr.reference === nextProps.zikr.reference &&
+      prevProps.zikr.description === nextProps.zikr.description
+    );
+  }
+);

@@ -1,9 +1,9 @@
-export const APP_VERSION = "0.6 ( beta )";
+export const APP_VERSION = "0.7 ( beta )";
 export const APP_NAME = "عين";
 export const APP_AUTHOR = "Elsline";
 export const APP_AUTHOR_EMAIL = "info@elsline.com";
 export const APP_AUTHOR_WEBSITE = "https://elsline.com";
-export const APP_AUTHOR_TWITTER = "https://twitter.com/elsline";
+export const APP_AUTHOR_TWITTER = "https://x.com/elsline";
 export const APP_AUTHOR_FACEBOOK = "https://facebook.com/elsline";
 export const APP_AUTHOR_INSTAGRAM = "https://instagram.com/elsline__";
 export const APP_AUTHOR_LINKEDIN = "https://linkedin.com/in/elsline";

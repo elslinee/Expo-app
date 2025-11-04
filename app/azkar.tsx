@@ -151,7 +151,6 @@ export default function AzkarScreen() {
               <TouchableOpacity
                 key={index}
                 onPress={() => handleCategoryPress(category.title)}
-                activeOpacity={1}
                 style={[
                   styles.card,
                   {
@@ -225,7 +224,6 @@ export default function AzkarScreen() {
               <TouchableOpacity
                 key={index}
                 onPress={() => handleCategoryPress(category.title)}
-                activeOpacity={1}
                 style={[
                   styles.card,
                   {

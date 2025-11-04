@@ -18,7 +18,9 @@ import { getSurahByNumber } from "@/utils/QuranApis";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import AyahModal from "@/components/quranScreen/AyahModal";
 import AyahItem from "@/components/quranScreen/AyahItem";
-import InlineAyahView from "@/components/quranScreen/InlineAyahView";
+import InlineAyahView, {
+  InlineAyahViewHandle,
+} from "@/components/quranScreen/InlineAyahView";
 import ListAyahView from "@/components/quranScreen/ListAyahView";
 import GoBack from "@/components/GoBack";
 import { FontSizeProvider, useFontSize } from "@/context/FontSizeContext";
@@ -72,6 +74,7 @@ export function SurahScreenContent() {
   // Removed loading states for simpler bookmark functionality
   const VIEW_MODE_KEY = "quran_view_mode_inline"; // true => inline, false => list
   const [listPage, setListPage] = useState(10);
+  const inlineRef = useRef<InlineAyahViewHandle | null>(null);
 
   useEffect(() => {
     if (surahNumber) {
@@ -362,11 +365,7 @@ export function SurahScreenContent() {
         <Text style={styles.errorText}>
           {error || "لم يتم العثور على السورة"}
         </Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={styles.retryButton}
-          onPress={fetchSurahData}
-        >
+        <TouchableOpacity style={styles.retryButton} onPress={fetchSurahData}>
           <Text style={styles.retryButtonText}>إعادة المحاولة</Text>
         </TouchableOpacity>
       </View>
@@ -376,14 +375,18 @@ export function SurahScreenContent() {
   const btnsIconsColors = color.darkText;
 
   const handleMainScroll = (event: any) => {
-    if (isInlineMode) return; // Only handle scroll for list mode
-
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const isCloseToBottom =
       layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
 
+    if (isInlineMode) {
+      if (isCloseToBottom) {
+        inlineRef.current?.loadMore?.();
+      }
+      return;
+    }
+
     if (isCloseToBottom && surahData && listPage < surahData.ayahs.length) {
-      console.log("Loading more ayahs from main scroll...");
       setListPage((prevPage) =>
         Math.min(prevPage + 10, surahData.ayahs.length)
       );
@@ -401,6 +404,7 @@ export function SurahScreenContent() {
     if (isInlineMode) {
       return (
         <InlineAyahView
+          ref={inlineRef}
           ayahs={surahData.ayahs}
           bookmark={bookmark}
           onAyahPress={handleAyahPress}
@@ -452,7 +456,6 @@ export function SurahScreenContent() {
           <View style={styles.actionButtonsContainer}>
             {bookmark && (
               <TouchableOpacity
-                activeOpacity={1}
                 style={styles.actionButton}
                 onPress={() => {
                   if (isInlineMode) return;
@@ -468,7 +471,6 @@ export function SurahScreenContent() {
             )}
 
             <TouchableOpacity
-              activeOpacity={1}
               style={styles.actionButton}
               onPress={() => {
                 setIsSwitchingView(true);
@@ -494,7 +496,6 @@ export function SurahScreenContent() {
 
             {/* Font Size Button */}
             <TouchableOpacity
-              activeOpacity={1}
               style={styles.actionButton}
               onPress={() => setShowFontSizePopup(true)}
             >

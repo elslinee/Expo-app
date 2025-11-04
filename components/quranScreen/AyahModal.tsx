@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useRef } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Modal,
   Pressable,
   Share,
+  Platform,
 } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
@@ -13,6 +14,10 @@ import { FontFamily } from "@/constants/FontFamily";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
+import { captureRef } from "react-native-view-shot";
+import AppLogo from "@/components/AppLogo";
 
 interface Ayah {
   numberInSurah: number;
@@ -54,20 +59,64 @@ function AyahModal({
 }: AyahModalProps) {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
+  const ayahShareViewRef = useRef<View>(null);
 
   const handleShare = async () => {
-    if (!ayah) return;
+    if (!ayah || !ayahShareViewRef.current) {
+      console.log("Missing ayah or view ref");
+      return;
+    }
 
     try {
-      const ayahInfo = getAyahInfo();
-      const message = `${ayah.text}\n\n${ayahInfo.surahName} - الآية ${ayahInfo.ayahNumber}`;
+      // Wait a bit to ensure the view is fully rendered
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-      await Share.share({
-        message,
-        title: `آية من القرآن الكريم`,
+      // Double check ref is still valid after waiting
+      if (!ayahShareViewRef.current) {
+        console.log("View ref became null after wait");
+        return;
+      }
+
+      console.log("Attempting to capture view...");
+      // Capture the ayah view as base64 data URI
+      const dataUri = await captureRef(ayahShareViewRef.current, {
+        format: "png",
+        quality: 1,
+        result: "data-uri",
       });
+
+      if (!dataUri || !dataUri.startsWith("data:image")) {
+        throw new Error("Invalid capture result");
+      }
+
+      console.log("View captured successfully");
+
+      // Extract base64 data
+      const base64Data = dataUri.split(",")[1];
+
+      // Create a file path in cache directory
+      const fileName = `ayah_${Date.now()}.png`;
+      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+      // Write the base64 data to file
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        // Share the file with proper MIME type
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "image/png",
+          dialogTitle: "مشاركة آية",
+          UTI: "public.png", // iOS only
+        });
+      } else {
+        console.log("Sharing not available, falling back to text");
+      }
     } catch (error) {
-      console.error("Error sharing:", error);
+      console.error("Error sharing ayah as image:", error);
     }
   };
 
@@ -127,7 +176,7 @@ function AyahModal({
       >
         <View
           style={{
-            backgroundColor: color.background,
+            backgroundColor: color.bg20,
             borderRadius: 16,
             padding: 20,
             margin: 20,
@@ -188,7 +237,6 @@ function AyahModal({
             >
               {/* Share Button */}
               <TouchableOpacity
-                activeOpacity={1}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -200,8 +248,8 @@ function AyahModal({
 
                   justifyContent: "center",
                 }}
-                onPress={() => {
-                  handleShare();
+                onPress={async () => {
+                  await handleShare();
                   onClose();
                 }}
               >
@@ -221,7 +269,6 @@ function AyahModal({
               {/* Favorite/Remove Button */}
               {showRemoveButton ? (
                 <TouchableOpacity
-                  activeOpacity={1}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -258,7 +305,6 @@ function AyahModal({
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
-                  activeOpacity={1}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -301,11 +347,10 @@ function AyahModal({
             </View>
             {showGoToSurah && (
               <TouchableOpacity
-                activeOpacity={1}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: color.bg20,
+                  backgroundColor: color.primary20,
                   paddingHorizontal: 16,
                   paddingVertical: 10,
                   borderRadius: 20,
@@ -333,6 +378,73 @@ function AyahModal({
           </View>
         </View>
       </Pressable>
+
+      {/* Hidden View for screenshot with logo - only visible when capturing */}
+      <View
+        ref={ayahShareViewRef}
+        collapsable={false}
+        style={{
+          position: "absolute",
+          left: -9999,
+          top: -9999,
+          opacity: 0,
+          pointerEvents: "none",
+          backgroundColor: color.bg20,
+          borderRadius: 16,
+          paddingVertical: 24,
+          paddingHorizontal: 20,
+          minWidth: 300,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {ayah ? (
+          <>
+            <Text
+              style={{
+                fontSize: 20,
+                marginBottom: 16,
+                color: color.darkText,
+                fontFamily: FontFamily.quranBold,
+                textAlign: "center",
+              }}
+            >
+              {ayah.text}
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 14,
+                fontFamily: FontFamily.medium,
+                textAlign: "center",
+                marginBottom: 20,
+                color: color.text20,
+                opacity: 0.7,
+              }}
+            >
+              {surahName
+                ? ` ${surahName} - الآية ${ayahInfo.ayahNumber}`
+                : ` ${ayahInfo.surahName} - الآية ${ayahInfo.ayahNumber}`}
+            </Text>
+
+            {/* App Logo for shared image */}
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 12,
+              }}
+            >
+              <AppLogo
+                size={60}
+                primaryColor={color.primary}
+                secondaryColor={color.primary}
+                backgroundColor="transparent"
+              />
+            </View>
+          </>
+        ) : null}
+      </View>
     </Modal>
   );
 }
