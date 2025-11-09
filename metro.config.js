@@ -45,9 +45,21 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     const modulePath = moduleName.replace("@/", "");
     const resolvedPath = path.resolve(__dirname, modulePath);
 
-    // محاولة حل المسار مع extensions
+    // محاولة حل المسار مع extensions (يشمل ملفات الصوت والصور)
     const sourceExts = context.sourceExts ||
-      config.resolver.sourceExts || ["js", "jsx", "ts", "tsx", "json"];
+      config.resolver.sourceExts || [
+        "js",
+        "jsx",
+        "ts",
+        "tsx",
+        "json",
+        "mp3",
+        "png",
+        "jpg",
+        "jpeg",
+        "svg",
+        "webp",
+      ];
     for (const ext of sourceExts) {
       const fullPath = `${resolvedPath}.${ext}`;
       if (fs.existsSync(fullPath)) {
@@ -99,8 +111,22 @@ const existingSourceExts = Array.isArray(config.resolver.sourceExts)
   ? config.resolver.sourceExts
   : [];
 
-config.resolver.sourceExts = isProduction
-  ? existingSourceExts.filter((ext) => ext !== "map")
-  : existingSourceExts;
+// إضافة ملفات الصوت والصور إلى sourceExts إذا لم تكن موجودة
+const requiredExts = ["mp3", "png", "jpg", "jpeg", "svg", "webp"];
+const missingExts = requiredExts.filter(
+  (ext) => !existingSourceExts.includes(ext)
+);
+if (missingExts.length > 0) {
+  config.resolver.sourceExts = [...existingSourceExts, ...missingExts];
+} else {
+  config.resolver.sourceExts = existingSourceExts;
+}
+
+// إزالة source maps من production
+if (isProduction) {
+  config.resolver.sourceExts = config.resolver.sourceExts.filter(
+    (ext) => ext !== "map"
+  );
+}
 
 module.exports = withNativeWind(config, { input: "./global.css" });
