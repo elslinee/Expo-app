@@ -1,6 +1,7 @@
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 const path = require("path");
+const fs = require("fs");
 
 const config = getDefaultConfig(__dirname);
 
@@ -37,9 +38,45 @@ if (!config.resolver) {
 }
 
 // إعداد path alias للـ @/
-config.resolver.alias = {
-  ...(config.resolver.alias || {}),
-  "@": path.resolve(__dirname),
+const originalResolveRequest = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  // حل @/ إلى المجلد الجذري
+  if (moduleName.startsWith("@/")) {
+    const modulePath = moduleName.replace("@/", "");
+    const resolvedPath = path.resolve(__dirname, modulePath);
+
+    // محاولة حل المسار مع extensions
+    const sourceExts = context.sourceExts ||
+      config.resolver.sourceExts || ["js", "jsx", "ts", "tsx", "json"];
+    for (const ext of sourceExts) {
+      const fullPath = `${resolvedPath}.${ext}`;
+      if (fs.existsSync(fullPath)) {
+        return {
+          filePath: fullPath,
+          type: "sourceFile",
+        };
+      }
+    }
+
+    // محاولة حل كـ directory مع index file
+    for (const ext of sourceExts) {
+      const indexPath = path.join(resolvedPath, `index.${ext}`);
+      if (fs.existsSync(indexPath)) {
+        return {
+          filePath: indexPath,
+          type: "sourceFile",
+        };
+      }
+    }
+  }
+
+  // استخدام الـ resolver الأصلي
+  if (originalResolveRequest) {
+    return originalResolveRequest(context, moduleName, platform);
+  }
+
+  // fallback إلى default resolver
+  return context.resolveRequest(context, moduleName, platform);
 };
 
 // التأكد من أن blockList هو array
