@@ -30,25 +30,33 @@ const isProduction =
   process.env.NODE_ENV === "production" ||
   process.env.EXPO_PUBLIC_ENV === "production";
 
+// التأكد من وجود config.resolver
+if (!config.resolver) {
+  config.resolver = {};
+}
+
+// التأكد من أن blockList هو array
+const existingBlockList = Array.isArray(config.resolver.blockList)
+  ? config.resolver.blockList
+  : [];
+
 if (isProduction) {
-  config.resolver = {
-    ...config.resolver,
-    blockList: [
-      ...(config.resolver?.blockList || []),
-      /react-devtools-core/,
-      /react-devtools-shared/,
-      /react-devtools-timeline/,
-    ],
-  };
+  config.resolver.blockList = [
+    ...existingBlockList,
+    /react-devtools-core/,
+    /react-devtools-shared/,
+    /react-devtools-timeline/,
+  ];
 }
 
 // تحسين resolver لإزالة الملفات غير المستخدمة
-config.resolver = {
-  ...config.resolver,
-  // إزالة source maps من production
-  sourceExts: isProduction
-    ? config.resolver.sourceExts.filter((ext) => ext !== "map")
-    : config.resolver.sourceExts,
-};
+// التأكد من أن sourceExts هو array
+const existingSourceExts = Array.isArray(config.resolver.sourceExts)
+  ? config.resolver.sourceExts
+  : [];
+
+config.resolver.sourceExts = isProduction
+  ? existingSourceExts.filter((ext) => ext !== "map")
+  : existingSourceExts;
 
 module.exports = withNativeWind(config, { input: "./global.css" });
