@@ -1,5 +1,6 @@
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
+const path = require("path");
 
 const config = getDefaultConfig(__dirname);
 
@@ -34,6 +35,12 @@ const isProduction =
 if (!config.resolver) {
   config.resolver = {};
 }
+
+// إعداد path alias للـ @/
+config.resolver.alias = {
+  ...(config.resolver.alias || {}),
+  "@": path.resolve(__dirname),
+};
 
 // التأكد من أن blockList هو array
 const existingBlockList = Array.isArray(config.resolver.blockList)
