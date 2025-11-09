@@ -1,6 +1,9 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ColorSchemeType } from "@/constants/ColorSchemes";
+import {
+  ColorSchemeType,
+  ColorSchemesList,
+} from "@/constants/ColorSchemes";
 
 type Theme = "light" | "dark";
 
@@ -34,7 +37,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         if (savedTheme && savedTheme !== theme) {
           setTheme(savedTheme as Theme);
         }
-        if (savedScheme && savedScheme !== colorScheme) {
+        if (
+          savedScheme &&
+          savedScheme !== colorScheme &&
+          ColorSchemesList.includes(savedScheme as ColorSchemeType)
+        ) {
           setColorSchemeState(savedScheme as ColorSchemeType);
         }
       } catch (error) {

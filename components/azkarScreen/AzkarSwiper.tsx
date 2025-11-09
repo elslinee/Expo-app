@@ -15,7 +15,6 @@ import {
   Modal,
   Alert,
   Share,
-  Platform,
 } from "react-native";
 
 import PagerView from "react-native-pager-view";
@@ -150,13 +149,13 @@ export default function AzkarSwiper({ azkar, color }: Props) {
     if (!current || !zikrShareViewRef.current) return;
 
     try {
-      // Wait a bit to ensure the view is fully rendered
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      // Wait a bit to ensure the view is fully rendered for maximum quality
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // Capture the zikr view as base64 data URI
+      // Capture the zikr view as base64 data URI at maximum quality
       const dataUri = await captureRef(zikrShareViewRef.current, {
         format: "png",
-        quality: 1,
+        quality: 1, // Maximum quality (1.0)
         result: "data-uri",
       });
 

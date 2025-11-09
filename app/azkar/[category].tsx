@@ -14,7 +14,6 @@ import { useTheme } from "@/context/ThemeContext";
 import { FontFamily } from "@/constants/FontFamily";
 import GoBack from "@/components/GoBack";
 import { useState, useEffect } from "react";
-import AzkarData from "@/assets/json/Azkar.json";
 import AzkarSwiper from "@/components/azkarScreen/AzkarSwiper";
 
 type Zikr = {
@@ -42,7 +41,7 @@ export default function AzkarCategoryScreen() {
   useEffect(() => {
     const initializeData = async () => {
       await loadFavorites();
-      loadAzkar();
+      await loadAzkar();
     };
     initializeData();
   }, [category]);
@@ -69,8 +68,10 @@ export default function AzkarCategoryScreen() {
     }
   };
 
-  const loadAzkar = () => {
+  const loadAzkar = async () => {
     try {
+      // Dynamic import لتقليل حجم الـ bundle
+      const { default: AzkarData } = await import("@/assets/json/Azkar.json");
       // Access the category from the JSON data
       const categoryAzkar = (AzkarData as any)[category];
 

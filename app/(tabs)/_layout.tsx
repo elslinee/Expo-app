@@ -73,7 +73,7 @@ export default function TabLayout() {
             tabBarIcon: ({ color }: { color: string }) => (
               <FontAwesome5 name="hands" size={24} color={color} />
             ),
-            newTab: true,
+
             newFeature: false,
           } as any
         }

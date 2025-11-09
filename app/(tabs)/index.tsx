@@ -11,7 +11,7 @@ import ChangelogModal from "@/components/ChangelogModal";
 export default function HomeScreen() {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
-  const CHANGELOG_KEY = "app_changelog_shown_v5"; // bump suffix on new releases
+  const CHANGELOG_KEY = "app_changelog_shown_v6"; // bump suffix on new releases
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: color.background }}>
@@ -94,13 +94,14 @@ export default function HomeScreen() {
       {/* First-run changelog modal */}
       <ChangelogModal
         changelogKey={CHANGELOG_KEY}
-        version="الإصدار 0.7 بيتا"
+        version="الإصدار 0.8 بيتا"
         title="آخر التغييرات"
         changes={[
-          "التسابيح: صوت عند الضغط  + تحسين في الأداء",
-          "الأذكار: إعادة بناء كاملة بصفحة واحدة والتنقّل تلقائياً عند الإكمال",
-          "القرآن الكريم: تحميل تدريجي للقراءة ومشاركة الآية كصورة",
-          "تحسينات المشاركة: صور منسّقة مع شعار التطبيق ومشاركة PNG",
+          "التطبيق أصبح أسرع وأكثر استجابة",
+          "حجم التطبيق أصغر بنسبة 15-30%",
+          "صور الأذكار المشتركة أوضح وأجمل",
+          "تحسينات في الأداء والاستقرار",
+          "تحميل أسرع للقرآن الكريم والأذكار",
         ]}
         color={color}
       />

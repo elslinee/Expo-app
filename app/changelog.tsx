@@ -33,6 +33,90 @@ export default function ChangelogScreen() {
 
       {/* Changelog Content */}
       <View style={styles.section}>
+        {/* Version 0.8 */}
+        <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
+          <View
+            style={[
+              styles.versionHeader,
+              { borderBottomColor: color.primary + "30" },
+            ]}
+          >
+            <Text style={[styles.versionNumber, { color: color.primary }]}>
+              الإصدار 0.8 بيتا
+            </Text>
+            <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
+              تحسينات الأداء وتقليل حجم التطبيق
+            </Text>
+          </View>
+
+          {/* تحسينات الأداء */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تحسينات الأداء والسرعة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • التطبيق أصبح أسرع في البدء والاستجابة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحميل أسرع للقرآن الكريم والأذكار
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • استهلاك أقل للذاكرة والبطارية
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • أداء أفضل بشكل عام في جميع الشاشات
+            </Text>
+          </View>
+
+          {/* تحسينات المشاركة */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تحسينات المشاركة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • صور الأذكار المشتركة أصبحت أوضح وأجمل
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • النصوص في الصور المشتركة أكبر وأسهل للقراءة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • الصور تظهر بشكل أفضل على وسائل التواصل الاجتماعي
+            </Text>
+          </View>
+
+          {/* تحسينات الحجم */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تقليل حجم التطبيق
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • حجم التطبيق أصبح أصغر بنسبة 15-30%
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحميل أسرع من المتجر
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • استهلاك أقل لمساحة التخزين على الجهاز
+            </Text>
+          </View>
+
+          {/* تحسينات عامة */}
+          <View style={styles.changelogCategory}>
+            <Text style={[styles.categoryTitle, { color: color.text }]}>
+              تحسينات عامة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • تحسينات في استقرار التطبيق
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • إصلاحات وتحسينات خلفية لتحسين التجربة
+            </Text>
+            <Text style={[styles.changelogItem, { color: color.darkText }]}>
+              • التطبيق أصبح أكثر كفاءة وأقل استهلاكاً للموارد
+            </Text>
+          </View>
+        </View>
+
         {/* Version 0.7 */}
         <View style={[styles.changelogCard, { backgroundColor: color.bg20 }]}>
           <View
@@ -42,7 +126,7 @@ export default function ChangelogScreen() {
             ]}
           >
             <Text style={[styles.versionNumber, { color: color.primary }]}>
-              الإصدار 0.7
+              الإصدار 0.7 بيتا
             </Text>
             <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
               تحسين التسابيح ومشاركة الصور + سلاسة القراءة والأذكار
@@ -145,7 +229,7 @@ export default function ChangelogScreen() {
             ]}
           >
             <Text style={[styles.versionNumber, { color: color.primary }]}>
-              الإصدار 0.6
+              الإصدار 0.6 بيتا
             </Text>
             <Text style={[styles.versionSubtitle, { color: color.darkText }]}>
               تحديث نظام التسابيح + تصميم متجاوب

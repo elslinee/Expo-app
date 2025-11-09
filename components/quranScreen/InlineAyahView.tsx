@@ -22,7 +22,10 @@ export interface InlineAyahViewHandle {
 }
 
 const InlineAyahView = forwardRef<InlineAyahViewHandle, InlineAyahViewProps>(
-  ({ ayahs, bookmark, onAyahPress, toArabicDigits, color }, ref) => {
+  (
+    { ayahs, bookmark, onAyahPress, onToggleBookmark, toArabicDigits, color },
+    ref
+  ) => {
     const { fontSize } = useFontSize();
 
     const [visibleCount, setVisibleCount] = useState(20);
@@ -49,23 +52,19 @@ const InlineAyahView = forwardRef<InlineAyahViewHandle, InlineAyahViewProps>(
           return (
             <Text
               key={ayah.numberInSurah}
-              onPress={() =>
+              onPress={() => {
                 onAyahPress({
                   numberInSurah: ayah.numberInSurah,
                   text: ayah.text,
                   translation: ayah.translation,
-                })
-              }
-              onLongPress={() =>
-                onAyahPress({
-                  numberInSurah: ayah.numberInSurah,
-                  text: ayah.text,
-                  translation: ayah.translation,
-                })
-              }
+                });
+              }}
+              onLongPress={() => {
+                onToggleBookmark(ayah.numberInSurah);
+              }}
               style={
                 isThisBookmarked
-                  ? styles.inlineAyahTextBookmarked(color.primary20)
+                  ? styles.inlineAyahTextBookmarked(color.primary + "88")
                   : styles.inlineAyahText
               }
             >
@@ -91,10 +90,10 @@ const styles = {
   }),
   inlineAyahText: {
     backgroundColor: "transparent",
-    borderRadius: 10,
     paddingHorizontal: 4,
     paddingVertical: 2,
     textAlign: "center" as const,
+    borderRadius: 10,
   },
   inlineAyahTextBookmarked: (backgroundColor: string) => ({
     backgroundColor: backgroundColor,

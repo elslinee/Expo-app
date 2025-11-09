@@ -5,8 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Modal,
-  Pressable,
   StyleSheet,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -265,7 +263,9 @@ export function SurahScreenContent() {
       console.error("Error fetching surah data:", err);
       setError("فشل في تحميل السورة");
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
     }
   };
 
@@ -377,7 +377,7 @@ export function SurahScreenContent() {
   const handleMainScroll = (event: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const isCloseToBottom =
-      layoutMeasurement.height + contentOffset.y >= contentSize.height - 50;
+      layoutMeasurement.height + contentOffset.y >= contentSize.height - 240;
 
     if (isInlineMode) {
       if (isCloseToBottom) {
@@ -454,7 +454,7 @@ export function SurahScreenContent() {
             </Text>
           </View>
           <View style={styles.actionButtonsContainer}>
-            {bookmark && (
+            {bookmark && !isInlineMode && (
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => {

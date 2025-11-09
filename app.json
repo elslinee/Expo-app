@@ -16,10 +16,9 @@
     "ios": {
       "supportsTablet": true,
       "backgroundColor": "#FBF5EA",
+      "jsEngine": "hermes",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "remote-notification"
-        ],
+        "UIBackgroundModes": ["remote-notification"],
         "NSLocationWhenInUseUsageDescription": "يستخدم التطبيق الموقع لتحديد أوقات الصلاة بدقة",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "يستخدم التطبيق الموقع لتحديد أوقات الصلاة بدقة"
       }
@@ -32,6 +31,7 @@
       "edgeToEdgeEnabled": true,
       "package": "com.elsline.een",
       "supportsRtl": true,
+      "jsEngine": "hermes",
       "notification": {
         "sound": "./assets/audios/adhanVoice.mp3"
       },
@@ -40,19 +40,16 @@
         "ACCESS_FINE_LOCATION",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
-      ]
+      ],
+      "enableProguardInReleaseBuilds": true,
+      "enableShrinkResourcesInReleaseBuilds": true
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/logo.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-audio",
-      "expo-font",
-      "expo-web-browser"
-    ],
+    "plugins": ["expo-router", "expo-audio", "expo-font", "expo-web-browser"],
     "experiments": {
       "typedRoutes": true
     },
