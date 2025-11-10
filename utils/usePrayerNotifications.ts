@@ -9,18 +9,19 @@ import type { PrayerTimesData } from "@/utils/prayerTimesService";
 
 type PrayerKey = keyof PrayerTimesData["timings"];
 
-const PRAYER_ORDER: PrayerKey[] = [
+// Only the prayers we want to schedule notifications for
+type ScheduledPrayerKey = "Fajr" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";
+
+const PRAYER_ORDER: ScheduledPrayerKey[] = [
   "Fajr",
-  "Sunrise",
   "Dhuhr",
   "Asr",
   "Maghrib",
   "Isha",
 ];
 
-const PRAYER_TITLES: Record<PrayerKey, string> = {
+const PRAYER_TITLES: Record<ScheduledPrayerKey, string> = {
   Fajr: "أذان صلاة الفجر",
-  Sunrise: "أذان صلاة الشروق",
   Dhuhr: "أذان صلاة الظهر",
   Asr: "أذان صلاة العصر",
   Maghrib: "أذان صلاة المغرب",
@@ -29,7 +30,7 @@ const PRAYER_TITLES: Record<PrayerKey, string> = {
 
 interface UsePrayerNotificationsOptions {
   enabled?: boolean;
-  include?: Partial<Record<PrayerKey, boolean>>; // e.g., { Sunrise: false }
+  include?: Partial<Record<ScheduledPrayerKey, boolean>>; // e.g., { Fajr: false }
   titlePrefix?: string;
 }
 
@@ -57,7 +58,7 @@ export default function usePrayerNotifications(
     const tz = prayerTimes.meta.timezone || "Africa/Cairo";
     const now = new Date();
 
-    type IdMap = Partial<Record<PrayerKey, string>>;
+    type IdMap = Partial<Record<ScheduledPrayerKey, string>>;
     const IDS_KEY = "prayer_notification_ids_v1";
 
     const schedulePerPrayer = async () => {
@@ -70,7 +71,6 @@ export default function usePrayerNotifications(
       const currentInclude = JSON.stringify(include);
       const currentTimings = JSON.stringify({
         Fajr: prayerTimes.timings.Fajr,
-        Sunrise: prayerTimes.timings.Sunrise,
         Dhuhr: prayerTimes.timings.Dhuhr,
         Asr: prayerTimes.timings.Asr,
         Maghrib: prayerTimes.timings.Maghrib,
@@ -93,15 +93,8 @@ export default function usePrayerNotifications(
         const todayInTZ = toZonedTime(now, tz);
         const yyyyMMdd = format(todayInTZ, "yyyy-MM-dd", { timeZone: tz });
 
-        console.log("📅 جدولة الإشعارات للصلوات:", include);
-        console.log(
-          "🔍 تفاصيل إعدادات الإشعارات:",
-          JSON.stringify(include, null, 2)
-        );
-
         // Cancel ALL scheduled notifications first to prevent duplicates
         await Notifications.cancelAllScheduledNotificationsAsync();
-        console.log("🗑️ تم إلغاء جميع الإشعارات السابقة");
 
         // Clear stored IDs
         try {
@@ -113,7 +106,6 @@ export default function usePrayerNotifications(
           (enabled) => enabled === true
         );
         if (!hasEnabledPrayers) {
-          console.log("❌ لا توجد صلوات مفعلة - لن يتم جدولة أي إشعارات");
           return;
         }
 
@@ -124,13 +116,11 @@ export default function usePrayerNotifications(
 
           if (!included) {
             // Do not schedule for excluded prayer
-            console.log(`❌ ${key}: الإشعار معطل - لن يتم جدولته`);
             continue;
           }
 
           const hhmm = prayerTimes.timings[key];
           if (!hhmm) {
-            console.log(`⚠️ ${key}: لا يوجد وقت للصلاة`);
             continue;
           }
 
@@ -159,17 +149,12 @@ export default function usePrayerNotifications(
             },
           });
           nextStored[key] = identifier;
-          console.log(
-            `✅ ${key}: تم جدولة الإشعار بنجاح - الوقت: ${targetInstant.getHours()}:${String(targetInstant.getMinutes()).padStart(2, "0")} | ID: ${identifier}`
-          );
         }
 
         // Persist latest identifiers map
         try {
           await AsyncStorage.setItem(IDS_KEY, JSON.stringify(nextStored));
         } catch {}
-
-        console.log("✅ تم جدولة جميع الإشعارات بنجاح");
       } catch (err) {
         console.error("Failed scheduling prayer notifications:", err);
       } finally {

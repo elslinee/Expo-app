@@ -15,6 +15,7 @@ import {
   Modal,
   Alert,
   Share,
+  Pressable,
 } from "react-native";
 
 import PagerView from "react-native-pager-view";
@@ -27,6 +28,7 @@ import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import { captureRef } from "react-native-view-shot";
 import AppLogo from "@/components/AppLogo";
+import OneTimeTip from "@/components/OneTimeTip";
 
 const SOUND_ENABLED_KEY = "azkar_sound_enabled";
 
@@ -42,6 +44,39 @@ interface Props {
   azkar: Zikr[];
   color: any;
 }
+
+interface TooltipProps {
+  visible: boolean;
+  text: string;
+  onClose: () => void;
+  color: any;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ visible, text, onClose, color }) => {
+  if (!visible) return null;
+
+  return (
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.tooltipOverlay} onPress={onClose}>
+        <View
+          style={[
+            styles.tooltipContainer,
+            { backgroundColor: color.background },
+          ]}
+        >
+          <Text style={[styles.tooltipText, { color: color.text }]}>
+            {text}
+          </Text>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+};
 
 // Pager-based swiper
 export default function AzkarSwiper({ azkar, color }: Props) {
@@ -64,6 +99,10 @@ export default function AzkarSwiper({ azkar, color }: Props) {
   const soundEnabledRef = useRef(true);
   const [isLoadingSound, setIsLoadingSound] = useState(true);
   const zikrShareViewRef = useRef<View>(null);
+  const [tooltip, setTooltip] = useState<{ visible: boolean; text: string }>({
+    visible: false,
+    text: "",
+  });
 
   // Audio player for tap sound
   const tapSoundPlayer = useAudioPlayer(require("@/assets/audios/click.mp3"));
@@ -144,6 +183,15 @@ export default function AzkarSwiper({ azkar, color }: Props) {
       Alert.alert("خطأ", "حدث خطأ في النسخ");
     }
   }, [current]);
+
+  const showTooltip = useCallback((text: string) => {
+    setTooltip({ visible: true, text });
+    setTimeout(() => setTooltip({ visible: false, text: "" }), 2000);
+  }, []);
+
+  const hideTooltip = useCallback(() => {
+    setTooltip({ visible: false, text: "" });
+  }, []);
 
   const handleShare = useCallback(async () => {
     if (!current || !zikrShareViewRef.current) return;
@@ -255,48 +303,51 @@ export default function AzkarSwiper({ azkar, color }: Props) {
         </Text>
       </View>
 
-      <PagerView
-        ref={pagerRef}
-        style={{ flex: 1, paddingHorizontal: 12 }}
-        scrollEnabled={false}
-        initialPage={0}
-        onPageSelected={(e: any) => {
-          const newIndex = e.nativeEvent.position;
-          setIndex(newIndex);
-          setCount(0);
-        }}
-      >
-        {azkar && azkar.length > 0 ? (
-          azkar.map((z, i) => (
-            <AzkarCardMemo
-              key={`azkar-${i}`}
-              zikr={z}
-              index={i}
-              color={color}
-              copied={copied && i === index}
-              soundEnabled={soundEnabled}
-              onCopy={handleCopy}
-              onShare={handleShare}
-              onToggleSound={toggleSound}
-            />
-          ))
-        ) : (
-          <View
-            key={"empty"}
-            style={[
-              styles.card,
-              {
-                backgroundColor: color.white,
-                shadowColor: color.primary,
-              },
-            ]}
-          >
-            <Text style={[styles.description, { color: color.text20 }]}>
-              لا توجد أذكار متاحة
-            </Text>
-          </View>
-        )}
-      </PagerView>
+      <View style={{ flex: 1, direction: "ltr" }}>
+        <PagerView
+          ref={pagerRef}
+          style={{ flex: 1, paddingHorizontal: 12, direction: "ltr" }}
+          scrollEnabled={false}
+          initialPage={0}
+          onPageSelected={(e: any) => {
+            const newIndex = e.nativeEvent.position;
+            setIndex(newIndex);
+            setCount(0);
+          }}
+        >
+          {azkar && azkar.length > 0 ? (
+            azkar.map((z, i) => (
+              <AzkarCardMemo
+                key={`azkar-${i}`}
+                zikr={z}
+                index={i}
+                color={color}
+                copied={copied && i === index}
+                soundEnabled={soundEnabled}
+                onCopy={handleCopy}
+                onShare={handleShare}
+                onToggleSound={toggleSound}
+                onShowTooltip={showTooltip}
+              />
+            ))
+          ) : (
+            <View
+              key={"empty"}
+              style={[
+                styles.card,
+                {
+                  backgroundColor: color.white,
+                  shadowColor: color.primary,
+                },
+              ]}
+            >
+              <Text style={[styles.description, { color: color.text20 }]}>
+                لا توجد أذكار متاحة
+              </Text>
+            </View>
+          )}
+        </PagerView>
+      </View>
 
       <View style={styles.counterRow}>
         <TouchableOpacity
@@ -378,6 +429,74 @@ export default function AzkarSwiper({ azkar, color }: Props) {
 
       {/* Copied Toast */}
 
+      {/* OneTimeTip for action buttons */}
+      <OneTimeTip
+        tipKey="azkar_action_buttons_tip_shown"
+        title="أزرار التحكم"
+        color={color}
+      >
+        <View>
+          <Text
+            style={{
+              fontFamily: FontFamily.regular,
+              textAlign: "center",
+              fontSize: 16,
+              color: color.darkText,
+            }}
+          >
+            اضغط مطولاً على الايقونة لمعرفة ماذا تفعل
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 16,
+              justifyContent: "center",
+              alignItems: "center",
+              marginVertical: 16,
+            }}
+          >
+            <View
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: `${color.text20}22`,
+                },
+              ]}
+            >
+              <FontAwesome5 name="volume-up" size={16} color={color.primary} />
+            </View>
+            <View
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: `${color.text20}22`,
+                },
+              ]}
+            >
+              <FontAwesome5 name="copy" size={16} color={color.darkText} />
+            </View>
+            <View
+              style={[
+                styles.actionBtn,
+                {
+                  backgroundColor: `${color.text20}22`,
+                },
+              ]}
+            >
+              <FontAwesome5 name="share-alt" size={16} color={color.darkText} />
+            </View>
+          </View>
+        </View>
+      </OneTimeTip>
+
+      {/* Tooltip for long press */}
+      <Tooltip
+        visible={tooltip.visible}
+        text={tooltip.text}
+        onClose={hideTooltip}
+        color={color}
+      />
+
       {/* Hidden View for screenshot with logo - only visible when capturing */}
       {current && (
         <View
@@ -402,7 +521,7 @@ export default function AzkarSwiper({ azkar, color }: Props) {
             style={[
               styles.content,
               {
-                color: color.darkText,
+                color: color.text,
                 textAlign: "center",
                 marginBottom: current.reference ? 16 : 0,
               },
@@ -569,6 +688,31 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: 14,
   },
+  tooltipOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  },
+  tooltipContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    maxWidth: "80%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  tooltipText: {
+    fontSize: 14,
+    fontFamily: FontFamily.medium,
+    textAlign: "center",
+  },
   actionBtns: {
     flexDirection: "row",
     justifyContent: "center",
@@ -596,6 +740,7 @@ const AzkarCardMemo = memo(
     onCopy,
     onShare,
     onToggleSound,
+    onShowTooltip,
   }: {
     zikr: Zikr;
     index: number;
@@ -605,6 +750,7 @@ const AzkarCardMemo = memo(
     onCopy: () => void;
     onShare: () => void;
     onToggleSound: () => void;
+    onShowTooltip: (text: string) => void;
   }) => {
     return (
       <View
@@ -619,6 +765,7 @@ const AzkarCardMemo = memo(
           <TouchableOpacity
             activeOpacity={1}
             onPress={onToggleSound}
+            onLongPress={() => onShowTooltip("تفعيل/إلغاء صوت النقر")}
             style={[
               styles.actionBtn,
               {
@@ -635,6 +782,7 @@ const AzkarCardMemo = memo(
           <TouchableOpacity
             activeOpacity={1}
             onPress={onCopy}
+            onLongPress={() => onShowTooltip("نسخ الذكر")}
             style={[
               styles.actionBtn,
               {
@@ -652,6 +800,7 @@ const AzkarCardMemo = memo(
           <TouchableOpacity
             activeOpacity={1}
             onPress={onShare}
+            onLongPress={() => onShowTooltip("مشاركة الذكر")}
             style={[
               styles.actionBtn,
               {
@@ -701,7 +850,8 @@ const AzkarCardMemo = memo(
       prevProps.soundEnabled === nextProps.soundEnabled &&
       prevProps.zikr.content === nextProps.zikr.content &&
       prevProps.zikr.reference === nextProps.zikr.reference &&
-      prevProps.zikr.description === nextProps.zikr.description
+      prevProps.zikr.description === nextProps.zikr.description &&
+      prevProps.onShowTooltip === nextProps.onShowTooltip
     );
   }
 );

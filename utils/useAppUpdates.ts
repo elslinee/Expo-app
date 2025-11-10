@@ -26,17 +26,14 @@ export default function useAppUpdates() {
     try {
       // لا تتحقق من التحديثات في وضع التطوير
       if (__DEV__ || !Updates.isEnabled) {
-        console.log("⚠️ التحديثات معطلة في وضع التطوير");
         return;
       }
 
       setUpdateState((prev) => ({ ...prev, isChecking: true, error: null }));
-      console.log("🔍 جاري التحقق من وجود تحديثات...");
 
       const update = await Updates.checkForUpdateAsync();
 
       if (update.isAvailable) {
-        console.log("✅ تحديث جديد متاح!");
         setUpdateState((prev) => ({
           ...prev,
           isChecking: false,
@@ -45,17 +42,15 @@ export default function useAppUpdates() {
         }));
 
         // تحميل التحديث
-        console.log("📥 جاري تحميل التحديث...");
+
         await Updates.fetchUpdateAsync();
 
-        console.log("✅ تم تحميل التحديث بنجاح");
         setUpdateState((prev) => ({
           ...prev,
           isDownloading: false,
           showUpdateModal: true,
         }));
       } else {
-        console.log("✅ التطبيق محدث بالفعل");
         setUpdateState((prev) => ({ ...prev, isChecking: false }));
       }
     } catch (error) {

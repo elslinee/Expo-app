@@ -452,9 +452,6 @@ class PrayerTimesService {
       // Check if we have recent cached data first
       const hasRecentData = await this.hasValidCachedData();
       if (hasRecentData) {
-        console.log(
-          "Recent prayer times data available, skipping location monitoring"
-        );
         return;
       }
 

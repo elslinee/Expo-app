@@ -10,7 +10,6 @@ config.transformer = {
   ...config.transformer,
   minifierPath: require.resolve("metro-minify-terser"),
   minifierConfig: {
-    // إزالة console.log في production
     compress: {
       drop_console: true,
       passes: 3,

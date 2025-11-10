@@ -1,8 +1,6 @@
 import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
-import { View, ScrollView } from "react-native";
-import DateAndLocation from "@/components/homeScreen/DateAndLocation";
-import ClockComponent from "@/components/PrayerTimesScreen/ClockComponent";
+import { ScrollView } from "react-native";
 import CountdownTimer from "@/components/PrayerTimesScreen/CountdownTimer";
 import AladhanVoice from "@/components/PrayerTimesScreen/AladhanVoice";
 

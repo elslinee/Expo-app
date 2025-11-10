@@ -1,4 +1,4 @@
-import { View, ScrollView, Text } from "react-native";
+import { View, ScrollView } from "react-native";
 import HeroSection from "@/components/homeScreen/HeroSection";
 import PrayerTimesComponent from "@/components/homeScreen/PrayerTimesComponent";
 import { getColors } from "@/constants/Colors";
@@ -11,7 +11,7 @@ import ChangelogModal from "@/components/ChangelogModal";
 export default function HomeScreen() {
   const { theme, colorScheme } = useTheme();
   const color = getColors(theme, colorScheme)[theme];
-  const CHANGELOG_KEY = "app_changelog_shown_v6"; // bump suffix on new releases
+  const CHANGELOG_KEY = "app_changelog_shown_v7"; // bump suffix on new releases
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: color.background }}>
@@ -94,14 +94,14 @@ export default function HomeScreen() {
       {/* First-run changelog modal */}
       <ChangelogModal
         changelogKey={CHANGELOG_KEY}
-        version="الإصدار 0.8 بيتا"
+        version="الإصدار 0.9 بيتا"
         title="آخر التغييرات"
         changes={[
-          "التطبيق أصبح أسرع وأكثر استجابة",
-          "حجم التطبيق أصغر بنسبة 15-30%",
-          "صور الأذكار المشتركة أوضح وأجمل",
-          "تحسينات في الأداء والاستقرار",
-          "تحميل أسرع للقرآن الكريم والأذكار",
+          "إزالة صلاة الشروق من قائمة الصلوات والإشعارات",
+          "إضافة لونين جديدين للوحة الألوان: البنفسجي والرمادي",
+          "إضافة نصائح تفاعلية للأزرار في صفحة السورة والأذكار",
+          "إصلاح مشكلة شاشة التحميل على بعض الأجهزة (مثل شاومي)",
+          "إضافة وضع 'تلقائي' للثيم يتبع إعدادات الجهاز تلقائياً",
         ]}
         color={color}
       />

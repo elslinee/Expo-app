@@ -206,28 +206,6 @@ export default function FavoritesScreen() {
             >
               ﴿ {toArabicDigits(item.ayahNumber)} ﴾
             </Text>
-            {/* <View
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 99,
-                backgroundColor: color.primary,
-                justifyContent: "center",
-                alignItems: "center",
-                borderWidth: 0,
-                marginRight: 8,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: "#fff",
-                }}
-              >
-                {item.ayahNumber}
-              </Text>
-            </View> */}
-
             <View style={{ flex: 1 }}>
               <Text
                 style={{

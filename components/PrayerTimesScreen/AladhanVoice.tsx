@@ -5,7 +5,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { usePrayerTimes } from "@/context/PrayerTimesContext";
 import {
   ElfajrIcon,
-  ElshrokIcon,
   EldohrIcon,
   El3srIcon,
   ElmgrbIcon,
@@ -19,27 +18,12 @@ import { FontFamily } from "@/constants/FontFamily";
 export default function AladhanVoice({ color }: { color: any }) {
   const { prayerTimes } = usePrayerTimes();
   // Stable keys to map times and toggles
-  const PRAYER_KEYS = [
-    "Fajr",
-    "Sunrise",
-    "Dhuhr",
-    "Asr",
-    "Maghrib",
-    "Isha",
-  ] as const;
+  const PRAYER_KEYS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"] as const;
 
   const [prayers, setPrayers] = useState([
     {
       name: "الفجر",
       icon: ElfajrIcon,
-      time: "00:00",
-      time24: "00:00",
-      aldhan: true,
-      notification: true,
-    },
-    {
-      name: "الشروق",
-      icon: ElshrokIcon,
       time: "00:00",
       time24: "00:00",
       aldhan: true,

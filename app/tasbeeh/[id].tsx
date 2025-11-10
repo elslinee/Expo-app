@@ -5,52 +5,37 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  ViewStyle,
-  Animated,
-  Easing,
-  Dimensions,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
+import { View, Text, Pressable, Dimensions } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import { captureRef } from "react-native-view-shot";
+import { Animated, Easing } from "react-native";
 import { useTheme } from "@/context/ThemeContext";
 import { getColors } from "@/constants/Colors";
 import { FontFamily } from "@/constants/FontFamily";
 import GoBack from "@/components/GoBack";
-import AppLogo from "@/components/AppLogo";
-import Svg, { Circle } from "react-native-svg";
-import { useAudioPlayer } from "expo-audio";
-import { FontAwesome5 } from "@expo/vector-icons";
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-type TasbeehItem = {
-  id: string;
-  name: string;
-  count: number;
-  dailyGoal: number;
-  totalCount?: number;
-  lastUsedDate?: string;
-  history?: { date: string; count: number }[];
-};
-
-const STORAGE_KEY = "TASBEEH_LIST_V2";
-const SOUND_ENABLED_KEY = "tasbeeh_sound_enabled";
+import { useTasbeehItem } from "@/hooks/useTasbeehItem";
+import { useSound } from "@/hooks/useSound";
+import {
+  CounterCard,
+  ActionButton,
+  ResetModal,
+  GoalReachedToast,
+  CopiedToast,
+  ShareView,
+  type TasbeehItem,
+} from "@/components/tasbeehDetail";
 
 export default function TasbeehDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { theme, colorScheme } = useTheme();
   const themeColors = getColors(theme, colorScheme)[theme];
-  const [item, setItem] = useState<TasbeehItem | null>(null);
+  const { item, setItem, persist } = useTasbeehItem(id);
+  const { soundEnabled, toggleSound, playTapSound } = useSound();
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -63,10 +48,6 @@ export default function TasbeehDetail() {
   const buttonViewRef = useRef<View>(null);
   const completedDailyGoalColor = themeColors.focusColor;
 
-  // Sound state
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const soundEnabledRef = useRef(true);
-  const tapSoundPlayer = useAudioPlayer(require("@/assets/audios/click.mp3"));
   // Get screen dimensions for responsive design
   const screenWidth = Dimensions.get("window").width;
   const screenHeight = Dimensions.get("window").height;
@@ -78,131 +59,52 @@ export default function TasbeehDetail() {
     return Math.min(item.count / item.dailyGoal, 1);
   }, [item]);
 
-  // Load saved sound preference on mount
+  // Initialize progress animation only when item ID changes (new item loaded)
   useEffect(() => {
-    const loadSoundPreference = async () => {
-      try {
-        const saved = await AsyncStorage.getItem(SOUND_ENABLED_KEY);
-        if (saved !== null) {
-          const enabled = saved === "true";
-          setSoundEnabled(enabled);
-          soundEnabledRef.current = enabled;
-        }
-      } catch (error) {
-        // Use default value if loading fails
-      }
-    };
-    loadSoundPreference();
-  }, []);
-
-  // Toggle sound on/off - instant update
-  const toggleSound = useCallback(() => {
-    // Update ref first for instant response
-    soundEnabledRef.current = !soundEnabledRef.current;
-    const newValue = soundEnabledRef.current;
-
-    // Update state for UI (non-blocking)
-    setSoundEnabled(newValue);
-
-    // Save to AsyncStorage (non-blocking)
-    AsyncStorage.setItem(SOUND_ENABLED_KEY, String(newValue)).catch(() => {
-      // Silently fail if save fails
-    });
-
-    // Test sound immediately if turning on
-    if (newValue && tapSoundPlayer) {
-      try {
-        tapSoundPlayer.seekTo(0);
-        tapSoundPlayer.play();
-      } catch (error) {
-        // Silently fail
-      }
-    }
-  }, [tapSoundPlayer]);
-
-  // Play tap sound function - optimized for fast clicks
-  // Uses ref to get the latest value instantly
-  const playTapSound = useCallback(() => {
-    if (!tapSoundPlayer || !soundEnabledRef.current) return;
-
-    try {
-      // Reset to beginning immediately for instant response
-      tapSoundPlayer.seekTo(0);
-      // Play immediately without blocking
-      tapSoundPlayer.play();
-    } catch (error) {
-      // Silently fail if audio is not available
-    }
-  }, [tapSoundPlayer]);
-
-  useEffect(() => {
-    const load = async () => {
-      // Try to migrate from V1 if needed
-      const oldData = await AsyncStorage.getItem("TASBEEH_LIST_V1");
-      if (oldData && !(await AsyncStorage.getItem(STORAGE_KEY))) {
-        try {
-          const oldItems: TasbeehItem[] = JSON.parse(oldData);
-          const migratedItems = oldItems.map((item) => ({
-            ...item,
-            totalCount: item.count || 0,
-            lastUsedDate: new Date().toISOString().split("T")[0],
-            history:
-              item.count > 0
-                ? [
-                    {
-                      date: new Date().toISOString().split("T")[0],
-                      count: item.count,
-                    },
-                  ]
-                : [],
-          }));
-          await AsyncStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(migratedItems)
-          );
-        } catch {}
-      }
-
-      const saved = await AsyncStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
-      try {
-        const list: TasbeehItem[] = JSON.parse(saved) || [];
-        let found = list.find((it) => it.id === id);
-
-        if (found) {
-          // Reset daily count if it's a new day
-          const today = new Date().toISOString().split("T")[0];
-          if (found.lastUsedDate && found.lastUsedDate !== today) {
-            found = { ...found, count: 0 };
-            // Update storage
-            const updatedList = list.map((it) => (it.id === id ? found : it));
-            await AsyncStorage.setItem(
-              STORAGE_KEY,
-              JSON.stringify(updatedList)
-            );
-          }
-
-          setItem(found);
-          const initialProgress =
-            found.dailyGoal > 0
-              ? Math.min(found.count / found.dailyGoal, 1)
-              : 0;
+    if (item) {
+      const initialProgress =
+        item.dailyGoal > 0 ? Math.min(item.count / item.dailyGoal, 1) : 0;
+      // Stop any ongoing animation first
+      progressAnim.stopAnimation((currentValue) => {
+        // Only animate if there's a significant difference to avoid jumps
+        if (
+          currentValue !== undefined &&
+          Math.abs(currentValue - initialProgress) > 0.01
+        ) {
+          Animated.timing(progressAnim, {
+            toValue: initialProgress,
+            duration: 200,
+            useNativeDriver: false,
+            easing: Easing.out(Easing.cubic),
+          }).start();
+        } else {
+          // If close or undefined, just set directly
           progressAnim.setValue(initialProgress);
         }
-      } catch {}
-    };
-    load();
-  }, [id, progressAnim]);
+      });
+    }
+  }, [item?.id, progressAnim]); // Only when item ID changes (new item loaded)
 
-  const persist = useCallback(async (updated: TasbeehItem) => {
-    const saved = await AsyncStorage.getItem(STORAGE_KEY);
-    let list: TasbeehItem[] = [];
-    try {
-      list = saved ? JSON.parse(saved) : [];
-    } catch {}
-    const next = list.map((it) => (it.id === updated.id ? updated : it));
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  }, []);
+  // Pulse animation loop
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1600,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.quad),
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulseAnim]);
 
   const playPressAnimation = useCallback(() => {
     Animated.sequence([
@@ -220,19 +122,6 @@ export default function TasbeehDetail() {
       }),
     ]).start();
   }, [scaleAnim]);
-
-  // const playSound = useCallback(async () => {
-  //   try {
-  //     if (soundRef.current) {
-  //       // إيقاف الصوت السابق إذا كان يعمل ثم تشغيل من البداية
-  //       await soundRef.current.stopAsync();
-  //       await soundRef.current.setPositionAsync(0);
-  //       await soundRef.current.playAsync();
-  //     }
-  //   } catch (error) {
-  //     console.error("Error playing sound:", error);
-  //   }
-  // }, []);
 
   const increment = useCallback(() => {
     if (!item) return;
@@ -267,12 +156,15 @@ export default function TasbeehDetail() {
     const newProgress =
       item.dailyGoal > 0 ? Math.min(next.count / item.dailyGoal, 1) : 0;
 
-    Animated.timing(progressAnim, {
-      toValue: newProgress,
-      duration: 300,
-      useNativeDriver: false,
-      easing: Easing.out(Easing.cubic),
-    }).start();
+    // Stop any ongoing animation and animate from current value
+    progressAnim.stopAnimation((currentValue) => {
+      Animated.timing(progressAnim, {
+        toValue: newProgress,
+        duration: 300,
+        useNativeDriver: false,
+        easing: Easing.out(Easing.cubic),
+      }).start();
+    });
 
     // Check if goal reached - show toast notification
     if (next.count === item.dailyGoal && item.dailyGoal > 0) {
@@ -306,6 +198,7 @@ export default function TasbeehDetail() {
     progressAnim,
     goalToastAnim,
     playTapSound,
+    setItem,
   ]);
 
   const reset = useCallback(() => {
@@ -317,17 +210,20 @@ export default function TasbeehDetail() {
     if (!item) return;
     const next = { ...item, count: 0 };
 
-    Animated.timing(progressAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: false,
-      easing: Easing.out(Easing.cubic),
-    }).start();
+    // Stop any ongoing animation and animate from current value to 0
+    progressAnim.stopAnimation(() => {
+      Animated.timing(progressAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+        easing: Easing.out(Easing.cubic),
+      }).start();
+    });
 
     setItem(next);
     persist(next);
     setShowResetModal(false);
-  }, [item, persist, progressAnim]);
+  }, [item, persist, progressAnim, setItem]);
 
   const cancelReset = useCallback(() => {
     setShowResetModal(false);
@@ -407,39 +303,13 @@ export default function TasbeehDetail() {
     });
   }, [item, copiedAnim]);
 
-  const counterCardStyle = useMemo<ViewStyle>(
-    () => ({
-      width: "100%",
-      minHeight: 140,
-      borderRadius: 18,
-      borderWidth: 0,
-      backgroundColor: themeColors.bg20,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 24,
-    }),
-    [themeColors]
-  );
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1600,
-          useNativeDriver: true,
-          easing: Easing.out(Easing.quad),
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pulseAnim]);
+  const handleButtonPress = useCallback(() => {
+    if (progress >= 1) {
+      confirmReset();
+    } else {
+      increment();
+    }
+  }, [progress, confirmReset, increment]);
 
   if (!item) {
     return (
@@ -486,6 +356,8 @@ export default function TasbeehDetail() {
     );
   }
 
+  const bottomButtonSize = isSmallScreen ? 150 : 170;
+
   return (
     <View
       style={{
@@ -517,200 +389,19 @@ export default function TasbeehDetail() {
             paddingTop: 40,
           }}
         >
-          <View style={counterCardStyle}>
-            {(() => {
-              const size = isSmallScreen ? 150 : 200;
-              const strokeWidth = isSmallScreen ? 12 : 16;
-              const radius = (size - strokeWidth) / 2;
-              const circumference = 2 * Math.PI * radius;
-
-              return (
-                <View
-                  style={{
-                    gap: isSmallScreen ? 18 : 32,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Pressable
-                    onLongPress={copyToClipboard}
-                    style={{
-                      maxHeight: 200,
-                      width: "100%",
-                      paddingHorizontal: 10,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: themeColors.text,
-                        fontFamily: FontFamily.black,
-                        fontSize: isSmallScreen ? 17 : 20,
-                        textAlign: "center",
-                      }}
-                      numberOfLines={isSmallScreen ? 3 : 4}
-                      adjustsFontSizeToFit={true}
-                      minimumFontScale={0.3}
-                    >
-                      {item.name}
-                    </Text>
-                  </Pressable>
-                  <View
-                    style={{
-                      position: "relative",
-                      width: size,
-                      height: size,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Svg
-                      width={size}
-                      height={size}
-                      style={{ position: "absolute" }}
-                    >
-                      <Circle
-                        cx={size / 2}
-                        cy={size / 2}
-                        r={radius}
-                        stroke={"transparent"}
-                        strokeWidth={strokeWidth}
-                        fill="none"
-                      />
-                    </Svg>
-                    <Animated.View style={{ position: "absolute" }}>
-                      <Svg width={size} height={size}>
-                        {/* Animated Progress Circle */}
-                        <AnimatedCircle
-                          cx={size / 2}
-                          cy={size / 2}
-                          r={radius}
-                          stroke={
-                            progress >= 1
-                              ? completedDailyGoalColor
-                              : themeColors.primary
-                          }
-                          strokeWidth={strokeWidth}
-                          fill="none"
-                          strokeDasharray={circumference}
-                          strokeDashoffset={progressAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [circumference, 0],
-                          })}
-                          strokeLinecap="round"
-                          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                        />
-                      </Svg>
-                    </Animated.View>
-                    <View
-                      style={{ alignItems: "center", justifyContent: "center" }}
-                    >
-                      <Text
-                        style={{
-                          color:
-                            progress >= 1
-                              ? completedDailyGoalColor
-                              : themeColors.primary,
-                          fontFamily: FontFamily.black,
-                          fontSize: isSmallScreen ? 50 : 64,
-                          lineHeight: isSmallScreen ? 50 : 64,
-                        }}
-                      >
-                        {item.count}
-                      </Text>
-                      <Text
-                        style={{
-                          marginTop: 6,
-                          opacity: 0.9,
-                          color: themeColors.darkText,
-                          fontFamily: FontFamily.medium,
-                          fontSize: isSmallScreen ? 12 : 14,
-                        }}
-                      >
-                        {item.dailyGoal}
-                      </Text>
-                    </View>
-                  </View>
-                  <View
-                    style={{
-                      width: "100%",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 12,
-                    }}
-                  >
-                    <TouchableOpacity
-                      onPress={shareCounter}
-                      style={[
-                        {
-                          justifyContent: "center",
-                          alignItems: "center",
-                          flex: 1,
-                        },
-                      ]}
-                    >
-                      <FontAwesome5
-                        name={"share-alt"}
-                        size={18}
-                        color={
-                          progress >= 1
-                            ? completedDailyGoalColor
-                            : themeColors.primary
-                        }
-                      />
-                    </TouchableOpacity>
-                    <Pressable
-                      onPress={reset}
-                      style={{ width: "60%" }}
-                      android_ripple={{ color: themeColors.primary20 }}
-                    >
-                      <View
-                        style={{
-                          height: isSmallScreen ? 40 : 48,
-                          borderRadius: 99,
-                          backgroundColor:
-                            progress >= 1
-                              ? completedDailyGoalColor
-                              : themeColors.primary,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: themeColors.background,
-                            fontFamily: FontFamily.bold,
-                            fontSize: isSmallScreen ? 12 : 15,
-                          }}
-                        >
-                          تصفير
-                        </Text>
-                      </View>
-                    </Pressable>
-                    <TouchableOpacity
-                      onPress={toggleSound}
-                      style={[
-                        {
-                          justifyContent: "center",
-                          alignItems: "center",
-                          flex: 1,
-                        },
-                      ]}
-                    >
-                      <FontAwesome5
-                        name={soundEnabled ? "volume-up" : "volume-mute"}
-                        size={18}
-                        color={
-                          progress >= 1
-                            ? completedDailyGoalColor
-                            : themeColors.primary
-                        }
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              );
-            })()}
-          </View>
+          <CounterCard
+            item={item}
+            progress={progress}
+            progressAnim={progressAnim}
+            isSmallScreen={isSmallScreen}
+            color={themeColors}
+            completedColor={completedDailyGoalColor}
+            onCopy={copyToClipboard}
+            onShare={shareCounter}
+            onReset={reset}
+            onToggleSound={toggleSound}
+            soundEnabled={soundEnabled}
+          />
         </View>
 
         {/* Hidden View for screenshot with logo - only visible when capturing */}
@@ -723,355 +414,50 @@ export default function TasbeehDetail() {
             top: -9999,
             opacity: 0,
             pointerEvents: "none",
-            gap: isSmallScreen ? 18 : 32,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: themeColors.bg20,
-            borderRadius: 18,
-            paddingVertical: 24,
-            paddingHorizontal: 20,
           }}
         >
-          {item &&
-            (() => {
-              const size = isSmallScreen ? 150 : 200;
-              const strokeWidth = isSmallScreen ? 12 : 16;
-              const radius = (size - strokeWidth) / 2;
-              const circumference = 2 * Math.PI * radius;
-              const currentProgress =
-                item.dailyGoal > 0
-                  ? Math.min(item.count / item.dailyGoal, 1)
-                  : 0;
-
-              return (
-                <>
-                  <Text
-                    style={{
-                      color: themeColors.text,
-                      fontFamily: FontFamily.black,
-                      fontSize: isSmallScreen ? 17 : 20,
-                      textAlign: "center",
-                    }}
-                    adjustsFontSizeToFit={true}
-                    minimumFontScale={0.3}
-                  >
-                    {item.name}
-                  </Text>
-                  {/* App Logo for shared image */}
-                  <View
-                    style={{
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 12,
-                    }}
-                  >
-                    <AppLogo
-                      size={60}
-                      primaryColor={themeColors.primary}
-                      secondaryColor={completedDailyGoalColor}
-                      backgroundColor="transparent"
-                    />
-                  </View>
-                </>
-              );
-            })()}
+          {item && (
+            <ShareView
+              item={item}
+              isSmallScreen={isSmallScreen}
+              color={themeColors}
+              completedColor={completedDailyGoalColor}
+            />
+          )}
         </View>
 
         <View style={{ gap: 12, paddingBottom: 16, paddingTop: 16 }}>
-          {(() => {
-            const bottomButtonSize = isSmallScreen ? 150 : 170;
-            const pulseScale = pulseAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [1, 1.6],
-            });
-            const pulseOpacity = pulseAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.22, 0],
-            });
-            return (
-              <Pressable
-                onPress={progress >= 1 ? confirmReset : increment}
-                style={{ alignSelf: "center" }}
-              >
-                <View
-                  ref={buttonViewRef}
-                  collapsable={false}
-                  style={{ width: bottomButtonSize, height: bottomButtonSize }}
-                >
-                  <Animated.View
-                    pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      borderRadius: bottomButtonSize / 2,
-                      backgroundColor:
-                        progress >= 1
-                          ? completedDailyGoalColor
-                          : themeColors.primary,
-                      opacity: pulseOpacity,
-                      transform: [{ scale: pulseScale }],
-                    }}
-                  />
-
-                  <Animated.View
-                    style={{
-                      width: bottomButtonSize,
-                      height: bottomButtonSize,
-                      borderRadius: bottomButtonSize / 2,
-                      backgroundColor:
-                        progress >= 1
-                          ? completedDailyGoalColor
-                          : themeColors.primary,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transform: [{ scale: scaleAnim }],
-                      gap: 8,
-                    }}
-                  >
-                    {progress >= 1 ? (
-                      <>
-                        <FontAwesome5
-                          name="redo"
-                          size={24}
-                          color={themeColors.white}
-                        />
-                        <Text
-                          style={{
-                            color: themeColors.white,
-                            fontFamily: FontFamily.black,
-                            fontSize: 16,
-                            textAlign: "center",
-                          }}
-                        >
-                          اعاده البدا
-                        </Text>
-                      </>
-                    ) : (
-                      <Text
-                        style={{
-                          color: themeColors.white,
-                          fontFamily: FontFamily.black,
-                          fontSize: 20,
-                        }}
-                      >
-                        سبِّح
-                      </Text>
-                    )}
-                  </Animated.View>
-                </View>
-              </Pressable>
-            );
-          })()}
+          <ActionButton
+            progress={progress}
+            size={bottomButtonSize}
+            color={themeColors}
+            completedColor={completedDailyGoalColor}
+            onPress={handleButtonPress}
+            pulseAnim={pulseAnim}
+            scaleAnim={scaleAnim}
+          />
         </View>
       </View>
-      {showResetModal && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: themeColors.background + "99",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 24,
-          }}
-        >
-          <View
-            style={{
-              width: "100%",
-              borderRadius: 18,
-              backgroundColor: themeColors.background,
-              padding: 20,
-            }}
-          >
-            <Text
-              style={{
-                color: themeColors.text,
-                fontFamily: FontFamily.black,
-                fontSize: 18,
-                textAlign: "center",
-              }}
-            >
-              تأكيد التصفير
-            </Text>
-            <Text
-              style={{
-                marginTop: 8,
-                color: themeColors.darkText,
-                fontFamily: FontFamily.medium,
-                fontSize: 14,
-                textAlign: "center",
-              }}
-            >
-              هل تريد تصفير العداد؟ لا يمكن التراجع عن هذا الإجراء.
-            </Text>
-            <View
-              style={{
-                marginTop: 16,
-                flexDirection: "row-reverse",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <Pressable
-                onPress={confirmReset}
-                style={{ flex: 1 }}
-                android_ripple={{ color: themeColors.primary20 }}
-              >
-                <View
-                  style={{
-                    height: 48,
-                    borderRadius: 14,
-                    backgroundColor: themeColors.primary,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: themeColors.white,
-                      fontFamily: FontFamily.bold,
-                      fontSize: 15,
-                    }}
-                  >
-                    تأكيد
-                  </Text>
-                </View>
-              </Pressable>
-              <Pressable
-                onPress={cancelReset}
-                style={{ flex: 1 }}
-                android_ripple={{ color: themeColors.primary20 }}
-              >
-                <View
-                  style={{
-                    height: 48,
-                    borderRadius: 14,
-                    borderWidth: 0,
-                    backgroundColor: themeColors.bg20,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: themeColors.text,
-                      fontFamily: FontFamily.bold,
-                      fontSize: 15,
-                    }}
-                  >
-                    إلغاء
-                  </Text>
-                </View>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      )}
 
-      {/* Copied Animation */}
-      {showCopied && (
-        <Animated.View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: 120,
-            left: 0,
-            right: 0,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: copiedAnim,
-            transform: [
-              {
-                translateY: copiedAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [20, 0],
-                }),
-              },
-            ],
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: themeColors.primary + "F0",
-              borderRadius: 16,
-              paddingHorizontal: 20,
-              paddingVertical: 12,
-              shadowColor: themeColors.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <Text
-              style={{
-                color: themeColors.white,
-                fontFamily: FontFamily.bold,
-                fontSize: 14,
-              }}
-            >
-              تم النسخ ✓
-            </Text>
-          </View>
-        </Animated.View>
-      )}
+      <ResetModal
+        visible={showResetModal}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+        color={themeColors}
+      />
 
-      {/* Goal Reached Toast */}
-      {showGoalReached && (
-        <Animated.View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: 135,
-            left: 0,
-            right: 0,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: goalToastAnim,
-            transform: [
-              {
-                translateY: goalToastAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [20, 0],
-                }),
-              },
-            ],
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: completedDailyGoalColor + "F0",
-              marginHorizontal: 20,
-              borderRadius: 16,
-              paddingHorizontal: 20,
-              paddingVertical: 12,
-              shadowColor: completedDailyGoalColor,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                color: themeColors.white,
-                fontFamily: FontFamily.extraBold,
-                fontSize: 18,
-              }}
-            >
-              ما شاء الله - وصلت للهدف اليومي!
-            </Text>
-          </View>
-        </Animated.View>
-      )}
+      <CopiedToast
+        visible={showCopied}
+        animValue={copiedAnim}
+        color={themeColors}
+      />
+
+      <GoalReachedToast
+        visible={showGoalReached}
+        animValue={goalToastAnim}
+        color={themeColors}
+        completedColor={completedDailyGoalColor}
+      />
     </View>
   );
 }

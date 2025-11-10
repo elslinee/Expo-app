@@ -39,7 +39,7 @@ export const getColors = (
       tint: palette.primary,
       tabIconDefault: palette.text20,
       tabIconSelected: "#1D1915",
-      border: "#333333",
+      border: "#5555",
       focusColor: palette.focusColor,
       text20: palette.text20,
       darkText: palette.darkText,

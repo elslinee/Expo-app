@@ -79,9 +79,6 @@ const loadQuranData = async (): Promise<LocalSurah[]> => {
       // تحميل تدريجي مع تحسين الأداء
       const { default: data } = await import("@/assets/json/Quran.json");
       QuranData = data as LocalSurah[];
-
-      // تحسين الذاكرة - تحميل البيانات الأساسية فقط
-      console.log("Quran data loaded successfully");
     } catch (error) {
       console.error("Error loading Quran data:", error);
       return [];

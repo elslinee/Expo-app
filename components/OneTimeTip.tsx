@@ -6,6 +6,8 @@ import {
   Modal,
   Pressable,
   StyleSheet,
+  StyleProp,
+  ViewStyle,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontFamily } from "@/constants/FontFamily";
@@ -13,19 +15,21 @@ import { FontFamily } from "@/constants/FontFamily";
 interface OneTimeTipProps {
   tipKey: string;
   title: string;
-  description: string;
+  description?: string;
   buttonText?: string;
   color: any;
   onClose?: () => void;
+  children?: React.ReactNode;
 }
 
 export default function OneTimeTip({
   tipKey,
   title,
-  description,
+  description = "",
   buttonText = "فهمت",
   color,
   onClose,
+  children,
 }: OneTimeTipProps) {
   const [showTip, setShowTip] = useState(false);
 
@@ -69,39 +73,49 @@ export default function OneTimeTip({
           <Text style={[styles.modalTitle, { color: color.darkText }]}>
             {title}
           </Text>
-          <View style={styles.descriptionContainer}>
-            {description.split("\n").map((line, index) => {
-              // Check if line starts with a number (Arabic or English)
-              const isNumbered =
-                /^[\d\u0660-\u0669\u06F0-\u06F9]+[\.\)]\s/.test(line.trim());
-              if (isNumbered) {
-                return (
-                  <View key={index} style={styles.listItem}>
-                    <Text style={[styles.listNumber, { color: color.primary }]}>
-                      {line.trim().split(/[\s\.\)]/)[0]}
+          {description && (
+            <View style={styles.descriptionContainer}>
+              {description.split("\n").map((line, index) => {
+                // Check if line starts with a number (Arabic or English)
+                const isNumbered =
+                  /^[\d\u0660-\u0669\u06F0-\u06F9]+[\.\)]\s/.test(line.trim());
+                if (isNumbered) {
+                  return (
+                    <View key={index} style={styles.listItem}>
+                      <Text
+                        style={[styles.listNumber, { color: color.primary }]}
+                      >
+                        {line.trim().split(/[\s\.\)]/)[0]}
+                      </Text>
+                      <Text
+                        style={[styles.listText, { color: color.darkText }]}
+                      >
+                        {line
+                          .trim()
+                          .replace(
+                            /^[\d\u0660-\u0669\u06F0-\u06F9]+[\.\)]\s/,
+                            ""
+                          )}
+                      </Text>
+                    </View>
+                  );
+                } else {
+                  return (
+                    <Text
+                      key={index}
+                      style={[
+                        styles.modalDescription,
+                        { color: color.darkText },
+                      ]}
+                    >
+                      {line}
                     </Text>
-                    <Text style={[styles.listText, { color: color.darkText }]}>
-                      {line
-                        .trim()
-                        .replace(
-                          /^[\d\u0660-\u0669\u06F0-\u06F9]+[\.\)]\s/,
-                          ""
-                        )}
-                    </Text>
-                  </View>
-                );
-              } else {
-                return (
-                  <Text
-                    key={index}
-                    style={[styles.modalDescription, { color: color.darkText }]}
-                  >
-                    {line}
-                  </Text>
-                );
-              }
-            })}
-          </View>
+                  );
+                }
+              })}
+            </View>
+          )}
+          {children && <View>{children}</View>}
           <View style={styles.modalButtonContainer}>
             <TouchableOpacity
               style={[styles.modalButton, { backgroundColor: color.primary }]}
@@ -177,6 +191,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalButton: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 8,

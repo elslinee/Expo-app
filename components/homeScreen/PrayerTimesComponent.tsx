@@ -30,12 +30,6 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
       time24: prayerTimes?.timings?.Fajr || "00:00",
     },
     {
-      name: "الشروق",
-      icon: ElshrokIcon,
-      time: formatTo12Hour(prayerTimes?.timings?.Sunrise || "") || "00:00",
-      time24: prayerTimes?.timings?.Sunrise || "00:00",
-    },
-    {
       name: "الظهر",
       icon: EldohrIcon,
       time: formatTo12Hour(prayerTimes?.timings?.Dhuhr || "") || "00:00",
@@ -61,7 +55,7 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
     },
   ];
   return (
-    <View className="px-6 mt-4">
+    <View style={{ paddingHorizontal: 16, marginTop: 4 }} className="">
       <View
         style={{
           backgroundColor: `${color.primary}1A`,
@@ -89,7 +83,7 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
                 style={{
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  fontSize: 10,
+                  fontSize: 11,
                   fontFamily: FontFamily.medium,
                   color: isNextPrayer ? "white" : color.text20,
                 }}
@@ -99,7 +93,7 @@ export default function PrayerTimesComponent({ color }: { color: any }) {
               </Text>
               <Text
                 style={{
-                  fontSize: 9,
+                  fontSize: 10,
                   fontFamily: FontFamily.bold,
                   color: isNextPrayer ? "white" : color.darkText,
                 }}

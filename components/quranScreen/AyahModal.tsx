@@ -63,7 +63,6 @@ function AyahModal({
 
   const handleShare = async () => {
     if (!ayah || !ayahShareViewRef.current) {
-      console.log("Missing ayah or view ref");
       return;
     }
 
@@ -73,11 +72,9 @@ function AyahModal({
 
       // Double check ref is still valid after waiting
       if (!ayahShareViewRef.current) {
-        console.log("View ref became null after wait");
         return;
       }
 
-      console.log("Attempting to capture view...");
       // Capture the ayah view as base64 data URI
       const dataUri = await captureRef(ayahShareViewRef.current, {
         format: "png",
@@ -88,8 +85,6 @@ function AyahModal({
       if (!dataUri || !dataUri.startsWith("data:image")) {
         throw new Error("Invalid capture result");
       }
-
-      console.log("View captured successfully");
 
       // Extract base64 data
       const base64Data = dataUri.split(",")[1];
@@ -113,7 +108,6 @@ function AyahModal({
           UTI: "public.png", // iOS only
         });
       } else {
-        console.log("Sharing not available, falling back to text");
       }
     } catch (error) {
       console.error("Error sharing ayah as image:", error);
@@ -404,7 +398,7 @@ function AyahModal({
               style={{
                 fontSize: 20,
                 marginBottom: 16,
-                color: color.darkText,
+                color: color.text,
                 fontFamily: FontFamily.quranBold,
                 textAlign: "center",
               }}

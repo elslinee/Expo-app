@@ -28,6 +28,16 @@
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#FBF5EA"
       },
+      "splash": {
+        "image": "./assets/logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#FBF5EA"
+      },
+      "backgroundColor": "#FBF5EA",
+      "androidNavigationBar": {
+        "backgroundColor": "#FBF5EA",
+        "barStyle": "dark-content"
+      },
       "edgeToEdgeEnabled": true,
       "package": "com.elsline.een",
       "supportsRtl": true,

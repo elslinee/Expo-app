@@ -1,5 +1,5 @@
 // constants/ColorSchemes.ts
-export type ColorSchemeType = "warm" | "ocean" | "nature";
+export type ColorSchemeType = "warm" | "ocean" | "nature" | "purple" | "sunset";
 
 export interface ColorPalette {
   primary: string;
@@ -83,10 +83,62 @@ const natureScheme: ColorScheme = {
   },
 };
 
+// نمط 4: البنفسجي الهادئ
+const purpleScheme: ColorScheme = {
+  name: "purple",
+  nameAr: "بنفسجي",
+  light: {
+    primary: "#8B7FA8",
+    primary20: "#E8E4F0",
+    text20: "#B8B0C8",
+    bg20: "#F5F3F8",
+    darkText: "#5A4F6B",
+    focusColor: "#9D8FB5",
+  },
+  dark: {
+    primary: "#9D8FB5",
+    primary20: "#2D2738",
+    text20: "#6B5F7F",
+    bg20: "#25202D",
+    darkText: "#D4CFE0",
+    focusColor: "#8B7FA8",
+  },
+};
+
+// نمط 5: الرمادي الهادئ
+const sunsetScheme: ColorScheme = {
+  name: "sunset",
+  nameAr: "هادئ",
+  light: {
+    primary: "#7A8B9A",
+    primary20: "#E1E6EA",
+    text20: "#A8B5C0",
+    bg20: "#F0F2F4",
+    darkText: "#4F5A64",
+    focusColor: "#8B9CAB",
+  },
+  dark: {
+    primary: "#8B9CAB",
+    primary20: "#2A2F35",
+    text20: "#5F6B75",
+    bg20: "#23272B",
+    darkText: "#D1D8DE",
+    focusColor: "#7A8B9A",
+  },
+};
+
 export const ColorSchemes: Record<ColorSchemeType, ColorScheme> = {
   warm: warmScheme,
   ocean: oceanScheme,
   nature: natureScheme,
+  purple: purpleScheme,
+  sunset: sunsetScheme,
 };
 
-export const ColorSchemesList: ColorSchemeType[] = ["warm", "ocean", "nature"];
+export const ColorSchemesList: ColorSchemeType[] = [
+  "warm",
+  "ocean",
+  "nature",
+  "purple",
+  "sunset",
+];

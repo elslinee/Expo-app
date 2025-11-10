@@ -11,7 +11,7 @@ export const isCurrentPrayerTime = (
   const prayerTime = parseInt(hours) * 60 + parseInt(minutes);
 
   // Define prayer order
-  const prayerOrder = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
+  const prayerOrder = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
   // Get next prayer time
   const nextPrayerIndex = (prayerIndex + 1) % prayerOrder.length;

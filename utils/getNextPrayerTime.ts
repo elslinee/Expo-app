@@ -23,7 +23,6 @@ const getNextPrayerTime = (
 
   const prayers = [
     { name: "الفجر", time: prayerTimes.Fajr },
-    { name: "الشروق", time: prayerTimes.Sunrise },
     { name: "الظهر", time: prayerTimes.Dhuhr },
     { name: "العصر", time: prayerTimes.Asr },
     { name: "المغرب", time: prayerTimes.Maghrib },
@@ -59,7 +58,6 @@ const getNextPrayerTime = (
   }
 
   if (!nextPrayer) return null;
-
 
   const hoursRemaining = Math.floor(minTimeDiff / 60);
   const minutesRemaining = minTimeDiff % 60;
