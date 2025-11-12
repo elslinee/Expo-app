@@ -94,7 +94,7 @@ export default function HomeScreen() {
       {/* First-run changelog modal */}
       <ChangelogModal
         changelogKey={CHANGELOG_KEY}
-        version="الإصدار 0.9 بيتا"
+        version="الإصدار 1.0.0"
         title="آخر التغييرات"
         changes={[
           "إزالة صلاة الشروق من قائمة الصلوات والإشعارات",

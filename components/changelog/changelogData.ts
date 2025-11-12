@@ -2,7 +2,7 @@ import { ChangelogVersion } from "./types";
 
 export const changelogVersions: ChangelogVersion[] = [
   {
-    version: "الإصدار 0.9 بيتا",
+    version: "الإصدار 1.0.0",
     subtitle: "تحسينات الأداء والتصميم والإشعارات",
     categories: [
       {
